@@ -1,6 +1,6 @@
 ---
 title: Github-Hexo创建博客
-date: 2017-11-07 20:33:50
+date: 2016-08-08 08:33:50
 categories: hexo             # 分类
 tags: [nodejs, hexo, NexT]   # [标签1, 标签2..., 标签n]
 ---
@@ -8,6 +8,7 @@ tags: [nodejs, hexo, NexT]   # [标签1, 标签2..., 标签n]
 ## 环境准备 ##
 [安装nodejs][1]
 [安装git][2]
+ <!-- more -->
 
 ## 安装Hexo ##
 打开cmd命令行，输入
