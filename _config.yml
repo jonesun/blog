@@ -3,11 +3,11 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: Hexo
-subtitle:
-description:
-author: John Doe
-language:
+title: Jone Sun's Blog
+subtitle: 用心发现,这个星球很美！
+description: 心随精英，口随大众。生活不仅仅只有电脑、手机和电视。。。
+author: Jone Sun
+language: zh-Hans
 timezone:
 
 # URL

@@ -119,6 +119,7 @@ hexo s
 ```
 git add . #不添加被删除的文件,`git add -A`会添加所有修改.
 git commit -m "更新描述"
+git remote add origin https://github.com/jonesun/blog.git
 git push origin master
 ```
 5. 部署
