@@ -13,6 +13,8 @@ Random从java1.0开始就已经引入，是线程安全的。
 
 Random初始化时，默认采用seeduniquifier方法生成的seed和获取到的当前原子时钟的当前时间的与操作后的值来初始化一个随机数种子。因为System.nanoTime()是一直变化的，所以种子一定是每次都不一样的，默认初始化的源码如下：
 
+ <!-- more -->
+
 ```
 public Random() {
         this(seedUniquifier() ^ System.nanoTime());
@@ -59,6 +61,7 @@ protected int next(int bits) {
     return (int)(nextseed >>> (48 - bits));
 }
 ```
+
 
 # 2.ThreadLocalRandom
 
