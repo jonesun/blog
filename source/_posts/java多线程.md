@@ -1,18 +1,52 @@
 ---
-title: java多线程1-Future
+title: java多线程1-从Future到CompletableFuture
 date: 2020-07-14 13:50:58
 categories: java 
 tags: [java, 多线程, future]
 ---
 
 # 引言
-Java项目编程中，为了充分利用计算机CPU资源，一般开启多个线程来执行异步任务。
+Java项目编程中，为了充分利用计算机CPU资源，一般开启多个线程来执行异步任务。多线有很多好处，其中最重要的是：
+
+- 可以发挥多核CPU的优势
+
+随着工业的进步，现在的笔记本、台式机乃至商用的应用服务器至少也都是双核的，4核、8核甚至16核的也都不少见，如果是单线程的程序，那么在双核CPU上就浪费了50%，在4核CPU上就浪费了75%。单核CPU上所谓的”多线程”那是假的多线程，同一时间处理器只会处理一段逻辑，只不过线程之间切换得比较快，看着像多个线程”同时”运行罢了。多核CPU上的多线程才是真正的多线程，它能让你的多段逻辑同时工作，多线程，可以真正发挥出多核CPU的优势来，达到充分利用CPU的目的。
+
+- 防止阻塞
+
+从程序运行效率的角度来看，单核CPU不但不会发挥出多线程的优势，反而会因为在单核CPU上运行多线程导致线程上下文的切换，而降低程序整体的效率。但是单核CPU我们还是要应用多线程，就是为了防止阻塞。试想，如果单核CPU使用单线程，那么只要这个线程阻塞了，比方说远程读取某个数据吧，对端迟迟未返回又没有设置超时时间，那么你的整个程序在数据返回回来之前就停止运行了。多线程可以防止这个问题，多条线程同时运行，哪怕一条线程的代码执行读取数据阻塞，也不会影响其它任务的执行。
 
 # 多线程发展
 
 ## 一、Thread&Runable
 
-java1开始，常见的两种创建线程的方式。一种是直接继承Thread，另外一种就是实现Runnable接口。但这两种方式存在一些问题：
+java1开始，常见的两种创建线程的方式。一种是直接继承Thread，另外一种就是实现Runnable接口。
+
+从源码中可以看到，Thread也是实现Runable接口的：
+
+```
+public class Thread implements Runnable {
+    private Runnable target;
+
+    //构造方法
+    public Thread(Runnable target) {
+        this(null, target, "Thread-" + nextThreadNum(), 0);
+    }
+
+    //run()方法
+    @Override
+    public void run() {
+        if (target != null) {
+            target.run();
+        }
+    }
+}
+
+
+```
+区别在于，Thread并没有直接实现run()方法，而调用的是 Runnable 接口中的 run() 方法，也就是说此方法是由 Runnable 子类完成的，所以如果要通过继承 Thread 类实现多线程，则必须覆写 run()；
+
+但这两种方式存在一些问题：
 
 - 没有参数
 
@@ -276,6 +310,8 @@ public void thenApply() {
 }
 ```
 
+>! 在线程操作中，可以使用 join() 方法让一个线程强制运行，线程强制运行期间，其他线程无法运行，必须等待此线程完成之后才可以继续执行
+
  ### 3. thenAccept-**消费**结果
 
 ```
@@ -310,8 +346,11 @@ public CompletionStage<Void> thenRunAsync(Runnable action,Executor executor);
 public void thenRun(){
     CompletableFuture.supplyAsync(() -> {
         try {
+            //线程休眠优先使用TimeUnit的方法
+            //如果需要休眠1分钟TimeUnit.MINUTES.sleep(1);Thread.sleep(60000);明显可读性TimeUnit更强
             TimeUnit.SECONDS.sleep(2);
         } catch (InterruptedException e) {
+            //中断线程会抛出此异常
             e.printStackTrace();
         }
         return "hello1";
@@ -320,7 +359,6 @@ public void thenRun(){
     while (true){}
 }
 ```
-
 
  ### 5. thenCombine-结合两个CompletionStage的结果，进行转化后返回
 
