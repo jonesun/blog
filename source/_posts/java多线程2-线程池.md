@@ -94,15 +94,13 @@ public ThreadPoolExecutor(int corePoolSize,
 
 #### int corePoolSize
 
-线程池中的核心线程数, 默认情况下, 核心线程一直存活在线程池中, 即便他们在线程池中处于闲置状态。除非我们将ThreadPoolExecutor的allowCoreThreadTimeOut属性设为true的时候, 这时候处于闲置的核心线程在等待新任务到来时会有超时策略, 这个超时时间由keepAliveTime来指定。一旦超过所设置的超时时间, 闲置的核心线程就会被终止
+线程池中的核心线程数, 默认情况下, 当初始化线程池时，会创建核心线程进入等待状态, 即便他们在线程池中处于空闲状态，从而降低了任务一来时要创建新线程的时间和性能开销。它的数量决定了添加的任务是开辟新的线程去执行, 还是放到workQueue任务队列中去。
 
-它的数量决定了添加的任务是开辟新的线程去执行, 还是放到workQueue任务队列中去
+除非我们将ThreadPoolExecutor的allowCoreThreadTimeOut属性设为true的时候, 这时候处于闲置的核心线程在等待新任务到来时会有超时策略, 这个超时时间由keepAliveTime来指定。一旦超过所设置的超时时间, 闲置的核心线程就会被终止。
 
 #### int maximumPoolSize
 
-线程池中所容纳的最大线程数, 如果活动的线程达到这个数值以后, 后续的新任务将会被阻塞。包含核心线程数+非核心线程数
-
-指定线程池中的最大线程数量, 这个参数会根据你使用的workQueue任务队列的类型, 决定线程池会开辟的最大线程数量
+线程池中所容纳的最大线程数, 如果活动的线程达到这个数值以后, 后续的新任务将会被阻塞。包含核心线程数+非核心线程数。这个参数会根据你使用的workQueue任务队列的类型, 决定线程池会开辟的最大线程数量。
 
 #### long keepAliveTime
 
@@ -124,7 +122,7 @@ keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
 
 #### BlockingQueue workQueue
 
-任务队列, 被添加到线程池中, 但尚未被执行的任务；通过线程池中的execute方法提交的Runable对象都会存储在该队列中, 可以选择下面几个阻塞队列：
+任务队列, 由于任务可能会有很多，而线程就那么几个，所以那么还未被执行的任务就进入队列中排队，可以选择下面几个阻塞队列：
 
 1. SynchronousQueue-直接递交
 
@@ -145,6 +143,15 @@ keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
     使用无界队列如LinkedBlockingQueue没有指定最大容量的时候，将会引起当核心线程都在忙的时候，新的任务被放在队列上，因此，永远不会有大于corePoolSize的线程被创建，因此maximumPoolSize参数将失效。这种策略比较适合所有的任务都不相互依赖，独立执行。举个例子，如网页服务器中，每个线程独立处理请求。但是当任务处理速度小于任务进入速度的时候会引起队列的无限膨胀。
 
 4. PriorityBlockingQueue-具有优先级的无限阻塞队列
+
+    根据给定的优先级策略来排序, 可在子线程中实现Comparable接口来实现
+    
+    ```
+    public int compareTo(ThreadTask o) {
+            //当前对象和其他对象做比较，当前优先级大就返回-1，优先级小就返回1,值越小优先级越高
+            return this.priority > o.priority ? -1 : 1;
+        }
+    ```
 
 5. 通过实现BlockingQueue接口自定义阻塞队列
 
@@ -389,7 +396,7 @@ public static ExecutorService newFixedThreadPool(int nThreads) {
 }
 ```
 
-适用：执行长期的任务, 因为采用无界的阻塞队列, 所以实际线程数量永远不会变化, 适用于负载较重的场景, 对当前线程数量进行限制。（保证线程数可控, 不会造成线程过多, 导致系统负载更为严重）
+适用：执行长期的任务, 因为采用无界的阻塞队列, 所以实际线程数量永远不会变化, 适用于负载较重的场景, 对当前线程数量进行限制。（保证线程数可控, 不会造成线程过多, 导致系统负载更为严重）如果某个线程因为执行异常而结束，那么线程池会补充一个新线程
 
 ## newSingleThreadExecutor
 
@@ -411,7 +418,7 @@ public static ExecutorService newSingleThreadExecutor() {
 }
 ```
 
-适用：一个任务一个任务执行的场景
+适用：一个任务一个任务执行的场景，如果这个唯一的线程因为异常结束，那么会有一个新的线程来替代它
 
 ## ScheduledThreadPool
 
@@ -439,18 +446,34 @@ public ScheduledThreadPoolExecutor(int corePoolSize) {
 
 适用：延时或者周期性执行任务的场景
 
+## newWorkStealingPool
+
+具有抢占式操作的线程池，任务的执行是无序的，哪个线程抢到任务，就由它执行
+```
+//创建方式
+ExecutorService executorService = Executors.newWorkStealingPool();
+
+//源码
+public static ExecutorService newWorkStealingPool() {
+        return new ForkJoinPool
+            (Runtime.getRuntime().availableProcessors(),
+             ForkJoinPool.defaultForkJoinWorkerThreadFactory,
+             null, true);
+    }
+```
+
+由此可以看到线程池除了使用ThreadPoolExecutor创建外，还有ScheduledThreadPoolExecutor以及java8新增的ForkJoinPool
 
 # 四、配置线程池
 
 ## 为何不推荐java提供的几种线程池
 
-客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
+客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列(newFixedThreadPool、newSingleThreadExecutor)可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
 
-阿里巴巴java开发手册中明确指出,线程池不允许使用Executors去创建：
+所以阿里巴巴java开发手册中明确指出,线程池不允许使用Executors去创建：
 
 ![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/executor-1.jpg?raw=true) 
 
-所以，如何配置线程池应具体情况具体分析
 
 ## CPU密集型任务
 
