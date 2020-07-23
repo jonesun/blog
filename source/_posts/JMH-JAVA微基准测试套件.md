@@ -49,9 +49,9 @@ JMH比较典型的应用场景有：
 
 将光标移到类名所在行，右键点击 Run 运行，该类下的所有被 @Benchmark 注解的方法都会被执行。
 
-## 使用
+# 使用
 
-# maven 引用
+## maven 引用
 
 ```
         <!-- https://mvnrepository.com/artifact/org.openjdk.jmh/jmh-core -->

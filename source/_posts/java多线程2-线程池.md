@@ -1,0 +1,526 @@
+---
+title: java多线程2-线程池
+date: 2020-07-23 10:18:00
+categories: java 
+tags: [java, 多线程, 线程池]
+---
+# 一、使用线程池的好处
+
+1. 降低系统资源消耗, 通过重用已存在的线程, 降低线程创建和销毁造成的消耗
+2. 提高系统响应速度, 当有任务到达时, 通过复用已存在的线程, 无需等待新线程的创建便能立即执行
+3. 方便线程并发数的管控。因为线程若是无限制的创建, 可能会导致内存占用过多而产生OOM, 并且会造成cpu过度切换（cpu切换线程是有时间成本的-需要保持当前执行线程的现场, 并恢复要执行线程的现场）。
+4. 提供更强大的功能, 如延时定时线程池
+5. ......
+
+# 二、线程池实现
+
+Executors中创建线程池的快捷方法, 实际上是调用了ThreadPoolExecutor的构造方法（定时任务使用的是ScheduledThreadPoolExecutor）
+
+## 线程池设计
+
+![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/threadPoolExecutorUML.png?raw=true) 
+
+ <!-- more -->
+
+- Executor
+
+    顶层接口Executor提供了一种思想：将任务提交和任务执行进行解耦。
+    用户无需关注如何创建线程, 如何调度线程来执行任务, 用户只需提供Runnable对象, 将任务的运行逻辑提交到执行器(Executor)中, 由Executor框架完成线程的调配和任务的执行部分。
+
+- ExecutorService
+
+    ExecutorService接口增加了一些能力：
+        1. 扩充执行任务的能力, 补充可以为一个或一批异步任务生成Future的方法
+        2. 提供了管控线程池的方法, 比如停止线程池的运行
+
+- AbstractExecutorService
+
+    AbstractExecutorService则是上层的抽象类, 将执行任务的流程串联了起来, 保证下层的实现只需关注一个执行任务的方法即可
+
+- ThreadPoolExecutor
+
+    最下层的实现类ThreadPoolExecutor实现最复杂的运行部分, ThreadPoolExecutor将会一方面维护自身的生命周期, 另一方面同时管理线程和任务, 使两者良好的结合从而执行并行任务
+
+## 线程池运行流程
+
+![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/threadPoolExecutor-1.png?raw=true) 
+
+线程池在内部实际上构建了一个生产者消费者模型，将线程和任务两者解耦，并不直接关联，从而良好的缓冲任务，复用线程。
+
+线程池的运行主要分成两部分：
+
+### 任务管理
+
+任务管理部分充当生产者的角色，当任务提交后，线程池会判断该任务后续的流转：
+
+1. 直接申请线程执行该任务
+
+2. 缓冲到队列中等待线程执行
+
+3. 拒绝该任务
+
+### 线程管理
+
+线程管理部分是消费者，它们被统一维护在线程池内，根据任务请求进行线程的分配，当线程执行完任务后则会继续获取新的任务去执行，最终当线程获取不到任务的时候，线程就会被回收。
+
+ ## 构造方法
+
+```
+public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+                          long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue)
+
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory)
+
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          RejectedExecutionHandler handler)
+
+public ThreadPoolExecutor(int corePoolSize,
+                          int maximumPoolSize,
+                          long keepAliveTime, TimeUnit unit,
+                          BlockingQueue<Runnable> workQueue,
+                          ThreadFactory threadFactory,
+                          RejectedExecutionHandler handler)
+```
+
+### 参数解释
+
+#### int corePoolSize
+
+线程池中的核心线程数, 默认情况下, 核心线程一直存活在线程池中, 即便他们在线程池中处于闲置状态。除非我们将ThreadPoolExecutor的allowCoreThreadTimeOut属性设为true的时候, 这时候处于闲置的核心线程在等待新任务到来时会有超时策略, 这个超时时间由keepAliveTime来指定。一旦超过所设置的超时时间, 闲置的核心线程就会被终止
+
+它的数量决定了添加的任务是开辟新的线程去执行, 还是放到workQueue任务队列中去
+
+#### int maximumPoolSize
+
+线程池中所容纳的最大线程数, 如果活动的线程达到这个数值以后, 后续的新任务将会被阻塞。包含核心线程数+非核心线程数
+
+指定线程池中的最大线程数量, 这个参数会根据你使用的workQueue任务队列的类型, 决定线程池会开辟的最大线程数量
+
+#### long keepAliveTime
+
+指定当线程池中空闲线程数量超过corePoolSize时, 多余的线程会在多长时间内被销毁
+
+非核心线程闲置时的超时时长, 对于非核心线程, 闲置时间超过这个时间, 非核心线程就会被回收。只有对ThreadPoolExecutor的allowCoreThreadTimeOut属性设为true的时候, 这个超时时间才会对核心线程产生效果
+
+#### TimeUnit unit
+
+keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
+
+- NANOSECONDS ： 1微毫秒 = 1微秒 / 1000
+- MICROSECONDS ： 1微秒 = 1毫秒 / 1000
+- MILLISECONDS ： 1毫秒 = 1秒 /1000
+- SECONDS ： 秒
+- MINUTES ： 分
+- HOURS ： 小时
+- DAYS ： 天
+
+#### BlockingQueue workQueue
+
+任务队列, 被添加到线程池中, 但尚未被执行的任务；通过线程池中的execute方法提交的Runable对象都会存储在该队列中, 可以选择下面几个阻塞队列：
+
+1. SynchronousQueue-直接递交
+
+    内部没有任何容量的阻塞队列。在它内部没有任何的缓存空间。对于SynchronousQueue中的数据元素只有当我们试着取走的时候才可能存在
+
+    这种策略会将提交的任务直接传送给工作线程，而不持有。如果当前没有工作线程来处理，即任务放入队列失败，则根据线程池的实现，会引发新的工作线程创建，因此新提交的任务会被处理。这种策略在当提交的一批任务之间有依赖关系的时候避免了锁竞争消耗。值得一提的是，这种策略最好是配合unbounded线程数来使用，从而避免任务被拒绝。同时我们必须要考虑到一种场景，当任务到来的速度大于任务处理的速度，将会引起无限制的线程数不断的增加。
+
+2. ArrayBlockingQueue-有界队列
+
+    基于数组实现的有界的阻塞队列,该队列按照FIFO（先进先出）原则对队列中的元素进行排序
+
+    有界队列如ArrayBlockingQueue帮助限制资源的消耗，但是不容易控制。队列长度和maximumPoolSize这两个值会相互影响，使用大的队列和小maximumPoolSize会减少CPU的使用、操作系统资源、上下文切换的消耗，但是会降低吞吐量，如果任务被频繁的阻塞如IO线程，系统其实可以调度更多的线程。使用小的队列通常需要大maximumPoolSize，从而使得CPU更忙一些，但是又会增加降低吞吐量的线程调度的消耗。总结一下是IO密集型可以考虑多些线程来平衡CPU的使用，CPU密集型可以考虑少些线程减少线程调度的消耗。
+
+3. LinkedBlockingQueue-无界队列
+
+    基于链表实现的阻塞队列, 该队列按照FIFO（先进先出）原则对队列中的元素进行排序
+
+    使用无界队列如LinkedBlockingQueue没有指定最大容量的时候，将会引起当核心线程都在忙的时候，新的任务被放在队列上，因此，永远不会有大于corePoolSize的线程被创建，因此maximumPoolSize参数将失效。这种策略比较适合所有的任务都不相互依赖，独立执行。举个例子，如网页服务器中，每个线程独立处理请求。但是当任务处理速度小于任务进入速度的时候会引起队列的无限膨胀。
+
+4. PriorityBlockingQueue-具有优先级的无限阻塞队列
+
+5. 通过实现BlockingQueue接口自定义阻塞队列
+
+> 有界队列：就是有固定大小的队列。比如设定了固定大小的 LinkedBlockingQueue，又或者大小为 0，只是在生产者和消费者中做中转用的 SynchronousQueue。
+
+> 无界队列：指的是没有设置固定大小的队列。这些队列的特点是可以直接入列，直到溢出。当然现实几乎不会有到这么大的容量（超过 Integer.MAX_VALUE），所以从使用者的体验上，就相当于 “无界”。比如没有设定固定大小的 LinkedBlockingQueue
+
+#### ThreadFactory threadFactory
+
+线程工厂, 用于创建线程, 一般用默认即可；通过自定义ThreadFactory, 可以按需要对线程池中创建的线程进行一些特殊的设置, 如命名、优先级等
+
+```
+new ThreadFactory() {
+    private final AtomicInteger mCount = new AtomicInteger(1);
+
+    public Thread new Thread(Runnable r) {
+        return new Thread(r,"AsyncTask #" + mCount.getAndIncrement());
+    }
+}
+```
+
+#### RejectedExecutionHandler handler
+
+ 拒绝策略；当任务太多来不及处理时, 如何拒绝任务: 
+
+名称 | 描述 | 用途
+---|---|---
+ThreadPoolExecutor.AbortPolicy | 丢弃任务并直接抛出RejectedExecutionException异常(默认拒绝策略) | 如果是比较关键的业务, 推荐此策略, 这样在系统不能承载更大的并发量时,能够及时的通过异常发现。故需做好日志和警报
+ThreadPoolExecutor.CallerRunsPolicy | 由调用线程(提交任务的线程)处理 | 适用于让所有任务都执行完毕, 比如存在大量计算的任务，多线程仅仅是增大吞吐量的手段, 最终必须让每个任务都执行完毕
+ThreadPoolExecutor.DiscardPolicy | 直接丢弃任务(不抛异常) | 因为使用此策略无法发现系统的异常状态, 故一般用于一些无关紧要的业务
+ThreadPoolExecutor.DiscardOldestPolicy | 丢弃队列最前面的任务, 然后重新提交被拒绝的任务 | 如果业务中允许老任务, 则可以采用
+自定义实现RejectedExecutionHandler | 通过实现RejectedExecutionHandler接口自定义handler | 如记录日志或持久化不能处理的任务
+
+
+### 线程池和装修公司
+
+  以运营一家装修公司做个比喻。公司在办公地点等待客户来提交装修请求；公司有固定数量的正式工以维持运转；
+  旺季业务较多时, 新来的客户请求会被排期, 比如接单后告诉用户一个月后才能开始装修；当排期太多时, 为避免用户等太久, 公司会通过某些渠道（比如人才市场、熟人介绍等）雇佣一些临时工（注意, 招聘临时工是在排期排满之后）；
+  如果临时工也忙不过来, 公司将决定不再接收新的客户, 直接拒单。
+
+线程池就是程序中的“装修公司”, 代劳各种脏活累活。上面的过程对应到线程池上：
+
+```
+public ThreadPoolExecutor(
+  int corePoolSize, // 正式工数量
+  int maximumPoolSize, // 工人数量上限, 包括正式工和临时工
+  long keepAliveTime, TimeUnit unit, // 临时工游手好闲的最长时间, 超过这个时间将被解雇
+  BlockingQueue<Runnable> workQueue, // 排期队列
+  ThreadFactory threadFactory, // 招人渠道
+  RejectedExecutionHandler handler) // 拒单方式
+```
+
+## ThreadPoolExecutor执行流程
+
+当一个任务被添加进线程池时：
+
+1. 线程数量未达到corePoolSize, 则新建一个线程执行任务, 即使此时线程池中存在空闲线程
+
+2. 线程数量达到corePoolSize时, 则将任务放入队列workQueue中, 等待线程池中任务调度执行
+
+3. 当队列workQueue已满, 且maximumPoolSize>corePoolSize时, 则创建新线程执行任务
+
+4. 当队列workQueue已满, 总线程数又达到了maximumPoolSize时, 就会执行拒绝策略RejectedExecutionHandler
+
+![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/executor-submit.png?raw=true) 
+
+
+另外
+
+1. 当线程池中超过corePoolSize线程, 空闲时间达到keepAliveTime时, 关闭空闲线程
+
+2. 当设置allowCoreThreadTimeOut(true)时, 线程池中corePoolSize线程空闲时间达到keepAliveTime也将关闭
+
+由此可以看出, 可能会有以下问题：
+
+- corePoolSize和maximumPoolSize设置不当会影响效率, 甚至耗尽线程
+- workQueue设置不当容易导致OOM
+- handler设置不当会导致提交任务时抛出异常
+
+## 向ThreadPoolExecutor添加任务
+
+### execute
+
+执行runnable, 没有返回值
+
+### submit
+
+提交一个线程任务, 可以接受回调函数的返回值, 适用于需要处理返回着或者异常的业务场景 
+
+```
+<T> Future<T> submit(Callable<T> task);
+<T> Future<T> submit(Runnable task, T result);
+Future<?> submit(Runnable task);
+```
+
+## 获取结果和返回异常
+
+线程池的处理结果、以及处理过程中的异常都被包装到Future中, 并在调用Future.get()方法时获取, 执行过程中的异常会被包装成ExecutionException, submit()方法本身不会传递结果和任务执行过程中的异常
+
+### 获取单个结果
+
+```
+ExecutorService executorService = Executors.newCachedThreadPool(4);
+Future<Object> future = executorService.submit(new Callable<Object>() {
+        @Override
+        public Object call() throws Exception {
+            throw new RuntimeException("exception in call~");// 该异常会在调用Future.get()时传递给调用者
+        }
+    });
+	
+try {
+  Object result = future.get();
+} catch (InterruptedException e) {
+  // interrupt
+} catch (ExecutionException e) {
+  // exception in Callable.call()
+  e.printStackTrace();
+}
+```
+
+### 单个任务的超时时间
+
+V Future.get(long timeout, TimeUnit unit)方法可以指定等待的超时时间, 超时未完成会抛出TimeoutException。
+
+### 获取多个结果
+
+如果向线程池提交了多个任务, 要获取这些任务的执行结果, 可以依次调用Future.get()获得。
+
+但对于这种场景, 更应该使用ExecutorCompletionService, ExecutorCompletionService提供了等待所有任务执行结束的有效方式
+
+该类的take()方法总是阻塞等待某一个任务完成, 然后返回该任务的Future对象。向CompletionService批量提交任务后, 只需调用相同次数的CompletionService.take()方法, 就能获取所有任务的执行结果, 获取顺序是任意的, 取决于任务的完成顺序
+
+```
+void solve(Executor executor, Collection<Callable<Result>> solvers)
+   throws InterruptedException, ExecutionException {
+   
+   CompletionService<Result> ecs = new ExecutorCompletionService<Result>(executor);// 构造器
+   
+   for (Callable<Result> s : solvers) {// 提交所有任务
+       ecs.submit(s);
+   }
+   int n = solvers.size();
+   for (int i = 0; i < n; ++i) {// 获取每一个完成的任务
+       Result r = ecs.take().get();
+       if (r != null)
+           use(r);
+   }
+}
+```
+
+### 多个任务的超时时间
+
+等待多个任务完成, 并设置最大等待时间, 可以通过CountDownLatch完成：
+
+```
+public void testLatch(ExecutorService executorService, List<Runnable> tasks) 
+	throws InterruptedException{
+      
+    CountDownLatch latch = new CountDownLatch(tasks.size());
+      for(Runnable r : tasks){
+          executorService.submit(new Runnable() {
+              @Override
+              public void run() {
+                  try{
+                      r.run();
+                  }finally {
+                      latch.countDown();// countDown
+                  }
+              }
+          });
+      }
+	  latch.await(10, TimeUnit.SECONDS); // 指定超时时间
+  }
+```
+
+## 优雅的关闭线程池
+
+### shutdown()
+
+表示不再接受新任务, 但不会强行终止已经提交或者正在执行中的任务, 经常和pool.awaitTermination(1, TimeUnit.SECONDS) 配合使用，这个方法会每隔一秒钟检查一次是否执行完毕（状态为 TERMINATED），当从 while 循环退出时就表明线程池已经完全终止了
+
+```
+long start = System.currentTimeMillis();
+for (int i = 0; i <= 5; i++) {
+    pool.execute(new Job());
+}
+pool.shutdown();
+while (!pool.awaitTermination(1, TimeUnit.SECONDS)) {
+    LOGGER.info("线程还在执行。。。");
+}
+long end = System.currentTimeMillis();
+LOGGER.info("一共处理了【{}】", (end - start));
+```
+
+### shutdownNow()
+
+对于尚未执行的任务全部取消, 正在执行的任务全部发出interrupt(), 停止执行 
+
+
+下面我们来看看java默认提供的几个线程池
+
+# 三、 java内置的线程池
+
+## newCachedThreadPool
+
+可缓存线程池：
+
+- 线程数无限制
+- 有空闲线程则复用空闲线程, 若无空闲线程则新建线程
+- 一定程序减少频繁创建/销毁线程, 减少系统开销
+
+```
+//创建方式
+ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+
+//源码
+public static ExecutorService newCachedThreadPool() {
+    return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                  60L, TimeUnit.SECONDS,
+                                  new SynchronousQueue<Runnable>());
+}
+```
+
+适用：执行很多短期异步的小程序或者负载较轻的服务器, 可以使得任务快速得到执行, 因为任务时间执行短, 可以很快结束, 也不会造成cpu过度切换
+
+## newFixedThreadPool
+
+定长线程池：
+
+- 可控制线程最大并发数（同时执行的线程数）
+- 超出的线程会在队列中等待
+
+```
+//创建方式
+ExecutorService fixedThreadPool = Executors.newFixedThreadPool(int nThreads);
+
+//源码
+public static ExecutorService newFixedThreadPool(int nThreads) {
+    return new ThreadPoolExecutor(nThreads, nThreads,
+                                  0L, TimeUnit.MILLISECONDS,
+                                  new LinkedBlockingQueue<Runnable>());
+}
+```
+
+适用：执行长期的任务, 因为采用无界的阻塞队列, 所以实际线程数量永远不会变化, 适用于负载较重的场景, 对当前线程数量进行限制。（保证线程数可控, 不会造成线程过多, 导致系统负载更为严重）
+
+## newSingleThreadExecutor
+
+单线程化的线程池：
+
+- 有且仅有一个工作线程执行任务
+- 所有任务按照指定顺序执行, 即遵循队列的入队出队规则
+
+```
+//创建方式
+ExecutorService singleThreadPool = Executors.newSingleThreadExecutor();
+
+//源码
+public static ExecutorService newSingleThreadExecutor() {
+    return new FinalizableDelegatedExecutorService
+        (new ThreadPoolExecutor(1, 1,
+                                0L, TimeUnit.MILLISECONDS,
+                                new LinkedBlockingQueue<Runnable>()));
+}
+```
+
+适用：一个任务一个任务执行的场景
+
+## ScheduledThreadPool
+
+定长线程池：
+
+- 支持定时及周期性任务执行
+
+```
+//创建方式
+ExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(int corePoolSize);
+
+//源码
+
+public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
+    return new ScheduledThreadPoolExecutor(corePoolSize);
+}
+
+//ScheduledThreadPoolExecutor():
+public ScheduledThreadPoolExecutor(int corePoolSize) {
+    super(corePoolSize, Integer.MAX_VALUE,
+          DEFAULT_KEEPALIVE_MILLIS, MILLISECONDS,
+          new DelayedWorkQueue());
+}
+```
+
+适用：延时或者周期性执行任务的场景
+
+
+# 四、配置线程池
+
+## 为何不推荐java提供的几种线程池
+
+客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
+
+阿里巴巴java开发手册中明确指出,线程池不允许使用Executors去创建：
+
+![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/executor-1.jpg?raw=true) 
+
+所以，如何配置线程池应具体情况具体分析
+
+## CPU密集型任务
+
+尽量使用较小的线程池, 一般为CPU核心数+1。 因为CPU密集型任务使得CPU使用率很高, 若开过多的线程数, 会造成CPU过度切换。
+
+## IO密集型任务
+
+可以使用稍大的线程池, 一般为2*CPU核心数。 IO密集型任务CPU使用率并不高, 因此可以让CPU在等待IO的时候有其他线程去处理别的任务, 充分利用CPU时间。
+
+## 混合型任务
+
+可以将任务分成IO密集型和CPU密集型任务, 然后分别用不同的线程池去处理。 只要分完之后两个任务的执行时间相差不大, 那么就会比串行执行来的高效。
+因为如果划分之后两个任务执行时间有数据级的差距, 那么拆分没有意义。
+因为先执行完的任务就要等后执行完的任务, 最终的时间仍然取决于后执行完的任务, 而且还要加上任务拆分与合并的开销, 得不偿失。
+
+# 五、SpringBoot中使用线程池
+
+## 定义
+
+```
+@Configuration
+public class ThreadPoolExecutorConfig {
+
+    /**
+     * 任务队列线程池
+     * @return
+     */
+    @Bean(value = "taskQueueThreadPool")
+    public ExecutorService buildTaskQueueThreadPool() {
+        int poolSize = Runtime.getRuntime().availableProcessors() * 2;
+        return new ThreadPoolExecutor(poolSize, poolSize, 0L, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(512), new ThreadFactoryBuilder()
+                .setNameFormat("task-queue-thread-%d").build(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+    /**
+     * 审核队列线程池
+     * @return
+     */
+    @Bean(value = "examineQueueThreadPool")
+    public ExecutorService buildExamineQueueThreadPool() {
+        int poolSize = Runtime.getRuntime().availableProcessors() * 2;
+        return new ThreadPoolExecutor(poolSize, poolSize, 0L, TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(512), new ThreadFactoryBuilder()
+                .setNameFormat("examine-queue-thread-%d").build(), new ThreadPoolExecutor.AbortPolicy());
+    }
+
+}
+
+```
+
+## 使用
+
+```
+@Resource(name = "taskQueueThreadPool")
+private ExecutorService taskQueueThreadPool;
+
+public void execute() {
+    taskQueueThreadPool.execute(new TaskCommitThread());
+}
+```
+
+# 六、线程池在业务中的实践
+
+## 1. 快速响应用户请求
+
+用户发起的实时请求，服务追求响应时间。这种场景最重要的就是获取最大的响应速度去满足用户，所以应该不设置队列去缓冲并发任务，调高corePoolSize和maxPoolSize去尽可能创造多的线程快速执行任务。
+
+## 2. 快速处理批量任务
+
+离线的大量计算任务，需要快速执行。与响应速度优先的场景区别在于，这类场景任务量巨大，并不需要瞬时的完成，而是关注如何使用有限的资源，尽可能在单位时间内处理更多的任务，也就是吞吐量优先的问题。所以应该设置队列去缓冲并发任务，调整合适的corePoolSize去设置处理任务的线程数。在这里，设置的线程数过多可能还会引发线程上下文切换频繁的问题，也会降低处理任务的速度，降低吞吐量。
+
+
