@@ -145,7 +145,7 @@ keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
 4. PriorityBlockingQueue-具有优先级的无限阻塞队列
 
     根据给定的优先级策略来排序, 可在子线程中实现Comparable接口来实现
-    
+
     ```
     public int compareTo(ThreadTask o) {
             //当前对象和其他对象做比较，当前优先级大就返回-1，优先级小就返回1,值越小优先级越高
@@ -247,7 +247,7 @@ public ThreadPoolExecutor(
 Future<?> submit(Runnable task);
 ```
 
-## 获取结果和返回异常
+## 获取结果
 
 线程池的处理结果、以及处理过程中的异常都被包装到Future中, 并在调用Future.get()方法时获取, 执行过程中的异常会被包装成ExecutionException, submit()方法本身不会传递结果和任务执行过程中的异常
 
@@ -327,7 +327,59 @@ public void testLatch(ExecutorService executorService, List<Runnable> tasks)
   }
 ```
 
+## 异常处理
+
+线程中的异常如果不处理的外，外部是无法感知的。异常处理可以用以下几种方式：
+
+### 直接线程中try/catch
+
+### 通过Future对象的get方法接收抛出的异常
+
+### 为工作者线程设置UncaughtExceptionHandler，在uncaughtException方法中处理异常
+
+```
+ExecutorService threadPool = Executors.newFixedThreadPool(1, r -> {
+    Thread t = new Thread(r);
+    t.setUncaughtExceptionHandler(
+            (t1, e) -> {
+                System.out.println(t1.getName() + "线程抛出的异常"+e);
+            });
+    return t;
+});
+threadPool.execute(()->{
+    Object object = null;
+    System.out.print("result## " + object.toString());
+});
+
+```
+
+### 重写ThreadPoolExecutor的afterExecute方法，处理传递的异常引用
+
+```
+class ExtendedExecutor extends ThreadPoolExecutor {
+    // 这可是jdk文档里面给的例子。。
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+        if (t == null && r instanceof Future<?>) {
+            try {
+                Object result = ((Future<?>) r).get();
+            } catch (CancellationException ce) {
+                t = ce;
+            } catch (ExecutionException ee) {
+                t = ee.getCause();
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt(); // ignore/reset
+            }
+        }
+        if (t != null)
+            System.out.println(t);
+    }
+}}
+```
+
 ## 优雅的关闭线程池
+
+需要注意的是，如果线程池不关闭的话，会一直占用内存，需手动关闭
 
 ### shutdown()
 
@@ -468,7 +520,9 @@ public static ExecutorService newWorkStealingPool() {
 
 ## 为何不推荐java提供的几种线程池
 
-客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列(newFixedThreadPool、newSingleThreadExecutor)可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
+客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列(比如线程获取一个任务后，任务的执行时间比较长，会导致队列的任务越积越多，导致机器内存使用不停飙升，最终导致OOM)可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
+
+
 
 所以阿里巴巴java开发手册中明确指出,线程池不允许使用Executors去创建：
 
