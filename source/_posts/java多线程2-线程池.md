@@ -152,8 +152,11 @@ keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
             return this.priority > o.priority ? -1 : 1;
         }
     ```
+5. DelayQueue-延时队列
 
-5. 通过实现BlockingQueue接口自定义阻塞队列
+要求元素都实现Delayed接口，通过执行时延从队列中提取任务，时间没到任务取不出来。
+
+6. 通过实现BlockingQueue接口自定义阻塞队列
 
 > 有界队列：就是有固定大小的队列。比如设定了固定大小的 LinkedBlockingQueue，又或者大小为 0，只是在生产者和消费者中做中转用的 SynchronousQueue。
 
@@ -283,6 +286,8 @@ V Future.get(long timeout, TimeUnit unit)方法可以指定等待的超时时间
 但对于这种场景, 更应该使用ExecutorCompletionService, ExecutorCompletionService提供了等待所有任务执行结束的有效方式
 
 该类的take()方法总是阻塞等待某一个任务完成, 然后返回该任务的Future对象。向CompletionService批量提交任务后, 只需调用相同次数的CompletionService.take()方法, 就能获取所有任务的执行结果, 获取顺序是任意的, 取决于任务的完成顺序
+
+> CompletionService：一种执行者，可将submit的多个任务的结果按照完成的先后顺序存入一个内部队列，然后可以使用take方法从队列中依次取出结果并移除，如果调用take时计算未完成则会阻塞
 
 ```
 void solve(Executor executor, Collection<Callable<Result>> solvers)
@@ -514,7 +519,7 @@ public static ExecutorService newWorkStealingPool() {
     }
 ```
 
-由此可以看到线程池除了使用ThreadPoolExecutor创建外，还有ScheduledThreadPoolExecutor以及java8新增的ForkJoinPool
+由此可以看到线程池除了使用ThreadPoolExecutor创建外，还有ScheduledThreadPoolExecutor以及ForkJoinPool
 
 # 四、配置线程池
 
@@ -601,3 +606,8 @@ public void execute() {
 离线的大量计算任务，需要快速执行。与响应速度优先的场景区别在于，这类场景任务量巨大，并不需要瞬时的完成，而是关注如何使用有限的资源，尽可能在单位时间内处理更多的任务，也就是吞吐量优先的问题。所以应该设置队列去缓冲并发任务，调整合适的corePoolSize去设置处理任务的线程数。在这里，设置的线程数过多可能还会引发线程上下文切换频繁的问题，也会降低处理任务的速度，降低吞吐量。
 
 
+在Java1.4之前，已经提供了Runnable接口、Thread类、Timer类和synchronize关键字，它们已经足以完成各种各样的多线程编程任务，为什么还要提供执行者这样的概念呢？这是因为Java的设计者想把线程的创建、执行和调度分离。
+
+在concurrent包出现之前，线程的创建基本上靠new一个Thread对象，执行靠start()方法，而线程的调度则完全依赖程序员在具体代码中自己写出来。
+
+而concurrent包出现之后，线程的创建还是依靠Thread、Runnable和Callable对象的实例化；而线程的执行则靠Executor、ExecutorService的对象执行execute()方法或submit()方法；线程的调度则被固化为几个具体的线程池类，如ThreadPoolExecutor、ScheduledThreadPoolExecutor、ExecutorCompletionService等等。这样表面上增加了复杂度，而实际上成功将线程的创建、执行和调度的业务逻辑分离，使程序员能够将精力集中在线程中业务逻辑的编写，大大提高了编码效率，降低了出错的概率，而且大大提高了性能

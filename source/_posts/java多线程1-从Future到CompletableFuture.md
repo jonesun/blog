@@ -694,7 +694,26 @@ try {
 }
 ```
 
+> CompletableFuture默认运行使用的是ForkJoin的的线程池，这个线程池默认线程数是CPU的核数，所以强烈建议使用后两个方法，根据任务类型不同，主动创建线程池，进行资源隔离，避免互相干
+扰
+
 以上是CompletableFuture的常用方法，另外由于方法都是返回CompletableFuture，故可以通过各种排列组合，完成日常工作中的复杂逻辑。如获取商品的信息时，需要调用多个服务来处理这一个请求并返回结果。这里可能会涉及到并发编程，我们完全可以使用Java 8的CompletableFuture或者RxJava来实现
+
+## Java9 CompletableFuture 类新增部分方法
+
+1. 支持对异步方法的超时调用
+
+```
+orTimeout()
+completeOnTimeout()
+```
+
+2. 支持延迟调用
+
+```
+Executor delayedExecutor(long delay, TimeUnit unit, Executor executor)
+Executor delayedExecutor(long delay, TimeUnit unit)
+```
 
 ## 延伸
 
@@ -709,3 +728,4 @@ Observable(RxJava2) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 | 不�
 Flowable(RxJava2) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 | 支持
 
 有关rxjava和stream的用法，限于篇幅，后面进行介绍
+
