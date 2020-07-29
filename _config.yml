@@ -7,7 +7,7 @@ title: Jone Sun's Blog
 subtitle: 用心发现,这个星球很美！
 description: 心随精英，口随大众。生活不仅仅只有电脑、手机和电视。。。
 author: Jone Sun
-language: zh-Hans
+language: zh-CN
 timezone:
 
 # URL
@@ -72,7 +72,7 @@ pagination_dir: page
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: next
+theme: hexo-theme-next-7.8.0
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
