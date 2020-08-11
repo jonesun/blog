@@ -1,7 +1,7 @@
 ---
 title: java设计模式-代理模式
 date: 2020-07-16 15:12:48
-categories: java 
+categories: [java, 设计模式]
 tags: [java, 设计模式, 代理模式]
 ---
 

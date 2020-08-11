@@ -1,11 +1,12 @@
 ---
-title: java多线程1-从Future到CompletableFuture
+title: java多线程1-从Thread到Future再到CompletableFuture
 date: 2020-07-14 13:50:58
-categories: java 
+categories: [java, 多线程] 
 tags: [java, 多线程, future]
 ---
 
 # 引言
+
 Java项目编程中，为了充分利用计算机CPU资源，一般开启多个线程来执行异步任务。多线有很多好处，其中最重要的是：
 
 - 可以发挥多核CPU的优势
@@ -16,13 +17,13 @@ Java项目编程中，为了充分利用计算机CPU资源，一般开启多个�
 
 从程序运行效率的角度来看，单核CPU不但不会发挥出多线程的优势，反而会因为在单核CPU上运行多线程导致线程上下文的切换，而降低程序整体的效率。但是单核CPU我们还是要应用多线程，就是为了防止阻塞。试想，如果单核CPU使用单线程，那么只要这个线程阻塞了，比方说远程读取某个数据吧，对端迟迟未返回又没有设置超时时间，那么你的整个程序在数据返回回来之前就停止运行了。多线程可以防止这个问题，多条线程同时运行，哪怕一条线程的代码执行读取数据阻塞，也不会影响其它任务的执行。
 
-# 多线程发展
-
-## 一、Thread&Runable
+# 一、Thread&Runable
 
 java1开始，常见的两种创建线程的方式。一种是直接继承Thread，另外一种就是实现Runnable接口。
 
 从源码中可以看到，Thread也是实现Runable接口的：
+
+ <!-- more -->
 
 ```
 public class Thread implements Runnable {
@@ -53,8 +54,6 @@ public class Thread implements Runnable {
 - 没有返回值
 
 - 无法抛出异常
-
- <!-- more -->
 
 ```
  public static void main(String[] args) {
@@ -89,7 +88,7 @@ public class Thread implements Runnable {
         }
     }
 ```
-## 二、Callable
+# 二、Callable
 
 为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call() 方法签名有 throws，所以它可以处理受检异常：
 
@@ -107,7 +106,7 @@ public interface Callable<V> {
 
 ```
 
-值得一提的是Callable并不可以单独执行，需要ExecutorService配合线程池使用：
+Callable并不可以单独执行，需要ExecutorService配合线程池使用：
 
 ```
 <T> Future<T> submit(Callable<T> task);
@@ -118,7 +117,7 @@ Future<?> submit(Runnable task);
 
 可以看到使用线程池时，无论使用Runable还是Callable，都默认返回Future，下面我们就来看看这个Future是何方神圣。
 
-## 三、Future
+# 三、Future
 
 Future与Callable一样都是java1.5开始引入的。同Callable与Runable一样，Future也是一个接口类：
 
@@ -258,13 +257,13 @@ public class FutureAndCallableTest {
 
 如果使用Debug可以发现，实际上ExecutorService返回的是Future的实现类FutureTask，下面我们就了解下FutureTask
 
-## 四、FutureTask
+## FutureTask
 
 通过查看源码，可以发现FutureTask实现了RunnableFuture接口，而RunnableFuture又继承了Runnable, Future两个接口。
 
 所以就可以解释为什么ExecutorService会返回Future了，因为它既可以作为Runnable被线程执行，又可以作为Future得到Callable的返回值。
 
-### Future不足
+## Future不足
 
 以上是单个Future的使用，但在开发过程中，我们可能会有以下需求
 
@@ -277,11 +276,11 @@ public class FutureAndCallableTest {
 
 所以java8引入了CompletableFuture
 
-## 五、CompletableFuture
+# 四、CompletableFuture
 
 CompletableFuture也实现了Future接口，另外还实现了CompletionStage接口(它里面的方法表示的是是在某个运行阶段得到了结果之后要做的事情)
 
- ### 1. 创建CompletableFuture对象
+## create
 
 ```
 //如果没有指定，默认会在ForkJoinPool.commonPool()中执行
@@ -291,7 +290,11 @@ public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier)
 public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor)
 ```
 
- ### 2. thenApply-变换结果
+## 常用方法
+
+### 1. thenApply
+
+变换结果
 
 ```
 //这些方法的输入是上一个阶段计算后的结果，返回值是经过转化后结果
@@ -310,9 +313,11 @@ public void thenApply() {
 }
 ```
 
->! 在线程操作中，可以使用 join() 方法让一个线程强制运行，线程强制运行期间，其他线程无法运行，必须等待此线程完成之后才可以继续执行
+>! 在线程操作中，可以使用 join() 方法让一个线程强制运行，线程强制运行期间，其他线程无法运行，必须等待此线程完成之后才可以继续执行，join在遇到底层的异常时，会抛出未受查的CompletionException，get在遇到底层异常时，会抛出受查异常ExecutionException
 
- ### 3. thenAccept-**消费**结果
+### 2. thenAccept
+
+消费结果
 
 ```
 //这些方法只是针对结果进行消费，入参是Consumer，没有返回值
@@ -332,7 +337,9 @@ public void thenAccept(){
 }
 ```
 
- ### 4. thenRun-对上一步的计算结果不关心，执行下一个操作
+ ### 3. thenRun
+ 
+ 对上一步的计算结果不关心，执行下一个操作
 
 ```
 public CompletionStage<Void> thenRun(Runnable action);
@@ -355,12 +362,14 @@ public void thenRun(){
         }
         return "hello1";
     }).thenRun(() -> System.out.println("hello world"));
-    //这里仅仅为测试方便，实际开发不能这么写
+    //这里仅仅为测试方便让主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭。实际开发不能这么写
     while (true){}
 }
 ```
 
- ### 5. thenCombine-结合两个CompletionStage的结果，进行转化后返回
+ ### 4. thenCombine
+ 
+ 结合两个CompletionStage的结果，进行转化后返回
 
 ```
 //需要上一阶段的返回值，并且other代表的CompletionStage也要返回值之后，把这两个返回值，进行转换后返回指定类型的值
@@ -393,7 +402,9 @@ public void thenCombine() {
 
 ```
 
- ### 6. applyToEither-两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的转化操作
+ ### 5. applyToEither
+ 
+ 两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的转化操作
 
 ```
 //两种渠道完成同一个事情，就可以调用这个方法，找一个最快的结果进行处理返回
@@ -425,7 +436,9 @@ public void applyToEither() {
 }
 ```
 
- ### 7. acceptEither-两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的**消费**操作
+ ### 6. acceptEither
+ 
+ 两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的**消费**操作
 
 ```
 public CompletionStage<Void> acceptEither(CompletionStage<? extends T> other,Consumer<? super T> action);
@@ -457,7 +470,9 @@ public static void acceptEither() {
 }
 ```
 
- ### 8. runAfterBoth-两个CompletionStage都运行完后执行
+ ### 7. runAfterBoth
+ 
+ 两个CompletionStage都运行完后执行
 
 ```
 public void runAfterBoth(){
@@ -481,7 +496,9 @@ public void runAfterBoth(){
 }
 ```
 
- ### 9. 运行时出现了异常，通过exceptionally进行补偿
+ ### 8. exceptionally
+ 
+ 运行时出现了异常，通过exceptionally进行补偿
 
 ```
 public CompletionStage<T> exceptionally(Function<Throwable, ? extends T> fn);
@@ -510,7 +527,9 @@ public void exceptionally() {
     System.out.println(result);
 }
 ```
- ### 10. whenComplete-当运行完成时，对结果的记录
+ ### 9. whenComplete
+ 
+ 当运行完成时，对结果的记录
 
 ```
 //这里为什么要说成记录，因为这几个方法都会返回CompletableFuture，当Action执行完毕后它的结果返回原始的CompletableFuture的计算结果或者返回异常。所以不会对结果产生任何的作用
@@ -546,7 +565,9 @@ public void whenComplete() {
 }
 ```
 
- ### 11. handle-运行完成时，对结果的处理
+ ### 10. handle
+ 
+ 运行完成时，对结果的处理
 
 handle 方法和 thenApply 方法处理方式基本一样。不同的是 handle 是在任务完成后再执行，还可以处理异常的任务。thenApply 只可以执行正常的任务，任务出现异常则不执行 thenApply 方法。
 
@@ -582,7 +603,9 @@ public static void handle() {
 }
 ```
 
- ### 12. thenCompose -第一个操作完成时，将其结果作为参数传递给第二个操作
+ ### 11. thenCompose
+ 
+ 第一个操作完成时，将其结果作为参数传递给第二个操作
 
 ```
 public <U> CompletableFuture<U> thenCompose(Function<? super T, ? extends CompletionStage<U>> fn);
@@ -607,9 +630,9 @@ public void thenCompose() throws Exception {
 }
 ```
 
- ### 13. anyOf-多个CompletableFuture谁计算的快，就用那个CompletionStage的结果进行下一步的**消费**操作
-
-anyOf是CompletableFuture静态方法，和 acceptEither、applyToEither的区别在于，后两者只能使用在两个future中，而anyOf可以使用在多个future中
+ ### 12. anyOf
+ 
+ 多个CompletableFuture谁计算的快，就用那个CompletionStage的结果进行下一步的**消费**操作。anyOf是CompletableFuture静态方法，和 acceptEither、applyToEither的区别在于，后两者只能使用在两个future中，而anyOf可以使用在多个future中
 
 ```
  public static CompletableFuture<Object> anyOf(CompletableFuture<?>... cfs) ;
@@ -660,7 +683,9 @@ public void anyOf() {
 }
 ```
 
- ### 14. allOf-多个CompletableFuture都执行完后
+ ### 13. allOf
+ 
+ 多个CompletableFuture都执行完后
 
 ```
 public static CompletableFuture<Void> allOf(CompletableFuture<?>... cfs){}
@@ -699,7 +724,7 @@ try {
 
 以上是CompletableFuture的常用方法，另外由于方法都是返回CompletableFuture，故可以通过各种排列组合，完成日常工作中的复杂逻辑。如获取商品的信息时，需要调用多个服务来处理这一个请求并返回结果。这里可能会涉及到并发编程，我们完全可以使用Java 8的CompletableFuture或者RxJava来实现
 
-## Java9 CompletableFuture 类新增部分方法
+## Java9新增
 
 1. 支持对异步方法的超时调用
 
@@ -715,7 +740,50 @@ Executor delayedExecutor(long delay, TimeUnit unit, Executor executor)
 Executor delayedExecutor(long delay, TimeUnit unit)
 ```
 
-## 延伸
+## 生产建议
+
+### 不要为使用而使用
+
+事实上，如果每个操作都很简单的话没有必要用这种多线程异步的方式，因为创建线程还需要时间，还不如直接同步执行来得快。
+
+事实证明，只有当每个操作很复杂需要花费相对很长的时间（比如，调用多个其它的系统的接口；比如，商品详情页面这种需要从多个系统中查数据显示的）的时候用CompletableFuture才合适，不然区别真的不大，还不如顺序同步执行。
+
+### 自定义线程池
+
+在生产环境下，不建议直接使用上述示例代码形式。因为示例代码中使用的
+
+```
+CompletableFuture.supplyAsync(() -> {});
+```
+
+结合源码来看一下：
+
+```
+public class CompletableFuture<T> implements Future<T>, CompletionStage<T> { 
+    private static final boolean USE_COMMON_POOL =
+        (ForkJoinPool.getCommonPoolParallelism() > 1);
+
+    /**
+     * Default executor -- ForkJoinPool.commonPool() unless it cannot
+     * support parallelism.
+     */
+    private static final Executor ASYNC_POOL = USE_COMMON_POOL ?
+        ForkJoinPool.commonPool() : new ThreadPerTaskExecutor();
+
+    /** Fallback if ForkJoinPool.commonPool() cannot support parallelism **/
+    static final class ThreadPerTaskExecutor implements Executor {
+        public void execute(Runnable r) { new Thread(r).start(); }
+    }
+
+}
+//多核情况下，默认使用ForkJoinPool.commonPool()
+```
+
+如果所有 CompletableFuture 都使用默认[ForkJoinPool.commonPool()](/2020/07/28/java多线程3-fork-join框架)线程池，一旦有任务执行很慢的 I/O 操作，就会导致所有线
+程都阻塞在 I/O 操作上，进而影响系统整体性能。
+所以，建议大家在生产环境使用时，根据不同的业务类型创建不同的线程池，以避免互相影响。
+
+# 五、延伸
 
 可以看到CompletableFuture的写法与特性跟RxJava很像，但应用场景还是有些区别的：
 
@@ -728,4 +796,3 @@ Observable(RxJava2) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 | 不�
 Flowable(RxJava2) | 支持 | 支持 | 支持 | 支持 | 支持 | 支持 | 支持
 
 有关rxjava和stream的用法，限于篇幅，后面进行介绍
-

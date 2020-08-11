@@ -1,7 +1,7 @@
 ---
 title: java多线程2-线程池
 date: 2020-07-23 10:18:00
-categories: java 
+categories: [java, 多线程]  
 tags: [java, 多线程, 线程池]
 ---
 # 一、使用线程池的好处
@@ -12,13 +12,16 @@ tags: [java, 多线程, 线程池]
 4. 提供更强大的功能, 如延时定时线程池
 5. ......
 
+
+> JVM在可创建线程的数量上存在一个限制，这个限制值将随着平台的不同而不同，并且承受着多个因素制约，包括JVM的启动参数、Thread构造函数中请求栈的大小，以及底层操作系统对线程的限制等。如果破坏了这些限制，那么可能抛出OutOfMemoryError异常。
+
 # 二、线程池实现
 
-Executors中创建线程池的快捷方法, 实际上是调用了ThreadPoolExecutor的构造方法（定时任务使用的是ScheduledThreadPoolExecutor）
+使用Executors中创建线程池的快捷方法, 实际上是调用了ThreadPoolExecutor的构造方法（定时任务使用的是ScheduledThreadPoolExecutor、CompletableFuture默认使用的是ForkJoinPool）
 
 ## 线程池设计
 
-![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/threadPoolExecutorUML.png?raw=true) 
+![excutorUML](excutorUML.png) 
 
  <!-- more -->
 
@@ -30,8 +33,9 @@ Executors中创建线程池的快捷方法, 实际上是调用了ThreadPoolExecu
 - ExecutorService
 
     ExecutorService接口增加了一些能力：
-        1. 扩充执行任务的能力, 补充可以为一个或一批异步任务生成Future的方法
-        2. 提供了管控线程池的方法, 比如停止线程池的运行
+
+    - 扩充执行任务的能力, 补充可以为一个或一批异步任务生成Future的方法
+    - 提供了管控线程池的方法, 比如停止线程池的运行
 
 - AbstractExecutorService
 
@@ -43,7 +47,7 @@ Executors中创建线程池的快捷方法, 实际上是调用了ThreadPoolExecu
 
 ## 线程池运行流程
 
-![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/threadPoolExecutor-1.png?raw=true) 
+![image](threadPoolExecutor-1.png) 
 
 线程池在内部实际上构建了一个生产者消费者模型，将线程和任务两者解耦，并不直接关联，从而良好的缓冲任务，复用线程。
 
@@ -219,7 +223,7 @@ public ThreadPoolExecutor(
 
 4. 当队列workQueue已满, 总线程数又达到了maximumPoolSize时, 就会执行拒绝策略RejectedExecutionHandler
 
-![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/executor-submit.png?raw=true) 
+![image](executor-submit.png) 
 
 
 另外
@@ -519,8 +523,6 @@ public static ExecutorService newWorkStealingPool() {
     }
 ```
 
-由此可以看到线程池除了使用ThreadPoolExecutor创建外，还有ScheduledThreadPoolExecutor以及ForkJoinPool
-
 # 四、配置线程池
 
 ## 为何不推荐java提供的几种线程池
@@ -528,25 +530,34 @@ public static ExecutorService newWorkStealingPool() {
 客户端程序使用这些快捷方法没什么问题, 对于服务端需要长期运行的程序, 创建线程池应该直接使用ThreadPoolExecutor的构造方法, 避免无界队列(比如线程获取一个任务后，任务的执行时间比较长，会导致队列的任务越积越多，导致机器内存使用不停飙升，最终导致OOM)可能导致的OOM以及线程个数限制不当导致的线程数耗尽等问题
 
 
-
 所以阿里巴巴java开发手册中明确指出,线程池不允许使用Executors去创建：
 
-![image](https://github.com/jonesun/blog/blob/master/source/image/java-executor/executor-1.jpg?raw=true) 
+![image](executor-1.jpg) 
 
 
-## CPU密集型任务
+## 线程池大小设置
+
+线程池大小的设置，在 「Java 并发编程实战」一书中，Brian Goetz 提供了不少优化建议。如果线程池数量过多，竞争 CPU 和内存资源，导致大量时间在上下文切换上。反之，如果线程池数量过少，
+无法充分利用 CPU 多核优势。
+
+线程池大小与 CPU 处理器的利用率之比可以用下面公式估算
+
+![线程池大小设置](excutor-size.png)
+
+### CPU密集型任务
 
 尽量使用较小的线程池, 一般为CPU核心数+1。 因为CPU密集型任务使得CPU使用率很高, 若开过多的线程数, 会造成CPU过度切换。
 
-## IO密集型任务
+### IO密集型任务
 
 可以使用稍大的线程池, 一般为2*CPU核心数。 IO密集型任务CPU使用率并不高, 因此可以让CPU在等待IO的时候有其他线程去处理别的任务, 充分利用CPU时间。
 
-## 混合型任务
+### 混合型任务
 
 可以将任务分成IO密集型和CPU密集型任务, 然后分别用不同的线程池去处理。 只要分完之后两个任务的执行时间相差不大, 那么就会比串行执行来的高效。
 因为如果划分之后两个任务执行时间有数据级的差距, 那么拆分没有意义。
 因为先执行完的任务就要等后执行完的任务, 最终的时间仍然取决于后执行完的任务, 而且还要加上任务拆分与合并的开销, 得不偿失。
+
 
 # 五、SpringBoot中使用线程池
 
@@ -605,6 +616,7 @@ public void execute() {
 
 离线的大量计算任务，需要快速执行。与响应速度优先的场景区别在于，这类场景任务量巨大，并不需要瞬时的完成，而是关注如何使用有限的资源，尽可能在单位时间内处理更多的任务，也就是吞吐量优先的问题。所以应该设置队列去缓冲并发任务，调整合适的corePoolSize去设置处理任务的线程数。在这里，设置的线程数过多可能还会引发线程上下文切换频繁的问题，也会降低处理任务的速度，降低吞吐量。
 
+> xxxx
 
 在Java1.4之前，已经提供了Runnable接口、Thread类、Timer类和synchronize关键字，它们已经足以完成各种各样的多线程编程任务，为什么还要提供执行者这样的概念呢？这是因为Java的设计者想把线程的创建、执行和调度分离。
 
