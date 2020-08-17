@@ -152,39 +152,68 @@ public class CountdownLatchTest2 {
 3. 模拟并发操作
 
 ```
-public class Parallellimit {
-    public static void main(String[] args) {
-        ExecutorService pool = Executors.newCachedThreadPool();
-        CountDownLatch cdl = new CountDownLatch(100);
-        for (int i = 0; i < 100; i++) {
-            CountRunnable runnable = new CountRunnable(cdl);
-            pool.execute(runnable);
-        }
-        pool.shutdown();
-    }
-}
+//模拟的并发量
+    private static final int CONCURRENT_NUM = 199;
 
-class CountRunnable implements Runnable {
-    private CountDownLatch countDownLatch;
-    public CountRunnable(CountDownLatch countDownLatch) {
-        this.countDownLatch = countDownLatch;
-    }
-    @Override
-    public void run() {
-        try {
-            synchronized (countDownLatch) {
-                /*** 每次减少一个容量*/
-                countDownLatch.countDown();
-                System.out.println("thread counts = " + (countDownLatch.getCount()));
+    public static void main(String[] args) throws InterruptedException {
+        Runnable taskTemp = new Runnable() {
+
+            // 注意，此处是非线程安全的，留坑
+            private AtomicInteger iCounter = new AtomicInteger();
+
+            @Override
+            public void run() {
+                doSomething(iCounter);
             }
-            countDownLatch.await();
-            System.out.println("concurrency counts = " + (100 - countDownLatch.getCount()));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        };
+        LatchTest latchTest = new LatchTest();
+        latchTest.startTaskAllInOnce(CONCURRENT_NUM, taskTemp);
+    }
+
+    private static void doSomething(AtomicInteger iCounter) {
+        for(int i = 0; i < 10; i++) {
+            // 发起请求
+            //此处模拟方法
+            int value = iCounter.incrementAndGet();
+            System.out.println(System.nanoTime() + " [" + Thread.currentThread().getName() + "] iCounter = " + value);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
-}
 
+    public long startTaskAllInOnce(int threadNums, final Runnable task) throws InterruptedException {
+        final CountDownLatch startGate = new CountDownLatch(1);
+        final CountDownLatch endGate = new CountDownLatch(threadNums);
+        for(int i = 0; i < threadNums; i++) {
+            Thread t = new Thread(() -> {
+                try {
+                    // 使线程在此等待，当开始门打开时，一起涌入门中
+                    startGate.await();
+                    try {
+                        task.run();
+                    } finally {
+                        // 将结束门减1，减到0时，就可以开启结束门了
+                        endGate.countDown();
+                    }
+                } catch (InterruptedException ie) {
+                    ie.printStackTrace();
+                }
+            });
+            t.start();
+        }
+        long startTime = System.nanoTime();
+        System.out.println(startTime + " [" + Thread.currentThread() + "] All thread is ready, concurrent going...");
+        // 因开启门只需一个开关，所以立马就开启开始门
+        startGate.countDown();
+        // 等等结束门开启
+        endGate.await();
+        long endTime = System.nanoTime();
+        System.out.println(endTime + " [" + Thread.currentThread() + "] All thread is completed.");
+        return endTime - startTime;
+    }
 ```
 
 4. A，B，C的工作都分为两个阶段，A只需要等待B，C各自完成他们工作的第一个阶段就可以执行了
@@ -543,4 +572,55 @@ public class SemaphoreTest3 {
         }
     }
 }
+```
+
+模拟5000次请求，同时最大200个并发操作
+
+```
+
+    /**
+     * 请求总数
+     */
+    private static final int THREAD_COUNT = 5000;
+
+    /**
+     * 同时并发执行的线程数
+     */
+    private static final int CONCURRENT_COUNT = 200;
+
+
+    private static int count = 0;
+    public static void main(String[] args) throws InterruptedException {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        //信号量 能保证同时执行的线程最多200个，模拟出稳定的并发量
+        final Semaphore semaphore = new Semaphore(CONCURRENT_COUNT);
+
+        //闭锁，实现计数器递减
+        final CountDownLatch countDownLatch = new CountDownLatch(THREAD_COUNT);
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            executorService.execute(() -> {
+                try {
+                    //获取执行许可，当总计未释放的许可数不超过200是，允许通过
+                    //否则线程阻塞等待，直到获取许可
+                    semaphore.acquire();
+                    add();
+                    //执行后，释放许可
+                    semaphore.release();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //闭锁减一
+                countDownLatch.countDown();
+            });
+        }
+        //线程阻塞，直到闭锁值为0时，继续往下执行
+        countDownLatch.await();
+        executorService.shutdown();
+        System.out.println(count);
+    }
+
+    private static void add(){
+        count++;
+    }
 ```

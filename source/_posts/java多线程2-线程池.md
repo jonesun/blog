@@ -390,6 +390,8 @@ class ExtendedExecutor extends ThreadPoolExecutor {
 
 需要注意的是，如果线程池不关闭的话，会一直占用内存，需手动关闭
 
+> Executors作为局部变量时，创建了线程，一定要记得调用executor.shutdown();来关闭线程池，如果不关闭，会有线程泄漏问题。
+
 ### shutdown()
 
 表示不再接受新任务, 但不会强行终止已经提交或者正在执行中的任务, 经常和pool.awaitTermination(1, TimeUnit.SECONDS) 配合使用，这个方法会每隔一秒钟检查一次是否执行完毕（状态为 TERMINATED），当从 while 循环退出时就表明线程池已经完全终止了
@@ -543,6 +545,18 @@ public static ExecutorService newWorkStealingPool() {
 线程池大小与 CPU 处理器的利用率之比可以用下面公式估算
 
 ![线程池大小设置](excutor-size.png)
+
+虽然线程池大小的设置受到很多因素影响，但是这里给出一个参考公式：
+
+> 最佳线程数目 = （（线程等待时间+线程CPU时间）/线程CPU时间 ）* CPU数目
+
+比如平均每个线程CPU运行时间为0.5s，而线程等待时间（非CPU运行时间，比如IO）为1.5s，CPU核心数为8，那么根据上面这个公式估算得到：((0.5+1.5)/0.5)*8=32。这个公式进一步转化为：
+
+最佳线程数目 = （线程等待时间与线程CPU时间之比 + 1）* CPU数目
+
+线程等待时间所占比例越高，需要越多线程。线程CPU时间所占比例越高，需要越少线程。
+
+所以并不是单纯的只是配一个CUP核心数就ok了。但一般都是整数倍
 
 ### CPU密集型任务
 
