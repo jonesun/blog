@@ -5,7 +5,7 @@ categories: [java,springboot]
 tags: [java, springboot]
 ---
 
-# 引言
+# 前言
 
 我们平常在开发SpringBoot+Mybatis项目时,有时会需要打印sql的执行语句
 
@@ -40,6 +40,8 @@ logging.level.com.xxxxx.dao=debug
 
 ==> Parameters: 100023(Integer), device(String), 10(Integer)
 ```
+
+> 注意上线时需要去除打印，可以用application-xx实现
 
 # 推荐使用idea插件
 

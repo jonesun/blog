@@ -1,5 +1,5 @@
 ---
-title: java多线程5-并发工具类CountDownLatch&CyclicBarrier&Semaphore
+title: java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore
 date: 2020-07-31 10:38:35
 categories: [java, 多线程]  
 tags: [java, 多线程]

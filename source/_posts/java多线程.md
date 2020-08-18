@@ -8,7 +8,7 @@ top: 1000
 
 # 目录
 
-[java多线程1-从Thread到Future再到CompletableFuture](2020/07/14/java多线程1-从Thread到Future再到CompletableFuture)
+[java多线程1-从Thread到Future再到CompletableFuture](/2020/07/14/java多线程1-从Thread到Future再到CompletableFuture)
 
 [java多线程2-线程池](/2020/07/23/java多线程2-线程池)
 
@@ -16,28 +16,135 @@ top: 1000
 
 [java多线程4-volatile&synchronized](/2020/07/30/java多线程4-volatile&synchronized/)
 
-[java多线程5-并发工具类CountDownLatch&CyclicBarrier&Semaphore](/2020/07/31/java多线程5-并发工具类CountDownLatch&CyclicBarrier&Semaphore)
+[java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore)
 
 [java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)
 
-[java多线程7-atomic原子变量](/2020/08/11/java多线程7-atomic原子变量)
+[java多线程7-atomic原子类](/2020/08/11/java多线程7-atomic原子类)
+
+[java多线程8-locks锁](/2020/08/17/java多线程8-locks锁)
+
+[java多线程9-BlockingQueue和BlockingDeque](/2020/08/18/java多线程9-BlockingQueue和BlockingDeque)
 
  <!-- more -->
 
 # java14并发包结构
 
-共计 17(atomic) + 10(locks) + 61 = 88 个类
+共计 17(atomic) + 10(locks) + 61 = 88个类
 
- <!-- more -->
+## juc-atomic 原子类
 
-![atomic](java14-concurrent-atomic.png) 
+### 1. 原子类
 
-![locks](java14-concurrent-locks.png) 
+AtomicInteger AtomicLong AtomicBoolean
 
-![concurrent-1](java14-concurrent-1.png) 
+AtomicReference AtomicStampedReference AtomicMarkableReference
 
-![concurrent-2](java14-concurrent-2.png) 
+### 2. 原子数组
 
+AtomicIntegerArray AtomicLongArray AtomicReferenceArray
+
+### 3. java8优化原子类
+
+Striped64 -> DoubleAccumulator DoubleAdder LongAccumulator LongAdder
+
+### 4. 属性原子修改器
+
+AtomicIntegerFieldUpdater AtomicLongFieldUpdater AtomicReferenceFieldUpdater
+
+---
+
+## juc-locks 锁
+
+## 1. 锁与读写锁
+
+Lock ReadWriteLock
+
+## 2. 锁的具体实现类(可重入锁)
+
+ReentrantLock ReentrantReadWriteLock
+
+### 3. java8新增锁
+
+StampedLock
+
+### 4. 等待/唤醒线程类
+
+Condition
+
+### 5. 辅助类
+
+LockSupport
+
+AbstractOwnableSynchronizer AbstractQueuedSynchronizer AbstractQueuedLongSynchronizer
+
+---
+
+##  juc-sync 同步器
+
+CountDownLatch CyclicBarrier Semaphore
+
+Exchanger Phaser
+
+---
+
+## juc-collections 集合
+
+### 1.map
+
+ConcurrentMap ConcurrentHashMap ConcurrentSkipListMap ConcurrentNavigableMap
+
+### 2.set
+
+CopyOnWriteArraySet ConcurrentSkipListSet
+
+### 3.list
+
+CopyOnWriteArrayList
+
+### 4.queue
+
+#### 4.1普通队列
+
+BlockingQueue ArrayBlockingQueue ConcurrentLinkedQueue LinkedBlockingQueue LinkedTransferQueue PriorityBlockingQueue SynchronousQueue DelayQueue TransferQueue
+
+Delayed
+
+#### 4.2双端队列
+
+BlockingDeque LinkedBlockingDeque ConcurrentLinkedDeque
+
+---
+
+## juc-executors 执行器
+
+### 1.Executor线程池
+
+AbstractExecutorService Executor ExecutorCompletionService Executors ExecutorService ScheduledThreadPoolExecutor RejectedExecutionHandler ThreadFactory ThreadPoolExecutor ScheduledExecutorService CompletionService CompletionStage
+
+### 2.Future
+
+Callable CompletableFuture Future FutureTask RunnableFuture RunnableScheduledFuture ScheduledFuture
+
+### 3.Fork/Join
+
+ForkJoinPool ForkJoinTask ForkJoinWorkerThread RecursiveAction RecursiveTask CountedCompleter
+
+---
+
+## jus-其他
+
+### 1.java9新增支持响应式编程类
+
+SubmissionPublisher Flow
+
+### 2.异常类
+
+BrokenBarrierException CancellationException CompletionException ExecutionException RejectedExecutionException TimeoutException
+
+### 3.其他
+
+ThreadLocalRandom TimeUnit Helpers(非公开类)
 
 # 基础概念
 
@@ -65,10 +172,14 @@ JUC: java.util.concurrent简称
 
 CAS: Compare-and-Swap, 即比较并替换，是一种实现并发算法时常用到的技术，Java并发包中的很多类都使用了CAS技术。CAS的原理是拿期望的值和原本的一个值作比较，如果相同则更新成新的值
 
-AQS：AbstractQueuedSynchronizer，抽象的队列式同步器。它提供了一种实现阻塞锁和一系列依赖FIFO等待队列的同步器的框架，ReentrantLock、Semaphore、CountDownLatch、CyclicBarrier等并发类均是基于AQS来实现的，具体用法是通过继承AQS实现其模板方法，然后将子类作为同步组件的内部类。
+AQS：AbstractQueuedSynchronizer，抽象的队列式同步器。它提供了一种实现阻塞锁和一系列依赖FIFO等待队列的同步器的框架，ReentrantLock Semaphore CountDownLatch CyclicBarrier等并发类均是基于AQS来实现的，具体用法是通过继承AQS实现其模板方法，然后将子类作为同步组件的内部类。
 
 AQS 定义了两种资源共享方式：
 1.Exclusive：独占，只有一个线程能执行，如ReentrantLock
-2.Share：共享，多个线程可以同时执行，如Semaphore、CountDownLatch、ReadWriteLock，CyclicBarrier
+2.Share：共享，多个线程可以同时执行，如Semaphore CountDownLatch ReadWriteLock，CyclicBarrier
+
+FIFO( First Input First Output): 指先进先出
+
+FILO：指先进后出
 
 红黑树

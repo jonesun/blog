@@ -277,6 +277,7 @@ public static void main(String[] args) {
 AtomicMarkableReference可以理解为上面AtomicStampedReference的简化版，就是不关心修改过几次，仅仅关心是否修改过。因此变量mark是boolean类型，仅记录值是否有过修改。
 
 ## 数组类型
+
 AtomicIntegerArray、AtomicLongArray、AtomicReferenceArray
 
 Atomic的数组要求不允许修改长度等，不像集合类那么丰富的操作，不过它可以让你的数组上每个元素的操作绝对安全的，也就是它细化的力度还是到数组上的元素，为你做了二次包装
@@ -345,6 +346,7 @@ AtomicReferenceArray#getAndSet(int, Object)
 ```
 
 ## 属性原子修改器(Updater)
+
 AtomicIntegerFieldUpdater、AtomicLongFieldUpdater、AtomicReferenceFieldUpdater
 
 外部的Updater可以对对象的属性本身的修改提供类似Atomic的操作，也就是它对这些普通的属性的操作是并发下安全的。它算是Atomic的系列的一个扩展，Atomic系列是为你定义好的一些对象，你可以使用，**但是如果是别人已经在使用的对象会原先的代码需要修改为Atomic系列，此时若全部修改类型到对应的对象相信很麻烦，因为牵涉的代码会很多**，此时java提供一个外部的Updater可以对对象的属性本身的修改提供类似Atomic的操作，也就是它对这些普通的属性的操作是并发下安全的。实现方式是通过反射找到属性，对属性进行操作，但是并不是设置accessable，所以必须是可见的属性才能操作
