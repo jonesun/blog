@@ -717,6 +717,24 @@ public void executeAsync() {
 
 > 注意调用者与被调用者不能在同一个类中
 
+> 如果需要观察线程池执行情况，继承ThreadPoolTaskExecutor，编写:
+
+```
+
+private void showThreadPoolInfo(String prefix){
+    ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+
+    logger.info("{}, {},taskCount [{}], completedTaskCount [{}], activeCount [{}], queueSize [{}]",
+            this.getThreadNamePrefix(),
+            prefix,
+            threadPoolExecutor.getTaskCount(),
+            threadPoolExecutor.getCompletedTaskCount(),
+            threadPoolExecutor.getActiveCount(),
+            threadPoolExecutor.getQueue().size());
+}
+
+```
+
 # 六、线程池在业务中的实践
 
 ## 1. 快速响应用户请求

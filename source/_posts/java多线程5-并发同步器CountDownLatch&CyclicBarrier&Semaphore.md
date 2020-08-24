@@ -7,12 +7,12 @@ tags: [java, 多线程]
 
 # CountDownLatch
 
-一个或多个线程等待其他线程完成操作
+倒计时锁: 一个或多个线程等待其他线程完成操作
 
 ## 概念
 CountDownLatch能够使一个线程在等待另外一些线程完成各自工作之后，再继续执行。使用一个计数器进行实现。计数器初始值为线程的数量。当每一个线程完成自己任务后，计数器的值就会减一。当计数器的值为0时，表示所有的线程都已经完成一些任务，然后在CountDownLatch上等待的线程就可以恢复执行接下来的任务。
 
-CountDownLatch可以解决那些一个或者多个线程在执行之前必须依赖于某些必要的前提业务先执行的场景
+> CountDownLatch可以解决那些一个或者多个线程在执行之前必须依赖于某些必要的前提业务先执行的场景
 
  <!-- more -->
 
@@ -276,7 +276,7 @@ CountDownLatch是一次性的，计算器的值只能在构造方法中初始化
 
 ## 概念
 
-循环栅栏，CyclicBarrier的计数器像一个阀门，需要所有线程都到达，然后继续执行，计数器递增，提供reset功能，可以多次使用。通过它可以实现让一组线程等待至某个状态之后再全部同时执行。
+可循环使用的栅栏，所有的线程必须到齐后才能一起通过这个障碍。CyclicBarrier的计数器像一个阀门，需要所有线程都到达，然后继续执行，计数器递增，提供reset功能，可以多次使用。通过它可以实现让一组线程等待至某个状态之后再全部同时执行。
 
 ## 常用方法
 
@@ -622,4 +622,227 @@ public class SemaphoreTest3 {
     private static void add(){
         count++;
     }
+```
+
+# Phaser
+
+阶段器: java1.7引入，用来解决控制多个线程分阶段共同完成任务的情景问题, 与CyclicBarrier不同的是Phaser可以**动态改变parties计数**
+
+## 常用方法
+
+```
+
+arrive() 该方法不作任何等待，直接返回下一阶段的序号。
+
+
+bulkRegister(int parties) 注册多个party。如果当前phaser已经被终止，则该方法无效，并返回负数。如果调用该方法时，onAdvance方法正在执行，则该方法等待其执行完毕。如果该Phaser有父Phaser则指定的party数大于0，且之前该Phaser的party数为0，那么该Phaser会被注册到其父Phaser中。
+
+
+//每执行一次方法register()就动态添加一个parties值
+public int register()
+
+//批量增加parties数量
+public int bulkRegister(int parties) 
+
+//当前线程退出，并且使parties值减1
+public int arriveAndDeregister()
+
+//当前线程已经到达屏障，在此等待一段时间，等条件满足后继续向下一个屏障继续执行
+public int arriveAndAwaitAdvance()
+
+//不作任何等待，直接返回下一阶段的序号
+public int arrive()
+
+//等待某一阶段执行完毕。如果当前阶段不等于指定的阶段或者该Phaser已经被终止，则立即返回
+public int awaitAdvance(int phase)
+
+//效果与awaitAdvance(int phase)相当，唯一的不同在于若该线程在该方法等待时被中断，则该方法抛出异常
+public int awaitAdvanceInterruptibly(int phase)
+        throws InterruptedException 
+
+//效果与awaitAdvanceInterruptibly(int phase)相当，区别在于如果超时则抛出TimeoutException
+public int awaitAdvanceInterruptibly(int phase, long timeout, TimeUnit unit) throws InterruptedException, TimeoutException
+
+// 强制让该Phaser进入终止状态。已经注册的party数不受影响。如果该Phaser有子Phaser，则其所有的子Phaser均进入终止状态。如果该Phaser已经处于终止状态，该方法调用不造成任何影响
+public void forceTermination()
+
+//当一个阶段的所有线程都到达时 , 执行该方法, 此时 phase自动加1(可自行重写)
+protected boolean onAdvance(int phase, int registeredParties)
+
+```
+
+## 样例
+
+```
+public class GamePhaser extends Phaser {
+
+    /**
+     * 当一个阶段的所有线程都到达时 , 执行该方法, 此时 phase自动加1
+     * @param phase
+     * @param registeredParties
+     * @return
+     */
+    @Override
+    protected boolean onAdvance(int phase, int registeredParties) {
+        switch (phase) {
+            case 0 :
+                System.out.println("预赛完成");
+                return false;
+            case 1:
+                System.out.println("初赛完成");
+                return false;
+            case 2:
+                System.out.println("决赛完成");
+                return false;
+            default:
+                return true;
+        }
+//        return super.onAdvance(phase, registeredParties);
+    }
+
+}
+
+
+public class RunnerGame {
+
+    public static void main(String[] args) {
+        int runnerNum = 4;
+
+        GamePhaser gamePhaser = new GamePhaser();
+        /**
+         * 注册一次表示phaser维护的线程个数
+         */
+        gamePhaser.register();
+        for (int i = 0; i < runnerNum;  i++ ) {
+            /**
+             * 注册一次表示phaser维护的线程个数
+             */
+            gamePhaser.register();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    System.out.println(Thread.currentThread().getName() + ":参加预赛");
+                    /**
+                     * 预赛阶段-----执行这个方法的话会等所有的选手都完成了之后再继续下面的方法
+                     */
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    gamePhaser.arriveAndAwaitAdvance();
+                    String name = Thread.currentThread().getName();
+                    if("选手0".equals(name)) {
+                        System.err.println(Thread.currentThread().getName() + ":退出初赛");
+                        gamePhaser.arriveAndDeregister();
+                        return;
+                    }
+                    /**
+                     * 参加初赛
+                     */
+                    System.out.println(Thread.currentThread().getName() + ":参加初赛");
+                    /**
+                     * 初赛阶段-----执行这个方法的话会等所有的选手都完成了之后再继续下面的方法
+                     */
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    gamePhaser.arriveAndAwaitAdvance();
+                    if("选手1".equals(name)) {
+                        System.err.println(Thread.currentThread().getName() + ":退出决赛");
+                        gamePhaser.arriveAndDeregister();
+                        return;
+                    }
+                    /**
+                     * 参加决赛
+                     */
+                    System.out.println(Thread.currentThread().getName() + ":参加决赛");
+                    try {
+                        TimeUnit.SECONDS.sleep(2);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    /**
+                     * 决赛阶段-----执行这个方法的话会等所有的选手都完成了之后再继续下面的方法
+                     */
+                    gamePhaser.arriveAndAwaitAdvance();
+                }
+            }, "选手" + i).start();
+        }
+        /**
+         * 后续阶段主线程就不参加了
+         */
+        gamePhaser.arriveAndDeregister();
+    }
+}
+
+```
+
+Phaser相对于CyclicBarrier和CountDownLatch的优势主要有两点：
+
+- Phaser可以完成多阶段，而一个CyclicBarrier或者CountDownLatch一般只能控制一到两个阶段的任务；
+
+- Phaser每个阶段的任务数量可以控制，而一个CyclicBarrier或者CountDownLatch任务数量一旦确定不可修改。
+
+# Exchanger
+
+交换器: 一个线程在完成一定的事务后想与另一个线程交换数据，则第一个先拿出数据的线程会一直等待第二个线程，直到第二个线程拿着数据到来时才能彼此交换对应数据
+
+> 超过2个线程则是随机发送消息, 不保证可靠性!
+
+## 常用方法
+
+```
+
+//等待另一个线程到达此交换点（除非当前线程被中断），然后将给定的对象传送给该线程，并接收该线程的对象。
+V exchange(V v)
+
+//等待另一个线程到达此交换点（除非当前线程被中断或超出了指定的等待时间），然后将给定的对象传送给该线程，并接收该线程的对象
+V exchange(V v, long timeout, TimeUnit unit)
+
+```
+
+## 样例
+
+```
+public class ExchangerTest {
+
+    public static void main(String[] args) {
+        /**
+         * 两个线程间的数据交换
+         */
+        Exchanger<String > exchanger = new Exchanger<>();
+
+        ExecutorService service1 = Executors.newSingleThreadExecutor();
+        service1.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                    System.out.println("子线程1："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程1"));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        service1.shutdown();
+
+        ExecutorService service2 = Executors.newSingleThreadExecutor();
+        service2.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(3000);
+                    System.out.println("子线程2："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程2"));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        service2.shutdown();
+    }
+
+}
 ```
