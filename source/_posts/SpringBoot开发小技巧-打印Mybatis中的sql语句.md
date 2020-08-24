@@ -16,6 +16,10 @@ tags: [java, springboot]
 如果项目使用的时yml配置，则:
 
 ```
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
 logging:
     level:
         com:
@@ -28,6 +32,7 @@ logging:
 如果项目使用的时properties配置，则:
 
 ```
+mybatis.configuration.log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 logging.level.com.xxxxx.dao=debug
 ```
 

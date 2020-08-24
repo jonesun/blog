@@ -158,7 +158,6 @@ public class CountdownLatchTest2 {
     public static void main(String[] args) throws InterruptedException {
         Runnable taskTemp = new Runnable() {
 
-            // 注意，此处是非线程安全的，留坑
             private AtomicInteger iCounter = new AtomicInteger();
 
             @Override

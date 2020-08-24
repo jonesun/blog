@@ -18,13 +18,15 @@ top: 1000
 
 [java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore)
 
-[java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)
+[java多线程6-ConcurrentHashMap-待细化](/2020/08/11/java多线程6-ConcurrentHashMap)
 
 [java多线程7-atomic原子类](/2020/08/11/java多线程7-atomic原子类)
 
 [java多线程8-locks锁](/2020/08/17/java多线程8-locks锁)
 
-[java多线程9-BlockingQueue和BlockingDeque](/2020/08/18/java多线程9-BlockingQueue和BlockingDeque)
+[java多线程9-BlockingQueue和BlockingDeque-待细化](/2020/08/18/java多线程9-BlockingQueue和BlockingDeque)
+
+[java多线程10-ThreadLocal-待细化](/2020/08/24/java多线程10-ThreadLocal)
 
  <!-- more -->
 
@@ -183,3 +185,6 @@ FIFO( First Input First Output): 指先进先出
 FILO：指先进后出
 
 红黑树
+
+
+并发的指标一般有QPS、TPS、IOPS，这几个指标都是可归为系统吞吐率，QPS越高系统能hold住的请求数越多，但光关注这几个指标不够，我们还需要关注RT，即响应时间，也就是从发出request到收到response的时延，这个指标跟吞吐往往是此消彼长的，我们追求的是一定时延下的高吞吐。

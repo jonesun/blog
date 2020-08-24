@@ -611,12 +611,87 @@ public class ThreadPoolExecutorConfig {
                 .setNameFormat("examine-queue-thread-%d").build(), new ThreadPoolExecutor.AbortPolicy());
     }
 
+    @Bean
+    public ThreadPoolTaskExecutor threadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor threadPoolTaskExecutor = new ThreadPoolTaskExecutor();
+        threadPoolTaskExecutor.setCorePoolSize(50);
+        threadPoolTaskExecutor.setMaxPoolSize(200);
+        threadPoolTaskExecutor.setQueueCapacity(1000);
+        threadPoolTaskExecutor.setThreadNamePrefix("Data-Job");
+        threadPoolTaskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        threadPoolTaskExecutor.setAwaitTerminationSeconds(60);
+        return threadPoolTaskExecutor;
+    }
+
+    @Bean(name = "asyncPoolTaskExecutor")
+    public ThreadPoolTaskExecutor getAsyncThreadPoolTaskExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(20);
+        taskExecutor.setMaxPoolSize(200);
+        taskExecutor.setQueueCapacity(25);
+        taskExecutor.setKeepAliveSeconds(200);
+        taskExecutor.setThreadNamePrefix("oKong-");
+        // 线程池对拒绝任务（无线程可用）的处理策略，目前只支持AbortPolicy、CallerRunsPolicy；默认为后者
+        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        //调度器shutdown被调用时等待当前被调度的任务完成
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        //等待时长
+        taskExecutor.setAwaitTerminationSeconds(60);
+        taskExecutor.initialize();
+        return taskExecutor;
+    }
+
+    @Bean
+    public ThreadPoolTaskExecutor defaultThreadPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        //核心线程数目
+        executor.setCorePoolSize(16);
+        //指定最大线程数
+        executor.setMaxPoolSize(64);
+        //队列中最大的数目
+        executor.setQueueCapacity(16);
+        //线程名称前缀
+        executor.setThreadNamePrefix("defaultThreadPool_");
+        //rejection-policy：当pool已经达到max size的时候，如何处理新任务
+        //CALLER_RUNS：不在新线程中执行任务，而是由调用者所在的线程来执行
+        //对拒绝task的处理策略
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        //线程空闲后的最大存活时间
+        executor.setKeepAliveSeconds(60);
+        //加载
+        executor.initialize();
+        return executor;
+    }
+
+    
+    @Bean
+    public Executor asyncServiceExecutor() {
+        logger.info("start asyncServiceExecutor");
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        //配置核心线程数
+        executor.setCorePoolSize(5);
+        //配置最大线程数
+        executor.setMaxPoolSize(5);
+        //配置队列大小
+        executor.setQueueCapacity(99999);
+        //配置线程池中的线程的名称前缀
+        executor.setThreadNamePrefix("async-service-");
+
+        // rejection-policy：当pool已经达到max size的时候，如何处理新任务
+        // CALLER_RUNS：不在新线程中执行任务，而是有调用者所在的线程来执行
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        //执行初始化
+        executor.initialize();
+        return executor;
+    }
+
 }
 
 ```
 
 ## 使用
 
+//原始(不推荐)
 ```
 @Resource(name = "taskQueueThreadPool")
 private ExecutorService taskQueueThreadPool;
@@ -625,6 +700,22 @@ public void execute() {
     taskQueueThreadPool.execute(new TaskCommitThread());
 }
 ```
+
+//SpringBoot提供的@Async("asyncServiceExecutor")注解
+```
+@Async("asyncServiceExecutor")
+public void executeAsync() {
+    System.out.println(Thread.currentThread().getName() + ">>start executeAsync");
+    try{
+        Thread.sleep(1000);
+    }catch(Exception e){
+        e.printStackTrace();
+    }
+    System.out.println(Thread.currentThread().getName() + "end executeAsync");
+}
+```
+
+> 注意调用者与被调用者不能在同一个类中
 
 # 六、线程池在业务中的实践
 
