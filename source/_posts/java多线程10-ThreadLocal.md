@@ -34,3 +34,19 @@ ThreadLocalMap是ThreadLocal类的一个静态内部类，它实现了键值对�
 > 使用完ThreadLocal后，执行remove操作，避免出现内存溢出情况
 
 > 在Spring框架中，如果可以使用RequestContextHolder，那么就不需要自己维护ThreadLocal，因为自己可能会忘记调用remove()方法等，造成内存泄漏
+
+
+```
+/**
+* 使用ThreadLocal 定义一个全局的SimpleDateFormat
+*/
+private static ThreadLocal<SimpleDateFormat> simpleDateFormatThreadLocal = new
+ThreadLocal<SimpleDateFormat>() {
+@Override
+protected SimpleDateFormat initialValue() {
+return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+}
+};
+// 用法
+String dateString = simpleDateFormatThreadLocal.get().format(calendar.getTime());
+```
