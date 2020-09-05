@@ -5,6 +5,121 @@ categories: [java,springboot]
 tags: [java, springboot, springsecurity]
 ---
 
+# SpringSecurity核心类
+
+> 以下源码来自SpringSecurity-5.3.3版本
+
+## Authentiction
+
+包含了用户身份信息，密码，细节信息，认证信息，以及权限列表等:
+
+- getAuthorities，权限列表,通常是代表权限的字符串列表；
+- getCredentials，密码信息,由用户输入的密码凭证，**认证之后会移出，来保证安全性**；
+- getDetails，细节信息，Web应用中一般是访问者的ip地址和sessionId；
+- getPrincipal, 最重要的身份信息，一般返回UserDetails的实现类
+
+>  Authentication继承自来自于java.security包的Principal类,而本身又是spring.security包中的接口。也就是说，Authentication是Spring Security中最高级别的认证
+
+## AuthenticationToken
+
+所有的认证请求都会被封装成一个Token的实现，比如最容易理解的UsernamePasswordAuthenticationToken，在Spring Security中提交的用户名和密码，会被封装成了UsernamePasswordAuthenticationToken
+
+## AuthenticationManager
+
+用户认证的管理类(权限验证控制器), 所有的认证请求(如login)都会通过生成一个Authentiction传给AuthenticationManager接口的唯一方法：
+
+```
+Authentication authenticate(Authentication authentication) throws AuthenticationException)
+```
+进行认证处理。当然由于是接口，所以具体的校验动作会转发给具体的实现类。而AuthenticationManager默认实现类为ProviderManager，然后ProviderManager根据配置的AuthenticationProvider列表，按照顺序进行依次认证，每个provider都会尝试认证，或者通过简单地返回null来跳过验证。如果所有实现都返回null，那么ProviderManager将抛出一个ProviderNotFoundException
+
+## AuthenticationProvider
+
+认证的具体实现类，当然这个类也是接口，而且只有两个方法:
+
+```
+public interface AuthenticationProvider {
+
+    /**
+    * 真正的认证
+    **/
+    Authentication authenticate(Authentication var1) throws AuthenticationException;
+
+    /**
+    * 满足什么样的身份信息才进行如上认证
+    **/
+    boolean supports(Class<?> var1);
+}
+```
+
+所以一般实现一个AuthenticationProvider就相当于提供一种认证方式(比如提交的用户名密码通过和数据库内的内容进行比较，那就有一个DaoProvider)。而Spring对于主流的认证方式都已经提供了默认实现:
+
+- DaoAuthenticationProvider 从数据库中读取用户信息验证身份
+- AnonymousAuthenticationProvider 匿名用户身份认证
+- RememberMeAuthenticationProvider 已存cookie中的用户信息身份认证
+- AuthByAdapterProvider 使用容器的适配器验证身份
+- CasAuthenticationProvider 使用cas实现单点登陆登录
+- JaasAuthenticationProvider 从JASS登陆配置中获取用户信息验证身份
+- RemoteAuthenticationProvider 根据远程服务验证用户身份
+- RunAsImplAuthenticationProvider 对身份已被管理器替换的用户进行验证
+- X509AuthenticationProvider 从X509认证中获取用户信息验证身份
+- TestingAuthenticationProvider 单元测试时使用
+- ...
+
+> 当然也可以自己实现AuthenticationProvider接口来自定义认证
+
+## UserDetailService
+
+通过上面分析可以知道用户认证是通过各种Provider来实现的，所以需要拿到系统已经保存的用户认证相关信息(即根据用户名加载用户)的任务则是交给了UserDetailsService而这个就是由UserDetailService来实现的，当然这个类也是接口，并且只有唯一的方法(UserDetails loadUserByUsername(String username))，常用的实现类有JdbcDaoImpl和InMemoryUserDetailsManager，前者从数据库中加载用户，后者从内存中。还可以自己实现UserDetailsService
+
+> 在DaoAuthenticationProvider的实现中，对应的方法便是retrieveUser，返回一个UserDetails。然后再将UsernamePasswordAuthenticationToken和UserDetails密码的比对，这便是交给additionalAuthenticationChecks方法完成的，如果这个void方法没有抛异常，则认为比对成功
+
+## UserDetails
+
+UserDetails接口，它代表了最详细的用户信息，这个接口涵盖了一些必要的用户信息字段，具体的实现类对它进行了扩展
+
+> 它和Authentication接口类似，都包含了用户名，密码以及权限信息，而区别就是Authentication中的getCredentials来源于用户提交的密码凭证，而UserDetails中的getPassword取到的则是用户正确的密码信息，认证的第一步就是比较两者是否相同，除此之外，Authentication中的getAuthorities是认证用户名和密码成功之后，由UserDetails中的getAuthorities传递而来。而Authentication中的getDetails信息是经过了AuthenticationProvider认证之后填充的
+
+
+## AbstractAuthenticationProcessingFilter
+
+Provider认证成功后，AbstractAuthenticationProcessingFilter 在 successfulAuthentication 方法中对登录成功进行了处理，通过 SecurityContextHolder.getContext().setAuthentication() 方法将 Authentication 认证信息对象绑定到 SecurityContext
+下次请求时，在过滤器链头的 SecurityContextPersistenceFilter 会从 Session 中取出用户信息并生成 Authentication（默认为 UsernamePasswordAuthenticationToken），并通过 SecurityContextHolder.getContext().setAuthentication() 方法将 Authentication 认证信息对象绑定到 SecurityContext
+需要权限才能访问的请求会从 SecurityContext 中获取用户的权限进行验证
+
+> UsernamePasswordAuthenticationFilter继承于AbstractAuthenticationProcessingFilter
+
+
+## SecurityContext
+
+当用户通过认证之后，就会为这个用户生成一个唯一的SecurityContext，里面包含用户的认证信息Authentication。通过SecurityContext我们可以获取到用户的标识Principle和授权信息GrantedAuthrity。在系统的任何地方只要通过SecurityHolder.getSecruityContext()就可以获取到SecurityContext。
+
+> 在Shiro中通过SecurityUtils.getSubject()到达同样的目的
+
+
+## SecurityContextHolder
+
+负责存储当前安全上下文信息。即保存着当前用户是什么，是否已经通过认证，拥有哪些权限。。。等等。SecurityContextHolder默认使用ThreadLocal策略来存储认证信息，意味着这是一种与线程绑定的策略。在Web场景下的使用Spring Security，在用户登录时自动绑定认证信息到当前线程，在用户退出时，自动清除当前线程的认证信息。
+
+
+```
+Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+if (principal instanceof UserDetails) {
+    String username = ((UserDetails) principal).getUsername();
+} else {
+    String username = principal.toString();
+}
+
+```
+
+## AuthenticationSuccessHandler 
+
+登陆认证成功处理过滤器
+
+## AuthenticationFailureHandler
+
+登陆失败处理过滤器
+
 # JWT
 
 Json Web Token （JWT） 近几年是前后端分离常用的 Token 技术，是目前最流行的跨域身份验证

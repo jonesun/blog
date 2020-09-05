@@ -10,6 +10,8 @@ tags: [java, 多线程]
 
 # 概念
 
+> 阻塞队列BlockingQueue就是为线程之间共享数据而设计的
+
 ## queue&deque
 
 queue: 先进先出队列

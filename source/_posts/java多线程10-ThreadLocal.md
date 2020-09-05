@@ -33,8 +33,9 @@ ThreadLocalMap是ThreadLocal类的一个静态内部类，它实现了键值对�
 
 > 使用完ThreadLocal后，执行remove操作，避免出现内存溢出情况
 
-> 在Spring框架中，如果可以使用RequestContextHolder，那么就不需要自己维护ThreadLocal，因为自己可能会忘记调用remove()方法等，造成内存泄漏
+> 在Spring框架中，如果可以使用RequestContextHolder，那么就不需要自己维护ThreadLocal，因为自己可能会忘记调用remove()方法等，造成内存泄漏，
 
+> Spring Security的基本组件SecurityContextHolder默认也是使用ThreadLocal策略来存储认证信息，在Web场景下的使用Spring Security，在用户登录时自动绑定认证信息到当前线程，在用户退出时，自动清除当前线程的认证信息
 
 ```
 /**
