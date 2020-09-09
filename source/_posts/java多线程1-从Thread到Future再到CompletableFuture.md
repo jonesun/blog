@@ -88,6 +88,7 @@ public class Thread implements Runnable {
         }
     }
 ```
+
 # 二、Callable
 
 为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call() 方法签名有 throws，所以它可以处理受检异常：

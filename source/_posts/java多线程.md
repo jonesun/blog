@@ -28,7 +28,7 @@ top: 1000
 
 [java多线程9-BlockingQueue和BlockingDeque-待细化](/2020/08/18/java多线程9-BlockingQueue和BlockingDeque)
 
-[java多线程10-ThreadLocal-待细化](/2020/08/24/java多线程10-ThreadLocal)
+[java多线程10-ThreadLocal](/2020/08/24/java多线程10-ThreadLocal)
 
  <!-- more -->
 

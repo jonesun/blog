@@ -120,6 +120,13 @@ if (principal instanceof UserDetails) {
 
 登陆失败处理过滤器
 
+使用Spring Security为的就是写最少的代码，实现更多的功能，在定制化Spring Security，核心思路就是：重写某个功能，然后配置。
+
+- 比如你要查自己的用户表做登录，那就实现UserDetailsService接口；
+- 比如前后端分离项目，登录成功和失败后返回json，那就实现AuthenticationFailureHandler/- AuthenticationSuccessHandler接口；
+- 比如扩展token存放位置，那就实现HttpSessionIdResolver接口；
+- 等等…
+
 # JWT
 
 Json Web Token （JWT） 近几年是前后端分离常用的 Token 技术，是目前最流行的跨域身份验证
