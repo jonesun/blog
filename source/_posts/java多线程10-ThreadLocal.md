@@ -310,5 +310,121 @@ InheritableThreadLocal用于子线程能够拿到父线程往ThreadLocal里设�
 
 由于每个Thread一个ThreadLocalMap, 而线程池是会复用线程的，故需要注意的是，线程中的逻辑执行完毕后(类似lock的使用在finally中的处理)，一定要remove相关key，避免数据混乱
 
-> 阿里开源的transmittable-thread-local，有兴趣可以了解下
+```
+class MyThreadPoolExecutor extends ThreadPoolExecutor {  
+  
+    public MyThreadPoolExecutor(int i, int j, int k, TimeUnit seconds,  
+            ArrayBlockingQueue<Runnable> arrayBlockingQueue) {  
+        super(i, j, k, seconds, arrayBlockingQueue);  
+    }  
+  
+    @Override  
+    protected void beforeExecute(Thread t, Runnable r) {  
+                //任务执行回调可以作为重置操作  
+        MyThreadLocal.currentAgentId.set(888);  
+    }  
+      
+    protected void afterExecute(Runnable r, Throwable t) {  
+                //任务执行回调可以作为重置操作  
+        MyThreadLocal.currentAgentId.set(null);  
+    }  
+  
+}  
+```
+
+## Spring 框架 @Async中的使用
+
+### 没有自定义线程池
+
+- 没有配置线程池，每执行一次都会创建新的线程处理，只需要将new ThreadLocal替换为InheritableThreadLocal 即可获取
+
+### 自定义线程池
+
+- 配置线程池，每次执行都会由线程池分配线程，使用 JDK 提供的 InheritableThreadLocal 无法获取到数据，而需要使用 Alibaba 扩展 InheritableThreadLocal 的 TransmittableThreadLocal
+
+> pom.xml中加入引用
+
+```
+<!-- https://mvnrepository.com/artifact/com.alibaba/transmittable-thread-local -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>transmittable-thread-local</artifactId>
+    <version>2.11.5</version>
+</dependency>
+
+```
+
+> 修改线程池配置
+
+线程池中传输必须配合 TransmittableThreadLocal 和 TtlExecutors 使用
+
+```
+@EnableAsync
+@Configuration
+public class TaskExecutorConfig implements AsyncConfigurer {
+
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
+
+        taskExecutor.setCorePoolSize(5);
+
+        taskExecutor.setMaxPoolSize(1024);
+
+        taskExecutor.setQueueCapacity(25);
+
+        taskExecutor.initialize();
+
+//        return taskExecutor;
+        // 使用 TTL 提供的 TtlExecutors
+        return TtlExecutors.getTtlExecutor(taskExecutor);
+    }
+
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        return new SimpleAsyncUncaughtExceptionHandler();
+    }
+}
+
+```
+
+> 修改ThreadLocal
+
+```
+public class UserContext {
+
+    //把构造函数私有化，外部不能new
+    private UserContext() {
+    }
+
+    //TransmittableThreadLocal InheritableThreadLocal ThreadLocal
+    private static final ThreadLocal<User> context = new TransmittableThreadLocal<>();
+
+    /**
+     * 存放用户信息
+     *
+     * @param user
+     */
+    public static void set(User user) {
+        context.set(user);
+    }
+
+    /**
+     * 获取用户信息
+     *
+     * @return
+     */
+    public static User get() {
+        return context.get();
+    }
+
+    /**
+     * 清除当前线程内引用，防止内存泄漏
+     */
+    public static void remove() {
+        context.remove();
+    }
+}
+
+```
 

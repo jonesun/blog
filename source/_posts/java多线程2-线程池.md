@@ -572,16 +572,14 @@ public static ExecutorService newWorkStealingPool() {
 因为如果划分之后两个任务执行时间有数据级的差距, 那么拆分没有意义。
 因为先执行完的任务就要等后执行完的任务, 最终的时间仍然取决于后执行完的任务, 而且还要加上任务拆分与合并的开销, 得不偿失。
 
-一种说法：一般般的设置线程池的大小规则是
-
-- 如果服务是cpu密集型的，设置为电脑的核数
-
-- 如果服务是io密集型的，设置为电脑的核数*2
-
 
 # 五、SpringBoot中使用线程池
 
-## 定义
+## ThreadPoolExecutor
+
+直接使用JDK中的线程池类
+
+### 定义
 
 ```
 @Configuration
@@ -689,7 +687,7 @@ public class ThreadPoolExecutorConfig {
 
 ```
 
-## 使用
+### 使用
 
 //原始(不推荐)
 ```
@@ -717,23 +715,190 @@ public void executeAsync() {
 
 > 注意调用者与被调用者不能在同一个类中
 
-> 如果需要观察线程池执行情况，继承ThreadPoolTaskExecutor，编写:
+> @Async 注解的方法只能返回void或者future类型的返回值
+
+## ThreadPoolTaskExecutor(推荐)
+
+Spring框架自己实现的线程池类
+
+### 定义
 
 ```
+@EnableAsync
+@Configuration
+//实现AsyncConfigurer接口对异常线程池更加细粒度的控制
+public class AsyncConfig implements AsyncConfigurer {
 
-private void showThreadPoolInfo(String prefix){
-    ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+    /**
+     * 处理异步方法调用时要使用的实例
+     * @return
+     */
+    @Override
+    public Executor getAsyncExecutor() {
+        ThreadPoolTaskExecutor taskExecutor = new ThreadPoolTaskExecutor();
 
-    logger.info("{}, {},taskCount [{}], completedTaskCount [{}], activeCount [{}], queueSize [{}]",
-            this.getThreadNamePrefix(),
-            prefix,
-            threadPoolExecutor.getTaskCount(),
-            threadPoolExecutor.getCompletedTaskCount(),
-            threadPoolExecutor.getActiveCount(),
-            threadPoolExecutor.getQueue().size());
+        //核心池大小
+        taskExecutor.setCorePoolSize(5);
+
+        //最大线程数
+        taskExecutor.setMaxPoolSize(1024);
+
+        // 队列大小
+        taskExecutor.setQueueCapacity(200);
+
+        //线程空闲时间
+        taskExecutor.setKeepAliveSeconds(1000);
+
+        //线程前缀名称
+        taskExecutor.setThreadNamePrefix("task-async-");
+
+        //配置拒绝策略
+        taskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+
+        //等待任务在关机时完成--表明等待所有线程执行完
+        taskExecutor.setWaitForTasksToCompleteOnShutdown(true);
+        //等待时间 （默认为0，此时立即停止），并没等待xx秒后强制停止
+        taskExecutor.setAwaitTerminationSeconds(60 * 15);
+
+        taskExecutor.initialize();
+        return taskExecutor;
+
+    }
+
+    /**
+     * 在使用void返回类型的异步方法执行期间抛出异常时要使用的实例
+     * @return
+     */
+    @Override
+    public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+        //被@Async 的方法在独立线程调用，不能被@ControllerAdvice全局异常处理器捕获，所以需要自己设置异常处理
+//        return new SimpleAsyncUncaughtExceptionHandler();
+        return new MyAsyncExceptionHandler();
+    }
+
+    class MyAsyncExceptionHandler implements AsyncUncaughtExceptionHandler {
+
+        @Override
+        public void handleUncaughtException(Throwable throwable, Method method, Object... objects) {
+            log.info("Exception message - " + throwable.getMessage());
+            log.info("Method name - " + method.getName());
+            for (Object param : objects) {
+                log.info("Parameter value - " + param);
+            }
+        }
+    }
+
 }
 
 ```
+
+> 常用策略
+
+- ThreadPoolExecutor.AbortPolicy 丢弃任务并抛出RejectedExecutionException异常(默认)。
+- ThreadPoolExecutor.DiscardPolic 丢弃任务，但是不抛出异常。
+- ThreadPoolExecutor.DiscardOldestPolicy 丢弃队列最前面的任务，然后重新尝试执行任务
+- ThreadPoolExecutor.CallerRunsPolic 由调用线程处理该任务
+
+### 使用
+
+直接在被调用的方法上加上@Async即可
+
+
+### 定义多个线程池
+
+实际业务中可能会根据场景不同，使用不同的线程池：
+
+```
+//AsyncConfig 中新增线程池即可
+    @Bean("simpleThreadPool")
+    public ThreadPoolTaskExecutor simpleThreadPool(){
+        ThreadPoolTaskExecutor simpleThreadPool = new ThreadPoolTaskExecutor();
+        simpleThreadPool.setCorePoolSize(5);
+        simpleThreadPool.setMaxPoolSize(200);
+        simpleThreadPool.setQueueCapacity(25);
+        simpleThreadPool.setRejectedExecutionHandler(new ThreadPoolExecutor.AbortPolicy());
+        simpleThreadPool.setThreadNamePrefix("simple-async-");
+        simpleThreadPool.initialize();
+
+        return simpleThreadPool;
+    }
+```
+
+在需要使用该线程池的方法中，加上@Async("simpleThreadPool")即可
+
+> 如果@Async未指定值，则会使用默认的线程池，如果指定了线程池，则使用指定的线程池。
+
+> 如果业务场景中存在并发量在某些特殊时间段下特别高，可以将线程池的各个配置在application.yml中配置，或者通过web端动态配置，不同情况下不同的线程池策略
+
+### 观察线程池执行情况
+
+如果需要观察线程池执行情况，继承ThreadPoolTaskExecutor，编写:
+
+```
+
+public class VisiableThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    //打印队列的详细信息
+    private void showThreadPoolInfo(String prefix){
+        ThreadPoolExecutor threadPoolExecutor = getThreadPoolExecutor();
+
+        if(null==threadPoolExecutor){
+            return;
+        }
+
+        log.info("{}, {},taskCount [{}], completedTaskCount [{}], activeCount [{}], queueSize [{}]",
+                this.getThreadNamePrefix(),
+                prefix,
+                threadPoolExecutor.getTaskCount(),
+                threadPoolExecutor.getCompletedTaskCount(),
+                threadPoolExecutor.getActiveCount(),
+                threadPoolExecutor.getQueue().size());
+    }
+
+
+    @Override
+    public void execute(Runnable task) {
+        showThreadPoolInfo("1. do execute");
+        super.execute(task);
+    }
+
+    @Override
+    public void execute(Runnable task, long startTimeout) {
+        showThreadPoolInfo("2. do execute");
+        super.execute(task, startTimeout);
+    }
+
+    @Override
+    public Future<?> submit(Runnable task) {
+        showThreadPoolInfo("1. do submit");
+        return super.submit(task);
+    }
+
+    @Override
+    public <T> Future<T> submit(Callable<T> task) {
+        showThreadPoolInfo("2. do submit");
+        return super.submit(task);
+    }
+
+    @Override
+    public ListenableFuture<?> submitListenable(Runnable task) {
+        showThreadPoolInfo("1. do submitListenable");
+        return super.submitListenable(task);
+    }
+
+    @Override
+    public <T> ListenableFuture<T> submitListenable(Callable<T> task) {
+        showThreadPoolInfo("2. do submitListenable");
+        return super.submitListenable(task);
+    }
+
+}
+
+```
+
+将原有的ThreadPoolTaskExecutor改为自定义后的线程池类
 
 # 六、线程池在业务中的实践
 
@@ -745,7 +910,7 @@ private void showThreadPoolInfo(String prefix){
 
 离线的大量计算任务，需要快速执行。与响应速度优先的场景区别在于，这类场景任务量巨大，并不需要瞬时的完成，而是关注如何使用有限的资源，尽可能在单位时间内处理更多的任务，也就是吞吐量优先的问题。所以应该设置队列去缓冲并发任务，调整合适的corePoolSize去设置处理任务的线程数。在这里，设置的线程数过多可能还会引发线程上下文切换频繁的问题，也会降低处理任务的速度，降低吞吐量。
 
-> xxxx
+> 思考
 
 在Java1.4之前，已经提供了Runnable接口、Thread类、Timer类和synchronize关键字，它们已经足以完成各种各样的多线程编程任务，为什么还要提供执行者这样的概念呢？这是因为Java的设计者想把线程的创建、执行和调度分离。
 
