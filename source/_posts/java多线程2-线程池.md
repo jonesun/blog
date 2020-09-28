@@ -34,12 +34,13 @@ tags: [java, 多线程, 线程池]
 
     ExecutorService接口增加了一些能力：
 
-    - 扩充执行任务的能力, 补充可以为一个或一批异步任务生成Future的方法
-    - 提供了管控线程池的方法, 比如停止线程池的运行
+    - 扩充执行任务的能力, 比如获取任务的执行结果、取消任务等功能，补充可以为一个或一批异步任务生成Future的方法
+    - 提供了管控线程池的方法, 比如停止线程池、关闭线程池、以及阻塞等待线程池完全终止的方法
+
 
 - AbstractExecutorService
 
-    AbstractExecutorService则是上层的抽象类, 将执行任务的流程串联了起来, 保证下层的实现只需关注一个执行任务的方法即可
+    AbstractExecutorService则是上层的抽象类, 将执行任务的流程串联了起来, 从而使得下层的实现类 ThreadPoolExecutor 只需要实现一个执行任务的方法即可
 
 - ThreadPoolExecutor
 
