@@ -89,6 +89,28 @@ public class Thread implements Runnable {
     }
 ```
 
+> 中断线程interrupt: 调用 interrupt() 方法，表示向当前线程打个招呼，告诉其可以中断线程了，至于什么时候终止，取决于当前线程自己，其实原理跟自定义标志位相似，只是打一个停止的标志，并不会去真的停止线程。这种通过标志位或中断操作的方式能够使线程在终止时可以继续执行内部逻辑，而不是立即停止线程，所以，这种中断线程的方式更加的优雅安全，推荐此种方式：
+
+```
+Thread thread = new Thread(() -> {
+
+        // isInterrupted()默认为false
+        while (!Thread.currentThread().isInterrupted()) {
+            i++;
+        }
+        System.out.println("i:"+i);
+
+    });
+thread.start();
+TimeUnit.SECONDS.sleep(1);
+
+// 将isInterrupted()设置为true
+thread.interrupt();
+
+```
+
+
+
 # 二、Callable
 
 为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call() 方法签名有 throws，所以它可以处理受检异常：

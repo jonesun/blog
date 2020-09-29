@@ -20,7 +20,7 @@ top: 1000
 
 [java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore)
 
-[java多线程6-ConcurrentHashMap-待细化](/2020/08/11/java多线程6-ConcurrentHashMap)
+[java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)
 
 [java多线程7-atomic原子类](/2020/08/11/java多线程7-atomic原子类)
 
@@ -174,7 +174,7 @@ JUC: java.util.concurrent简称
 
 乐观锁: CAS操作的就是乐观锁，乐观地认为程序中的并发情况不那么严重，所以让线程不断去尝试更新。每次不加锁而是假设没有冲突而去完成某项操作，如果因为冲突失败就重试，直到成功为止
 
-CAS: Compare-and-Swap, 即比较并替换，是一种实现并发算法时常用到的技术，Java并发包中的很多类都使用了CAS技术。CAS的原理是拿期望的值和原本的一个值作比较，如果相同则更新成新的值
+CAS: Compare-and-Swap, 即比较并替换，是一种实现并发算法时常用到的技术，Java并发包中的很多类都使用了CAS技术。CAS的原理是拿期望的值和原本的一个值作比较，如果相同则更新成新的值(java中使用Unsafe类来实现)
 
 AQS：AbstractQueuedSynchronizer，抽象的队列式同步器。它提供了一种实现阻塞锁和一系列依赖FIFO等待队列的同步器的框架，ReentrantLock Semaphore CountDownLatch CyclicBarrier等并发类均是基于AQS来实现的，具体用法是通过继承AQS实现其模板方法，然后将子类作为同步组件的内部类。
 
