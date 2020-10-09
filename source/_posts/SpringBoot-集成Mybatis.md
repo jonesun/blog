@@ -7,10 +7,13 @@ tags: [java, springboot]
 
 # 简介
 
+MyBatis 是一款优秀的持久层框架，它支持自定义 SQL、存储过程以及高级映射。MyBatis 免除了几乎所有的 JDBC 代码以及设置参数和获取结果集的工作。MyBatis 可以通过简单的 XML 或注解来配置和映射原始类型、接口和 Java POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。
 
 <!-- more -->
 
 # 集成方式
+
+新建SpringBoot 2.x项目
 
 ## 引入
 
@@ -23,9 +26,30 @@ tags: [java, springboot]
     <version>2.1.3</version>
 </dependency>
 
+<dependency>
+    <groupId>com.h2database</groupId>
+    <artifactId>h2</artifactId>
+    <scope>runtime</scope>
+</dependency>
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-test</artifactId>
+    <scope>test</scope>
+    <exclusions>
+        <exclusion>
+            <groupId>org.junit.vintage</groupId>
+            <artifactId>junit-vintage-engine</artifactId>
+        </exclusion>
+    </exclusions>
+</dependency>
+
 ```
 
+为演示方便，这里使用H2来代替Mysql
+
 ## 配置
+
+### yml配置
 
 application.yml中
 
@@ -33,25 +57,253 @@ application.yml中
 spring:
   profiles:
     active: dev
+
+mybatis:
+  type-aliases-package: com.jonesun.mybatis.entity
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    # 打印sql日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 开启驼峰命名
+    map-underscore-to-camel-case: true
+
 ```
 
 application-dev.yml中
 
 ```
-mybatis:
-  type-aliases-package: com.xxx.entity
-  mapper-locations: classpath*:mapper/**/*.xml
-  configuration:
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+# 应用名称
+spring:
+  application:
+    name: mybatis-normal-demo
+
+  # h2配置(日常开发改为mysql配置即可)
+  datasource:
+    driver-class-name: org.h2.Driver
+    schema: classpath:db/schema-h2.sql
+    data: classpath:db/data-h2.sql
+    url: jdbc:h2:mem:test
+    username: root
+    password: test
+  h2:
+    console:
+      enabled: true
+      path: /console
+
+#  日志输出级别
+logging:
+  level:
+    com:
+      jonesun:
+        mybatis:
+          dao: debug
 ```
 
-application-dev.yml：开发环境
-application-test.yml：测试环境
-application-prod.yml：生产环境
+> 常用配置说明
+* application-dev.yml：开发环境
+* application-test.yml：测试环境
+* application-prod.yml：生产环境
+
+初始化数据库：db/schema-h2.sql
+
+```
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users
+(
+	id BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+	name VARCHAR(30) NULL DEFAULT NULL COMMENT '姓名',
+	age INT(11) NULL DEFAULT NULL COMMENT '年龄',
+	email VARCHAR(50) NULL DEFAULT NULL COMMENT '邮箱',
+	create_time DATETIME NULL DEFAULT NULL COMMENT '创建日期',
+	PRIMARY KEY (id)
+);
+```
+
+初始化表数据: db/data-h2.sql
+
+```
+DELETE FROM users;
+
+INSERT INTO users (id, `name`, age, email, create_time) VALUES
+(1, 'Jone', 18, 'jone@163.com', '2020-02-09 08:20:00'),
+(2, 'Jack', 20, 'jack@163.com', '2020-02-10 11:00:00'),
+(3, 'Tom', 28, 'tom@163.com', '2020-03-11 06:10:00'),
+(4, 'Sandy', 21, 'sandy@163.com', '2020-04-12 05:30:00'),
+(5, 'Billie', 24, 'billie@163.com', '2020-05-13 03:40:00');
+```
 
 ## 使用
 
-可结合mybatis-plus生成基础sql，结合pagehelper实现分页
+### 编写mapper
+
+**实体类**
+
+```
+package com.jonesun.mybatis.entity;
+
+public class User implements Serializable {
+
+    private Long id;
+    private String name;
+    private Integer age;
+    private String email;
+    private LocalDateTime createTime; 
+
+    //省略getter、setter    
+}
+```
+
+**dao**
+
+```
+package com.jonesun.mybatis.dao;
+
+public interface UserDao {
+
+    int insert(User user);
+
+    int deleteById(Serializable id);
+
+    int updateById(User user);
+
+    User selectById(Serializable id);
+
+    List<User> selectList();
+
+}
+
+```
+
+**mapper.xml**
+
+resources\mapper\user\UserMapper.xml
+
+```
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jonesun.mybatis.dao.UserDao">
+
+    <sql id="BASE_TABLE">
+        users
+    </sql>
+
+    <sql id="BASE_COLUMN">
+        id, name, age, email, create_time
+    </sql>
+
+    <insert id="insert" useGeneratedKeys="true"
+            keyProperty="id">
+        insert into
+        <include refid="BASE_TABLE"/>
+        (name, age, email, create_time)
+        values (#{name}, #{age}, #{email}, now())
+    </insert>
+
+    <delete id="deleteById">
+        delete
+        from
+        <include refid="BASE_TABLE"/>
+        where id = #{id}
+    </delete>
+
+    <update id="updateById">
+        update
+        <include refid="BASE_TABLE"/>
+        set name = #{name},
+        age = #{age},
+        email = #{email}
+        where id = #{id}
+    </update>
+
+    <select id="selectById" resultType="com.jonesun.mybatis.entity.User">
+        SELECT
+        <include refid="BASE_COLUMN"/>
+        FROM
+        <include refid="BASE_TABLE"/>
+        WHERE id = #{id}
+    </select>
+
+
+    <select id="selectList" resultType="com.jonesun.mybatis.entity.User">
+        SELECT
+        <include refid="BASE_COLUMN"/>
+        FROM
+        <include refid="BASE_TABLE"/>
+    </select>
+
+</mapper>
+
+```
+
+### 编写测试类
+
+> springboot2.x的版本, 默认使用的是junit5版本, junit4和junit5两个版本差别比较大，需要注意下用法
+
+![junit5vsjunit4](junit5vsjunit4.png)
+
+```
+package com.jonesun.mybatis.dao;
+
+import com.jonesun.mybatis.entity.User;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.test.context.SpringBootTest;
+
+import javax.annotation.Resource;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+class UserDaoTest {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Resource
+    UserDao userDao;
+
+    @Test
+//    @Transactional
+    void insert() {
+        User user = new User("Jone Sun", 30, "sunjoner7@gmail.com");
+        int result = userDao.insert(user);
+        assertNotNull(user.getId(), "用户插入失败");
+        assertTrue(result > 0, "用户插入失败");
+        log.debug(user.toString());
+    }
+
+    @Test
+    void deleteById() {
+        int result = userDao.deleteById(5);
+        assertTrue(result > 0, "用户删除失败");
+    }
+
+    @Test
+    void selectById() {
+        User user = userDao.selectById(1);
+        assertEquals(user.getName(), "Jone", "用户名错误");
+        log.debug(user.toString());
+    }
+
+    @Test
+    void updateById() {
+        User user = userDao.selectById(1);
+        user.setAge(21);
+        int result = userDao.updateById(user);
+        assertTrue(result > 0, "用户更新失败");
+        log.debug(user.toString());
+    }
+
+    @Test
+    void selectList() {
+        List<User> list = userDao.selectList();
+        assertFalse(list.isEmpty(), "列表为空");
+        log.debug(list.toString());
+    }
+}
+```
 
 # 常用动态SQL标签
 
@@ -313,3 +565,278 @@ selectKey中的order属性有2个选择：BEFORE和AFTER。
 > selectKey中返回的值只能有一条数据，如果满足条件的数据有多条会报错，所以一般都是用于生成主键，确保唯一，或者在selectKey后面的语句加上条件，确保唯一
 
 ## cache
+
+Mybatis提供了一级缓存和二级缓存的支持
+
+> 一级缓存
+
+* spring整合mybatis后，非事务环境下，每次操作数据库都使用新的sqlSession对象。因此mybatis的一级缓存无法使用（一级缓存针对同一个sqlsession有效）,当然可以使用同一个sqlSession来使用一级缓存
+
+* *在开启事物的情况之下，spring使用threadLocal获取当前资源绑定同一个sqlSession，因此此时一级缓存是有效的
+
+```
+@Test
+@Transactional
+void cacheTest() {
+    List<User> list1 = userDao.selectList();
+    assertFalse(list1.isEmpty(), "列表为空");
+    log.debug(list1.toString());
+
+    List<User> list2 = userDao.selectList();
+    assertFalse(list2.isEmpty(), "列表为空");
+    log.debug(list2.toString());
+}
+
+//这样就只会访问一次数据库
+```
+
+> 二级缓存
+
+在同一个namespace下的mapper文件中，执行相同的查询SQL，第一次会去查询数据库，并写到缓存中；第二次直接从缓存中取。当执行SQL时两次查询中间发生了增删改操作，则二级缓存清空
+
+Mybatis 的二级缓存需要手动开启才能启动，与一级缓存的最大区别就在于二级缓存的作用范围比一级缓存大，二级缓存是多个 sqlSession 可以共享一个 Mapper 的二级缓存区域，二级缓存作用的范围是 Mapper 中的同一个命名空间（namespace）的 statement 。在配置文件默认开启了二级缓存的情况下，如果每一个 namespace 都开启了二级缓存，则都对应有一个二级缓存区，同一个 namespace 共用一个二级缓存区
+
+```
+<mapper namespace="cn.jonesun.mybatis.mapper.UserMapper">
+    <!-- 开启本mapper的namespace下的二级缓存
+    type：指定cache接口的实现类的类型，mybatis默认使用PerpetualCache
+    要和ehcache整合，需要配置type为ehcache实现cache接口的类型-->
+
+    <cache />
+
+</mapper>
+```
+
+参数名	| 说明
+---|---
+type | 指定缓存（cache）接口的实现类型，当需要和ehcache整合时更改该参数值即可。
+flushInterval | 刷新间隔。可被设置为任意的正整数，单位毫秒。默认不设置。
+size | 引用数目。可被设置为任意正整数，缓存的对象数目等于运行环境的可用内存资源数目。默认是1024。
+readOnly | 只读，true或false。只读的缓存会给所有的调用者返回缓存对象的相同实例。默认是false。
+eviction | 缓存收回策略。LRU（最近最少使用的），FIFO（先进先出），SOFT（ 软引用），WEAK（ 弱引用）。默认是 LRU。
+
+>  在 Mapper 中加入cache便签后，可以在select中可设置useCache="false"来禁用缓存；在insert、update、delete中设置flushCache="false"来取消清空/刷新缓存，默认是会清空缓存
+
+### 注意要点
+
+> 通常我们会为每个单表创建单独的映射文件，由于MyBatis的二级缓存是基于namespace的，多表查询语句所在的namspace无法感应到其他namespace中的语句对多表查询中涉及的表进行的修改，引发**脏数据问题**
+
+为了避免这个问题，在多个mapper.xml中如果要一起使用二级缓存，可以使用cache-ref引用别的命名空间的Cache配置，两个命名空间的操作使用的是同一个Cache，这样两个映射文件对应的Sql操作都使用的是同一块缓存了:
+
+```
+<cache-ref namespace="mapper.StudentMapper"/>
+```
+
+* 不过需要注意的是，缓存的粒度就变粗了，多个Mapper namespace下的所有操作都会对缓存使用造成影响
+
+### 实际应用
+
+> 二级缓存一般应用在对于访问多的查询请求且对查询结果的实时性要求不高的，此时可采用 Mybatis 二级缓存技术降低数据库访问量，提高访问速度。例如：耗时比较高的统计分析的sql
+
+# pagehelper
+
+可结合[pagehelper](https://pagehelper.github.io/)实现分页
+
+* pom.xml中加入引用
+
+```
+<dependency>
+    <groupId>com.github.pagehelper</groupId>
+    <artifactId>pagehelper-spring-boot-starter</artifactId>
+    <version>1.2.5</version>
+</dependency>
+```
+
+* service层使用
+
+```
+@Service
+public class UserServiceImpl implements UserService {
+
+    @Autowired
+    UserDao userDao;
+
+    @Override
+    public PageInfo<User> getAllUsersForPage(int pageNo, int pageSize) {
+
+        PageHelper.startPage(pageNo,pageSize);
+        List<User> list = userDao.selectList();
+        PageInfo<User> pageInfo = new PageInfo<>(list);
+        return pageInfo;
+    }
+}
+
+@SpringBootTest
+class UserServiceTest {
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired
+    private UserService userService;
+
+    @Test
+    void getAllUsersForPage() {
+        PageInfo<User> pageInfo = userService.getAllUsersForPage(1, 10);
+        assertFalse(pageInfo.getList().isEmpty(), "列表为空");
+        log.debug(pageInfo.toString());
+    }
+}
+
+```
+
+# mysql
+
+实际项目中会使用mysql与mybatis进行搭配
+
+* pom.xml中加入引用
+
+```
+<!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+<dependency>
+    <groupId>mysql</groupId>
+    <artifactId>mysql-connector-java</artifactId>
+    <version>8.0.21</version>
+</dependency>
+```
+
+* 修改对应application-xx.yml
+
+```
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
+    username: root
+    password: xxx
+    driver-class-name: com.mysql.cj.jdbc.Driver
+```
+
+# 数据库连接池
+
+> Hikari
+
+SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义配置:
+
+```
+  datasource:
+    url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
+    username: root
+    password: xxx
+    driver-class-name: com.mysql.cj.jdbc.Driver
+#    # SpringBoot 默认数据库连接池Hikari will use the above plus the following to setup connection pooling
+#    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      ## 最小空闲连接数量
+      minimum-idle: 5
+      ## 连接池最大连接数，默认是10
+      maximum-pool-size: 15
+      ## 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+      auto-commit: true
+      ## 空闲连接存活最大时间，默认600000（10分钟）,时间单位都是毫秒
+      idle-timeout: 30000
+      ## 连接池名称
+      pool-name: DatebookHikariCP
+      ## 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+      max-lifetime: 1800000
+      ## 数据库连接超时时间,默认30秒，即30000
+      connection-timeout: 30000
+```
+
+> druid
+
+如果需要可以改用阿里巴巴的druid
+
+* pom文件加入引用
+
+```
+<!-- https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter -->
+<dependency>
+    <groupId>com.alibaba</groupId>
+    <artifactId>druid-spring-boot-starter</artifactId>
+    <version>1.1.23</version>
+</dependency>
+```
+
+* 对应application-xx.yml中加入配置
+
+```
+  datasource:
+    url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
+    username: root
+    password: xxx
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 使用druid连接池
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+#      #当数据库抛出不可恢复的异常时,抛弃该连接
+#      init-exception-throw: true
+#      exception-sorter: true
+      #初始化时建立物理连接的个数
+      initial-size: 5
+      #最大连接池数量 maxIdle已经不再使用
+      max-active: 20
+      #是否缓存preparedStatement,mysql5.5+建议开启
+      pool-prepared-statements: true
+      #当值大于0时poolPreparedStatements会自动修改为true
+      max-pool-prepared-statement-per-connection-size: 20
+      #获取连接时最大等待时间，单位毫秒
+      max-wait: 30000
+      #销毁线程时检测当前连接的最后活动时间和当前时间差大于该值时，关闭当前连接
+      min-evictable-idle-time-millis: 30000
+      #最小连接池数量
+      min-idle: 5
+      #申请连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+      test-on-borrow: false
+      #归还连接时会执行validationQuery检测连接是否有效,开启会降低性能,默认为true
+      test-on-return: false
+      #申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效
+      test-while-idle: true
+      #既作为检测的间隔时间又作为testWhileIdel执行的依据
+      time-between-eviction-runs-millis: 60000
+      #用来检测连接是否有效的sql 必须是一个查询语句
+      #mysql中为 select 'x'
+      #oracle中为 select 1 from dual
+      validation-query: select 'x'
+
+      # 配置监控统计拦截的filters，去掉后监控界面sql无法统计，StatFilter,用于统计监控信息'wall'用于防火墙
+      filters: stat,wall,slf4j
+      #通过connectProperties属性来打开mergeSql功能；慢SQL记录
+      connection-properties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
+      #合并多个DruidDataSource的监控数据
+      use-global-data-source-stat: true
+      # 配置DruidStatFilter
+      web-stat-filter:
+          enabled: true
+          url-pattern: "/*"
+          exclusions: "*.js,*.gif,*.jpg,*.bmp,*.png,*.css,*.ico,/druid/*"
+      #设置访问druid监控页的账号和密码,默认没有
+      stat-view-servlet:
+        enabled: true
+        url-pattern: "/druid/*"
+        # IP白名单(没有配置或者为空，则允许所有访问)
+#        allow: localhost,127.0.0.1,192.168.*
+        # IP黑名单 (存在共同时，deny优先于allow)
+        #deny: 192.168.1.100
+        #  禁用HTML页面上的“Reset All”功能
+        reset-enable: false
+        login-username: admin
+        login-password: admin123
+
+```
+
+# MyBatis-Plus
+
+可结合mybatis-plus生成基础sql
+
+使用默认的MyBatis，如果需要添加新的表对应dao层的话，一般需要编写mapper和dao方法(这点就不如JPA来的方便)，所以实际项目开发中可以使用[MyBatis-Plus](https://baomidou.com/)来简化开发，生成基础的sql
+
+> 引入 MyBatis-Plus 之后请不要再次引入 MyBatis 以及 MyBatis-Spring，以避免因版本差异导致的问题。
+
+去除原有mybatis相关依赖，加入:
+
+```
+<dependency>
+    <groupId>com.baomidou</groupId>
+    <artifactId>mybatis-plus</artifactId>
+    <version>3.4.0</version>
+</dependency>
+```
