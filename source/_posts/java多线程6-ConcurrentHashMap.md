@@ -44,6 +44,8 @@ transient Node<k,v>[] table
 
 > 链表长度低于6，会把红黑树转回链表
 
+![hashmap-put](hashmap-put.jpg)
+
 ### get
 
 当需要从HashMap中获取value值时，同样根据key计算hash和转换得到索引值，取出value:
