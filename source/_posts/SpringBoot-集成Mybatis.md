@@ -19,6 +19,11 @@ MyBatis 是一款优秀的持久层框架，它支持自定义 SQL、存储过�
 
 在pom.xml中加入
 ```
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-web</artifactId>
+</dependency>
+
 <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
 <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
@@ -643,13 +648,17 @@ eviction | 缓存收回策略。LRU（最近最少使用的），FIFO（先进�
 <dependency>
     <groupId>com.github.pagehelper</groupId>
     <artifactId>pagehelper-spring-boot-starter</artifactId>
-    <version>1.2.5</version>
+    <version>1.3.0</version>
 </dependency>
 ```
 
 * service层使用
 
 ```
+public interface UserService {
+    PageInfo<User> getAllUsersForPage(int pageNo, int pageSize);
+}
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -710,6 +719,12 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 ```
 
+> 有两点需要注意: 
+
+- mysql-connector包使用了新的驱动: com.mysql.jdbc.Driver被弃用了,应为com.mysql.cj.jdbc.Driver
+
+- 连接的URL中需要增加时区信息: serverTimezone=UTC或者serverTimezone=GMT+8
+
 # 数据库连接池
 
 > Hikari
@@ -743,7 +758,7 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
 
 > druid
 
-如果需要可以改用阿里巴巴的druid
+如果需要可以改用阿里巴巴的[druid](https://github.com/alibaba/druid/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
 
 * pom文件加入引用
 
@@ -823,20 +838,47 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
 
 ```
 
+> 阿里巴巴的druid带了一个监控sql相关的页面，访问项目地址+/druid/即可查看(登录用户名密码在yml中设置的login-username和login-password)
+
 # MyBatis-Plus
 
-可结合mybatis-plus生成基础sql
+可结合mybatis-plus生成基础sql，感兴趣可以了解下，个人不是很推荐代码生成相关(除非确实都是简单的CURD)
 
-使用默认的MyBatis，如果需要添加新的表对应dao层的话，一般需要编写mapper和dao方法(这点就不如JPA来的方便)，所以实际项目开发中可以使用[MyBatis-Plus](https://baomidou.com/)来简化开发，生成基础的sql
+使用默认的MyBatis，如果需要添加新的表对应dao层的话，一般需要编写mapper和dao方法(这点就不如JPA来的方便)，可以使用[MyBatis-Plus](https://baomidou.com/)来简化开发，生成基础的sql
 
 > 引入 MyBatis-Plus 之后请不要再次引入 MyBatis 以及 MyBatis-Spring，以避免因版本差异导致的问题。
 
 去除原有mybatis相关依赖，加入:
 
 ```
-<dependency>
-    <groupId>com.baomidou</groupId>
-    <artifactId>mybatis-plus</artifactId>
-    <version>3.4.0</version>
-</dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.mybatis.spring.boot</groupId>-->
+<!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
+<!--            <version>2.1.3</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>com.github.pagehelper</groupId>-->
+<!--            <artifactId>pagehelper-spring-boot-starter</artifactId>-->
+<!--            <version>1.3.0</version>-->
+<!--        </dependency>-->
+
+
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus</artifactId>
+            <version>3.4.0</version>
+        </dependency>
 ```
+
+注意因为pagehelper-spring-boot-starter默认会引用mybatis，所以要不直接去除(MyBatis-Plus有自己的分页功能), 要不就将pagehelper-spring-boot-starter的mybatis引用排除掉
+
+# 推荐idea插件
+
+* free-idea-mybatis是一款增强idea对mybatis支持的插件，主要功能如下： 
+    - 生成mapper xml文件
+    - 快速从代码跳转到mapper及从mapper返回代码
+    - mybatis自动补全及语法错误提示
+    - 集成mybatis generator gui界面
+
+这个插件同样可以生成mapper.xml相关文件
