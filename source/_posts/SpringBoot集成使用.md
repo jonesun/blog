@@ -16,6 +16,8 @@ top: 999
 
 [SpringBoot-集成Mybatis](/2020/09/29/SpringBoot-集成Mybatis)
 
+[SpringBoot-集成swagger3](/2020/10/10/SpringBoot-集成swagger)
+
 [SpringBoot-集成Redis](/2020/08/26/SpringBoot-集成Redis)
 
 [SpringBoot-SpringSecurity整合](/2020/07/22/SpringBoot-SpringSecurity整合)
