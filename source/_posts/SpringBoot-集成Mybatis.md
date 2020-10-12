@@ -756,6 +756,16 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
       connection-timeout: 30000
 ```
 
+大多数线上应用可以使用如下的Hikari配置:
+
+```
+maximumPoolSize: 20
+minimumIdle: 10
+connectionTimeout: 30000
+idleTimeout: 600000
+maxLifetime: 1800000
+```
+
 > druid
 
 如果需要可以改用阿里巴巴的[druid](https://github.com/alibaba/druid/wiki/%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)
@@ -840,6 +850,8 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
 
 > 阿里巴巴的druid带了一个监控sql相关的页面，访问项目地址+/druid/即可查看(登录用户名密码在yml中设置的login-username和login-password)
 
+关于druid和Hikari有个比较有意思的[讨论](https://github.com/brettwooldridge/HikariCP/issues/232)
+
 # MyBatis-Plus
 
 可结合mybatis-plus生成基础sql，感兴趣可以了解下，个人不是很推荐代码生成相关(除非确实都是简单的CURD)
@@ -882,3 +894,21 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
     - 集成mybatis generator gui界面
 
 这个插件同样可以生成mapper.xml相关文件
+
+# 多数据源
+
+如果是主从复制- -读写分离：比如test01中负责增删改，test02中负责查询。但是需要注意的是负责增删改的数据库必须是主库（master）
+@Primary 标志这个 Bean 如果在多个同类 Bean 候选时，该 Bean 优先被考虑。「多数据源配置的时候注意，必须要有一个主数据源，用 @Primary 标志该 Bean
+
+[sharding-jdbc](https://shardingsphere.apache.org/document/current/cn/user-manual/shardingsphere-jdbc/configuration/spring-boot-starter/)
+
+```
+<dependency>
+    <groupId>io.shardingsphere</groupId>
+    <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
+    <version>3.0.0</version>
+</dependency>
+
+```
+
+[mysql主从复制](https://blog.csdn.net/shijiemozujiejie/article/details/80766633)
