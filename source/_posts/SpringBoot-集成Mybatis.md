@@ -898,7 +898,6 @@ maxLifetime: 1800000
 # 多数据源
 
 如果是主从复制- -读写分离：比如test01中负责增删改，test02中负责查询。但是需要注意的是负责增删改的数据库必须是主库（master）
-@Primary 标志这个 Bean 如果在多个同类 Bean 候选时，该 Bean 优先被考虑。「多数据源配置的时候注意，必须要有一个主数据源，用 @Primary 标志该 Bean
 
 [sharding-jdbc](https://shardingsphere.apache.org/document/current/cn/user-manual/shardingsphere-jdbc/configuration/spring-boot-starter/)
 

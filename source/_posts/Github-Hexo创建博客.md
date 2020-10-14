@@ -137,7 +137,14 @@ npm install -g hexo-cli
 ```
 git clone https://github.com/jonesun/blog.git
 ```
-4. 运行部署
+
+4. 安装模块
+
+```
+rm -rf node_modules && npm install --force
+```
+
+1. 运行部署
 ```
 hexo g
 hexo s

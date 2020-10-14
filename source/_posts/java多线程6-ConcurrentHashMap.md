@@ -141,6 +141,23 @@ return (int) ((float) expectedSize / 0.75F + 1.0F);
 new HashMap(capacity(expectedSize));
 ```
 
+偶然间翻到HashSet的源码，HashSet内部通过维护一个HashMap来实现读取插入等功能，他对hashMap的初始化容量是这么写的：
+
+```
+public HashSet(Collection<? extends E> c) {
+    map = new HashMap<>(Math.max((int) (c.size()/.75f) + 1, 16));
+    addAll(c);
+}
+```
+
+而面试题经常问到的HashSet的值为什么不能重复, 看看add方法实现就知道了:
+
+```
+public boolean add(E e) {
+    return map.put(e, PRESENT)==null;
+}
+```
+
 ## 遍历方式选择
 
 HashMap中可以看到:
