@@ -7,13 +7,16 @@ tags: [java]
 
 # 简介
 
-Java的java.util包主要提供了以下三种类型的集合：
+Java的java.util包主要提供了以下四种类型的集合：
 
-List：一种有序列表的集合，例如，按索引排列的Student的List；
-Set：一种保证没有重复元素的集合，例如，所有无重复名称的Student的Set；
-Map：一种通过键值（key-value）查找的映射表集合，例如，根据Student的name查找对应Student的Map
+* List：一种有序列表的集合
+* Set：一种保证没有重复元素的集合
+* Map：一种通过键值（key-value）查找的映射表集合
+* Queue: 先进先出（FIFO：First In First Out）的有序表
 
 Java访问集合总是通过统一的方式——迭代器（Iterator）来实现，它最明显的好处在于无需知道集合内部元素是按什么方式存储的
+
+![iterable](iterable.png)
 
 # List
 
@@ -96,11 +99,60 @@ juc中提供的在并发编程中线程安全的有序的集合，适用于高�
 
 ![map](map.png)
 
+map相关的介绍在[java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)有体现，另外再补充一个EnumMap
+
+> EnumMap
+
+如果作为key的对象是enum类型，可以使用Java集合库提供的一种EnumMap，它在内部以一个非常紧凑的数组存储value，并且根据enum类型的key直接定位到内部数组的索引，并不需要计算hashCode()，既保证速度，也不浪费空间
+
+# Queue
+
+![queue](queue.png)
+
+> Queue
+
+它和List的区别在于，List可以在任意位置添加和删除元素，而Queue只有两个操作：
+
+- 把元素添加到队列末尾
+- 从队列头部取出元素
+
+> PriorityQueue
+
+优先队列,它的出队顺序与元素的优先级有关(如排队时vip的处理)
+
+PriorityQueue默认按元素比较的顺序排序（必须实现Comparable接口），也可以通过Comparator自定义排序算法（元素就不必实现Comparable接口）
+
+> BlockingQueue
+
+并发编程中经常用到了阻塞队列，如线程池的任务队列[java多线程2-线程池](/2020/07/23/java多线程2-线程池)，它是基于ReentrantLock
+
+- 当队列中没有数据的情况下，消费者端的所有线程都会被自动阻塞（挂起），直到有数据放入队列
+- 当队列中填满数据的情况下，生产者端的所有线程都会被自动阻塞（挂起），直到队列中有空的位置，线程被自动唤醒
+
+这也是我们在多线程环境下，为什么需要BlockingQueue的原因。作为BlockingQueue的使用者，我们再也不需要关心什么时候需要阻塞线程，什么时候需要唤醒线程，因为这一切BlockingQueue都给你一手包办了
+
+> Deque
+
+双端队列(允许两头都进，两头都出)，它的功能是：
+
+- 既可以添加到队尾，也可以添加到队首
+- 既可以从队首获取，又可以从队尾获取
+
+**LinkedList即是List，又是Queue，还是Deque**,但是，在使用的时候，如果我们把它当作List，就获取List的引用，如果我们把它当作Queue，就获取Queue的引用
+
+```
+// 这是一个List:
+List<String> list = new LinkedList<>();
+// 这是一个Queue:
+Queue<String> queue = new LinkedList<>();
+```
+
+# 注意
+
 由于Java的集合设计非常久远，中间经历过大规模改进，我们要注意到有一小部分集合类是遗留类，不应该继续使用：
 
-Hashtable：一种线程安全的Map实现；
-Vector：一种线程安全的List实现；
-Stack：基于Vector实现的LIFO的栈。
-还有一小部分接口是遗留接口，也不应该继续使用：
-
-Enumeration<E>：已被Iterator<E>取代。
+- Hashtable：一种线程安全的Map实现；
+- Vector：一种线程安全的List实现；
+- Stack：基于Vector实现的LIFO的栈
+  
+还有一小部分接口是遗留接口，也不应该继续使用：Enumeration<E>：已被Iterator<E>取代。
