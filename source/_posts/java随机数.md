@@ -148,3 +148,39 @@ public class RandomTest {
 ![image](https://github.com/jonesun/blog/blob/master/source/image/jmh/JMH-Visual-Chart-Random.png?raw=true) 
 
 可以看到ThreadLocalRandom效率最高
+
+# SecureRandom
+
+使用Random创建的是伪随机数，只要给定一个初始的种子，产生的随机数序列是完全一样的：
+
+```
+ Random r = new Random(12345);
+        for (int i = 0; i < 10; i++) {
+            System.out.println(r.nextInt(100));
+        }
+        // 51, 80, 41, 28, 55...
+    }
+```
+
+不指定种子的话，默认的统当前时间戳作为种子，因此每次运行时，种子不同，得到的伪随机数序列就不同
+
+> Math.random()实际上内部调用了Random类，所以它也是伪随机数，只是我们无法指定种子
+
+而在有些场景中我们需要安全的随机数，即不能被预测到的，这个时候就需要用SecureRandom
+
+> SecureRandom的安全性是通过操作系统提供的安全的随机种子来生成随机数。这个种子是通过CPU的热噪声、读写磁盘的字节、网络流量等各种随机事件产生的“熵”。
+
+```
+SecureRandom sr = new SecureRandom();
+System.out.println(sr.nextInt(100));
+
+SecureRandom sr = null;
+try {
+    sr = SecureRandom.getInstanceStrong(); // 获取高强度安全随机数生成器
+} catch (NoSuchAlgorithmException e) {
+    sr = new SecureRandom(); // 获取普通的安全随机数生成器
+}
+byte[] buffer = new byte[16];
+sr.nextBytes(buffer); // 用安全随机数填充buffer
+System.out.println(Arrays.toString(buffer));
+```

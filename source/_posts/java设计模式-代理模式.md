@@ -192,6 +192,23 @@ public class DynamicProxyTest {
 
 ```
 
+其实就是JDK帮我们自动编写了类（不需要源码，可以直接生成字节码）:
+
+```
+public class HelloDynamicProxy implements Hello {
+    InvocationHandler handler;
+    public HelloDynamicProxy(InvocationHandler handler) {
+        this.handler = handler;
+    }
+    public void morning(String name) {
+        handler.invoke(
+           this,
+           Hello.class.getMethod("morning", String.class),
+           new Object[] { name });
+    }
+}
+```
+
 ## CgLib
 
 > JDK的动态代理有一个限制,就是使用动态代理的对象必须实现一个或多个接口,如果想代理没有实现接口的类,就可以使用Cglib实现

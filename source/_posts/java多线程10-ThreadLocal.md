@@ -148,6 +148,19 @@ tl.remove()
 
 > 在android中Looper、ActivityThread以及AMS中都用到了ThreadLocal。当某些数据是以线程为作用域并且不同线程具有不同的数据副本的时候，就可以考虑采用ThreadLocal。实际上像Spring等框架源码大量使用了ThreadLocal
 
+```
+static ThreadLocal<User> threadLocalUser = new ThreadLocal<>();
+void processUser(user) {
+    try {
+        threadLocalUser.set(user);
+        step1();
+        step2();
+    } finally {
+        threadLocalUser.remove();
+    }
+}
+```
+
 ## 场景1
 
 每个线程需要一个独享对象（通常是工具类，典型需要使用的类有SimpleDateFormat和Random）

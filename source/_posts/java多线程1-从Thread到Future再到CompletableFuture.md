@@ -315,6 +315,11 @@ public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executo
 
 ## 常用方法
 
+CompletableFuture的命名规则：
+
+- xxx()：表示该方法将继续在已有的线程中执行；
+- xxxAsync()：表示将异步在线程池中执行
+
 ### 1. thenApply
 
 变换结果

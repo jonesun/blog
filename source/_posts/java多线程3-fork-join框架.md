@@ -161,3 +161,5 @@ public class Test {
 
 ForkJoinTask在执行的时候可能会抛出异常，在主线程中是无法直接获取的，但是可以通过ForkJoinTask提供的isCompletedAbnormally()方法来检查任务是否已经抛出异常或已经被取消了
 
+Fork/Join线程池在Java标准库中就有应用。Java标准库提供的java.util.Arrays.parallelSort(array)可以进行并行排序，它的原理就是内部通过Fork/Join对大数组分拆进行并行排序，在多核CPU上就可以大大提高排序的速度。
+

@@ -20,6 +20,8 @@ Redis 的应用场景包括：缓存系统（“热点”数据：高频读、�
 
 # 集成方式
 
+要访问Redis，可以直接引入spring-boot-starter-data-redis依赖，它实际上是Spring Data的一个子项目——Spring Data Redis
+
 ## 引入
 
 在pom.xml中加入

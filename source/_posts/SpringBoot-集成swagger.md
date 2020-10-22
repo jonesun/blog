@@ -247,3 +247,7 @@ Swagger3Config
 
 - 在生产环境中必须关闭swagger
 - 它本身只用于前后端工程师之间的沟通,可以专门使用一台内部服务器来展示ui供访问
+
+# 扩展
+
+springdoc-openapi-ui，，它自动引入Swagger UI用来创建API文档，也比较方便

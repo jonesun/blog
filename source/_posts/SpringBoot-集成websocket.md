@@ -216,7 +216,7 @@ ws://localhost:8888/spring-websocket/websocket/xxx
 
 - 重连心跳机制
 
-- 使用netty
+- 使用netty：Servlet的线程模型并不适合大规模的长链接。基于NIO的Netty等框架更适合处理WebSocket长链接
 
 - 加入ssl时的处理
 
