@@ -11,6 +11,34 @@ tags: [java, springboot]
 
 # 使用
 
+## 常用日志框架
+
+> JDK Logging
+
+JDK提供的日志框架，由于自身有些局限性，故不太流行
+
+> Commons Logging
+
+Commons Logging是一个第三方日志库，它是由Apache创建的日志模块。Commons Logging的特色是，它可以挂接不同的日志系统，并通过配置文件指定挂接的日志系统。默认情况下，Commons Loggin自动搜索并使用Log4j（Log4j是另一个流行的日志系统），如果没有找到Log4j，再使用JDK Loggin
+
+> Log4j
+
+Apache的提供的一种日志实现，现已不推荐使用
+
+> SLF4J
+
+SLF4J类似于Commons Logging，也是一个日志接口，比Commons Logging更加好用，现在流行程度也更高
+
+> Logback
+
+Logback是由log4j创始人设计的另一个开源日志组件，性能比Log4j要高很多
+
+> Log4j2
+
+Log4j的重构版，性能提升很多，尤其在多线程环境下，性能也高于Logback
+
+**一般使用SLF4J提供的接口，引入Logback或者Log4j2**
+
 ## 集成
 
 SpringBoot2默认已经集成了logback，如果不想修改可直接在resource中新建logback.xml进行配置即可。
@@ -98,6 +126,64 @@ public class Main {
     log.error("Something else is wrong here");
   }
 }
+```
+
+# 拼接字符串
+
+SLF4J的日志接口可以这样来拼接字符串:
+
+```
+int score = 99;
+logger.info("Set score {} for Person {} ok.", score, p.getName());
+```
+
+## 使用日志的好处
+
+如果使用日志有很多好处：
+
+* 可以设置输出样式，避免自己每次都写"ERROR: " + var；
+* 可以设置输出级别，禁止某些级别输出。例如，只输出错误日志；
+* 可以被重定向到文件，这样可以在程序运行结束后查看日志；
+* 可以按包名控制日志级别，只输出某些包打的日志；
+* 可以输出到不同的目的地：
+  * console：输出到屏幕；
+  * file：输出到文件；
+  * socket：通过网络输出到远程计算机；
+  * jdbc：输出到数据库
+* ……
+
+日常开发中有些童鞋在跟进bug时会习惯性的使用**System.out.println()**来打印log日志，然后再删除掉，下次再出现问题再打印，可以自己考虑哪个更好
+
+## 异步日志
+
+> 官方建议一般程序员查看的日志改成异步方式，一些运营日志改成同步。日志异步输出的好处在于，使用单独的进程来执行日志打印的功能，可以提高日志执行效率，减少日志功能对正常业务的影响。
+
+Log4j2异步日志需要加载disruptor-3.0.0.jar或者更高的版本：
+
+```
+<!-- log4j2异步日志需要加载disruptor-3.0.0.jar或者更高的版本 -->
+<dependency>
+    <groupId>com.lmax</groupId>
+    <artifactId>disruptor</artifactId>
+    <version>3.3.6</version>
+</dependency>
+```
+
+配置文件加入:
+
+```
+
+<loggers>  
+     <AsyncLogger name="AsyncLogger" level="trace" includeLocation="true">  
+        <appender-ref ref="Console" />  
+        <appender-ref ref="debugLog" />  
+        <appender-ref ref="errorLog" />  
+    </AsyncLogger>  
+ 
+    <asyncRoot level="trace" includeLocation="true">  
+        <appender-ref ref="Console" />  
+    </asyncRoot>   
+</loggers> 
 ```
 
 # 高阶
