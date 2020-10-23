@@ -14,6 +14,8 @@ Java的java.util包主要提供了以下四种类型的集合：
 * Map：一种通过键值（key-value）查找的映射表集合
 * Queue: 先进先出（FIFO：First In First Out）的有序表
 
+ <!-- more -->he
+
 Java访问集合总是通过统一的方式——迭代器（Iterator）来实现，它最明显的好处在于无需知道集合内部元素是按什么方式存储的
 
 ![iterable](iterable.png)
