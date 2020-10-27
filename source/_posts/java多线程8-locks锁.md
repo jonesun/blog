@@ -73,6 +73,8 @@ public interface Lock {
 
 可重入锁, 支持重入性，表示能够对共享资源重复加锁，即当前线程获取该锁再次获取不会被阻塞。ReentrantLock实现了Lock接口的，并且ReentrantLock提供了更多的方法
 
+> JVM允许同一个线程重复获取同一个锁，这种能被同一个线程反复获取的锁，就叫做可重入锁
+
 ```
 private ArrayList<Integer> arrayList = new ArrayList<Integer>();
 private Lock lock = new ReentrantLock(); 
@@ -218,6 +220,8 @@ public interface ReadWriteLock {
 
 一个用来获取读锁，一个用来获取写锁。也就是说将文件的读写操作分开，分成2个锁来分配给线程，从而使得多个线程可以同时进行读操作
 
+> 使用ReadWriteLock时，适用条件是同一个数据，有大量线程读取，但仅有少数线程修改, 适合读多写少的场景
+
 # ReentrantReadWriteLock
 
 ReentrantReadWriteLock实现了ReadWriteLock接口，并添加了可重入的特性
@@ -243,6 +247,8 @@ ReentrantReadWriteLock实现了ReadWriteLock接口，并添加了可重入的特
 ## Condition
 
 它用来替代传统的Object的wait()、notify()实现线程间的协作，相比使用Object的wait()、notify()，使用Condition的await()、signal()这种方式实现线程间协作更加安全和高效。使用Condition可以实现等待/唤醒，并且能够唤醒制定线程
+
+> Condition可以替代wait和notify；Condition对象必须从Lock对象获取
 
 
 # LockSupport

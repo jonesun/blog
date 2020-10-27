@@ -158,3 +158,18 @@ Queue<String> queue = new LinkedList<>();
 - Stack：基于Vector实现的LIFO的栈
   
 还有一小部分接口是遗留接口，也不应该继续使用：Enumeration<E>：已被Iterator<E>取代。
+
+interface | non-thread-safe | thread-safe
+---|---|---
+List | ArrayList | 	CopyOnWriteArrayList
+Map | HashMap | ConcurrentHashMap
+Set | HashSet / TreeSet | CopyOnWriteArraySet
+Queue | ArrayDeque / LinkedList | ArrayBlockingQueue / LinkedBlockingQueue
+Deque | ArrayDeque / LinkedList | LinkedBlockingDeque
+
+java.util.Collections工具类还提供了一个旧的线程安全集合转换器，可以这么用:
+```
+Map unsafeMap = new HashMap();
+Map threadSafeMap = Collections.synchronizedMap(unsafeMap);
+```
+但是它实际上是用一个包装类包装了非线程安全的Map，然后对所有读写方法都用synchronized加锁，这样获得的线程安全集合的性能比java.util.concurrent集合要低很多，一般不推荐使用。
