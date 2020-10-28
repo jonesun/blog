@@ -277,6 +277,56 @@ controller或者service中获取(可以改造现有项目)
 LoginUser user = UserContext.get();
 ```
 
+## 场景3
+
+在编写一个功能时需要把一个共有参数(这个参数在这中间是只读状态)一路传递到所有调用方法中
+
+> 为了保证能释放ThreadLocal关联的实例，我们可以通过AutoCloseable接口配合try (resource) {...}结构，让编译器自动为我们关闭
+
+```
+public class UserContext implements AutoCloseable {
+
+    static final ThreadLocal<String> ctx = new ThreadLocal<>();
+
+    public UserContext(String user) {
+        ctx.set(user);
+    }
+
+    public static String currentUser() {
+        return ctx.get();
+    }
+
+    @Override
+    public void close() {
+        ctx.remove();
+    }
+}
+
+
+try (var ctx = new UserContext("Bob")) {
+    // 可任意调用UserContext.currentUser();
+    doHandle1();
+    doHandle2();
+    
+} // 在此自动调用UserContext.close()方法释放ThreadLocal关联对象，避免内存泄漏
+
+public void doHandle1() {
+   String currentUser = UserContext.currentUser(); 
+   doHandle3();
+}
+
+public void doHandle2() {
+   String currentUser = UserContext.currentUser(); 
+   ......
+}
+
+public void doHandle3() {
+   String currentUser = UserContext.currentUser(); 
+   ......
+}
+
+```
+
 
 > 在编写AOP日志时，经常会用到的RequestContextHolder，其实内部也维护了ThreadLocal(有兴趣可以看看Spring是如何做到remove的-使用过滤器)
 
