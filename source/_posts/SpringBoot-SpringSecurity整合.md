@@ -20,6 +20,10 @@ tags: [java, springboot, springsecurity]
 
 >  Authentication继承自来自于java.security包的Principal类,而本身又是spring.security包中的接口。也就是说，Authentication是Spring Security中最高级别的认证
 
+未整理完成......
+
+ <!-- more -->
+
 ## AuthenticationToken
 
 所有的认证请求都会被封装成一个Token的实现，比如最容易理解的UsernamePasswordAuthenticationToken，在Spring Security中提交的用户名和密码，会被封装成了UsernamePasswordAuthenticationToken
@@ -131,10 +135,6 @@ if (principal instanceof UserDetails) {
 
 Json Web Token （JWT） 近几年是前后端分离常用的 Token 技术，是目前最流行的跨域身份验证
 解决方案。
-
-未整理完成......
-
- <!-- more -->
 
 # spring-security-jwt
 
