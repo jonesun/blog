@@ -144,7 +144,7 @@ public class DecoratorTest {
 
 ```
 
-后面如果想要增加新的装饰只要编写新类继承CarDecorator即可，想要增加新车则编写新类继承Car。互不影响
+后面如果想要增加带新的装饰的车只要编写新类继承CarDecorator即可，想要增加新车则编写新类继承Car。互不影响
 
 或者不想有车贴，直接去除CarStickerDecorator即可
 
