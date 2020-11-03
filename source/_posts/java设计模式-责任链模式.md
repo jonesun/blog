@@ -20,11 +20,15 @@ tags: [java, 设计模式]
 - Client: 创建处理链，并向链头的具体处理者对象提交请求，它不关心处理细节和请求的传递过程
 
 抽象的处理者实现三个职责：
-一是定义一个请求的处理方法handleMessage，唯一对外开放的方法；
-二是定义一个链的编排方法setNext，设置下一个处理者；
-三是定义了具体的请求者必须实现的两个方法：定义自己能够处理的级别getHandlerLevel和具体的处理任务echo。
+- 一是定义一个请求的处理方法handleMessage，唯一对外开放的方法；
+- 二是定义一个链的编排方法setNext，设置下一个处理者；
+- 三是定义了具体的请求者必须实现的两个方法：定义自己能够处理的级别getHandlerLevel和具体的处理任务echo。
+
 注意事项：
+
 链中节点数量需要控制，避免出现超长链的情况，一般的做法是在Handler中设置一个最大节点数量，在setNext方法中判断是否已经是超过其阈值，超过则不允许该链建立，避免无意识地破坏系统性能
+
+JavaEE的Servlet规范定义的Filter就是一种责任链模式，它不但允许每个Filter都有机会处理请求，还允许每个Filter决定是否将请求“放行”给下一个Filter，这种模式不但允许一个Filter自行决定处理ServletRequest和ServletResponse，还可以“伪造”ServletRequest和ServletResponse以便让下一个Filter处理，能实现非常复杂的功能
 
 # 使用场景
 
