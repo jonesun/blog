@@ -43,7 +43,7 @@ tags: [java, 设计模式]
   
 ```
 /**
- * 真正命令执行者
+ * Receiver是被调用者（士兵）
  */
 public class Receiver {
 
@@ -98,7 +98,7 @@ public class ConcreteCommand implements Command {
 
 ```
 
-* 定义请求者Invoker
+* Invoker调用者（司令员）
 
 ```
 /**
