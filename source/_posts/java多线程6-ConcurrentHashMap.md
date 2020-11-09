@@ -73,7 +73,7 @@ static final int hash(Object key) {
 
 由于HashMap是通过hash计算来得出存放位置的，故他是不能保证顺序的。如果需要有序的HashMap，使用LinkedHashMap：
 
-LinkedHashMap属于HashMap的子类，与HashMap的区别在于LinkedHashMap保存了记录插入的顺序。TreeMap实现了SortedMap接口，TreeMap有能力对插入的记录根据key排序，默认按照升序排序，也可以自定义比较强，在使用TreeMap的时候，key应当实现Comparable
+LinkedHashMap属于HashMap的子类，与HashMap的区别在于LinkedHashMap保存了记录插入的顺序。TreeMap实现了SortedMap接口，TreeMap有能力对插入的记录根据key排序，默认按照升序排序，也可以自定义比较器，在使用TreeMap的时候，key应当实现Comparable(String默认已经实现了Comparable)
 
 ## HashMap线程不安全?
 

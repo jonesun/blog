@@ -476,4 +476,6 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 
 > 这种模式适合数据量巨大的缓存要求，当数据量不是很大使用sentinel即可
 
+[IBM开发者文章-了解 Redis 并在 Spring Boot 项目中使用 Redis](https://developer.ibm.com/zh/languages/java/articles/know-redis-and-use-it-in-springboot-projects/)
+
 
