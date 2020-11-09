@@ -102,3 +102,14 @@ live2d:
     vOffset: -20
   mobile:
     show: false  #是否在手机进行显示
+
+baidu_url_submit:
+  count: 5 				     ## 提交最新的五个链接
+  host: jonesun.github.io	     ## 百度站长平台中注册的域名
+  token: wxEYCMr7JzpSUEfi	 ## 准入秘钥
+  path: baidu_urls.txt ## 文本文档的地址， 新链接会保存在此文本文档里
+
+sitemap:
+  path: sitemap.xml
+baidusitemap:
+  path: baidusitemap.xml

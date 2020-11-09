@@ -156,3 +156,81 @@ hexo d
   [3]: http://theme-next.iissnan.com/
   [4]: https://www.zybuluo.com/mdeditor
 
+
+# 博客提交搜索引擎收录
+
+请确保Next主题版本为NexT-7.1.2及以上 
+
+## 百度和Google收录
+
+- 安装百度和 Google 的站点地图生成插件
+
+```
+npm install hexo-generator-baidu-sitemap --save
+npm install hexo-generator-sitemap --save
+```
+
+- 修改配置文件(最外层的_config.yml), 可搜索sitemap字段(默认都有，没有再添加)
+
+```
+# 自动生成sitemap
+sitemap:
+  path: sitemap.xml
+baidusitemap:
+  path: baidusitemap.xml
+
+```
+
+hexo g 生成后进入 public 目录，你会发现里面有 sitemap.xml 和 baidusitemap.xml 两个文件，这就是生成的站点地图。里面包含了网站上所有页面的链接，搜索引擎通过这两个文件来抓取网站页面: 
+
+sitemap.xml 用来提交给 Google
+
+baidusitemap.xml 用来提交给百度
+
+## Google Search Console
+
+- 进入 [Google Web Master Search Console](https://www.google.com/webmasters)，首先需要进行站点验证，在**主题配置文件_config.yml** 把验证代码写上：
+
+```
+google_site_verification: 7MWmpu7Y_liZprzsvd1MxYuG1tRYQ7V1eK9_rLcHmB0
+```
+
+- 通过hexo g 和 hexo d部署后，再点击Google Search Console需要的验证
+
+- 验证是否收录
+
+打开谷歌搜索,输入: 
+```
+//换成自己的域名，查看结果
+site: https://jonesun.github.io/
+```
+
+## 百度站长平台
+
+首先注册百度账号，完善个人信息，然后打开[站长平台](https://ziyuan.baidu.com/site), 添加网站，得到验证代码后，在**主题配置文件_config.yml** 把验证代码写上：
+
+```
+baidu_site_verification: code-SeFMiHxes9
+```
+
+- 通过hexo g 和 hexo d部署后，再点击验证，等待结果
+
+## 链接提交
+
+安装插件
+
+```
+npm install hexo-baidu-url-submit --save
+
+```
+
+在**主题配置文件_config.yml** 加入：
+
+```
+baidu_url_submit:
+  count: 5 				     ## 提交最新的五个链接
+  host: jonesun.github.io	     ## 百度站长平台中注册的域名
+  token: wxEYCMr7JzpSUEfi	 ## 准入秘钥
+  path: baidu_urls.txt ## 文本文档的地址， 新链接会保存在此文本文档里
+
+```
