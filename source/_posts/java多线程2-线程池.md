@@ -510,6 +510,8 @@ public ScheduledThreadPoolExecutor(int corePoolSize) {
 
 适用：延时或者周期性执行任务的场景
 
+> 同样可以模拟心跳机制，如果用户希望取消心跳， scheduleAtFixedRate 调用将返回一个 ScheduledFuture 实例，它不仅封装了结果（如果有），还拥有一个 cancel 方法来关闭计划的操作
+
 ## newWorkStealingPool
 
 具有抢占式操作的线程池，任务的执行是无序的，哪个线程抢到任务，就由它执行

@@ -14,7 +14,7 @@ Java的java.util包主要提供了以下四种类型的集合：
 * Map：一种通过键值（key-value）查找的映射表集合
 * Queue: 先进先出（FIFO：First In First Out）的有序表
 
- <!-- more -->he
+ <!-- more -->
 
 Java访问集合总是通过统一的方式——迭代器（Iterator）来实现，它最明显的好处在于无需知道集合内部元素是按什么方式存储的
 
@@ -32,7 +32,7 @@ ArrayList在内部使用了数组来存储所有元素。可以看作是能够�
 
 通过链表实现了List接口。在LinkedList中，它的内部每个元素都指向下一个元素
 
-LinkList是一个双链表,在添加和删除元素时具有比ArrayList更好的性能.但在get与set方面弱于ArrayList.当然,这些对比都是指**数据量很大或者操作很频繁**(当插入的数据量很小时，两者区别不太大，当插入的数据量大时，大约在容量的1/10之前，LinkedList会优于ArrayList，在其后就劣与ArrayList，且越靠近后面越差)
+LinkedList是一个双链表,在添加和删除元素时具有比ArrayList更好的性能.但在get与set方面弱于ArrayList.当然,这些对比都是指**数据量很大或者操作很频繁**(当插入的数据量很小时，两者区别不太大，当插入的数据量大时，大约在容量的1/10之前，LinkedList会优于ArrayList，在其后就劣与ArrayList，且越靠近后面越差)
 
 > CopyOnWriteArrayList
 
@@ -173,3 +173,24 @@ Map unsafeMap = new HashMap();
 Map threadSafeMap = Collections.synchronizedMap(unsafeMap);
 ```
 但是它实际上是用一个包装类包装了非线程安全的Map，然后对所有读写方法都用synchronized加锁，这样获得的线程安全集合的性能比java.util.concurrent集合要低很多，一般不推荐使用。
+
+# Collections
+
+java提供了Collections方便集合的操作
+
+* 排序
+
+```
+List<Integer> list = Arrays.asList(2, 4, 9, 3, 1, 5, 8, 6);
+
+//排序
+Collections.sort(list);
+System.out.println("list: " + list);
+
+//倒序
+Collections.reverse(list);
+System.out.println("list: " + list);
+```
+> reverse的意思是反转，而不是降序。只是将list集合原来的顺序反转了一下，反转并不意味着降序了。所以要想实现降序，可以先对集合进行升序，然后再反转，这样就降序了
+
+

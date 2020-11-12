@@ -87,7 +87,7 @@ public final class EnumSingleton extends Enum { // 继承自Enum，标记为fina
 public class LazySingleton {
 
     private static class LazyHolder {
-         private static final LazySingleton INSTANCE = new LazySingleton();
+         private static LazySingleton INSTANCE = new LazySingleton();
     }
 
     public static LazySingleton getInstance() {
