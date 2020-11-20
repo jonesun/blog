@@ -23,12 +23,15 @@ tags: [java]
 
 我们都知道Java8加入了LocalDateTime等基础类，改进了时间得运算处理，所以如果是新项目想都不要想，直接上java8+，如果是旧项目或者有引用库还是java7及以下得也有方法可以解决，但不管怎样，放弃Date或者Calendar从现在开始
 
+<!-- more -->
 
 > 新API的类型几乎全部是不变类型，可以在多线程情况下放心使用, 并且修正了旧API一些不合理的常量设计：
 
   - Month的范围用1~12表示1月到12月(再也不用记要不要加1减1了)
   - Week的范围用1~7表示周一到周日
   - 处理加减会自动调整日期，例如从2019-10-31减去1个月得到的结果是2019-09-30，因为9月没有31日
+
+> System.currentTimeMillis()，这个数值代表什么呢？从 Javadoc 可以看出，它是返回当前时间和 1970 年 1 月 1 号 UTC 时间相差的毫秒数，这个数值与夏 / 冬令时并没有关系，所以并不受其影响
 
 # 重要类
 
@@ -281,6 +284,8 @@ TIMESTAMP | java.sql.Timestamp | LocalDateTime
 > 新系统最好使用DATETIME，因为TIMESTAMP存储了不在范围内的时间值时，会直接抛出异常
 
 > 还有一种建议即直接用long表示，在数据库中存储为BIGINT类型, 显示的时候再转换
+
+[2038 年问题](https://en.wikipedia.org/wiki/Year_2038_problem)
 
 ## Mybatis
 
