@@ -26,6 +26,8 @@ top: 999
 
 [SpringBoot应用整合ELK实现日志收集](/2020/07/21/SpringBoot应用整合ELK实现日志收集)
 
+[SpringBoot-监控](/2020/11/20/SpringBoot-监控)
+
 ## 开发小技巧
 
 [SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties](/2020/08/31/SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties)

@@ -303,3 +303,11 @@ public class Controller implements Initializable {
 javabean中除了基本数据类型及其包装类、String、list(集合)外，还可能会有自定义的对象属性，使用ObjectProperty即可, 但这种做法的颗粒度不太细，推荐还是新增对应自定义子对象的Fxwrapper，并在javabean变化时进行绑定初始化
 
 示例代码使用的是java14+javafx14，[github-javafx-property-test](https://github.com/jonesun/javafx-property-test), 如果还是使用的javafx8则不需要pom.xml中对于openjfx的引用
+
+
+# 属性绑定常用方法
+
+bind(): 单向绑定
+
+bindBidirectional(): 双向绑定
+

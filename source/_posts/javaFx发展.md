@@ -36,4 +36,7 @@ JavaFX可在Windows、Mac OS X和Linux上运行，利用 JavaFX 能够非常轻�
 
 [TestOpenJfx14](https://gitee.com/sunr7/TestOpenjfx14)
 
+> 支持自动更新
+
+java8使用[fxlauncher](https://github.com/edvin/fxlauncher), java9+使用[update4j](https://github.com/update4j/update4j)
 
