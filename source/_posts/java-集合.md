@@ -36,7 +36,7 @@ LinkedList是一个双链表,在添加和删除元素时具有比ArrayList更好
 
 > CopyOnWriteArrayList
 
-juc中提供的在并发编程中读多写少的场景下的list实现
+juc中提供的在并发编程中读多写少的场景下的list实现, 原理是任何修改操作，如 add、set、remove，都会拷贝原数组，修改后替换原来的数组，通过这种防御性的方式，实现另类的线程安全
 
 > Vector
 线程安全的List实现，在方法上加入synchronized。现在一般不推荐使用了，可用Collections.synchronizedList来包装集合使用
@@ -173,6 +173,23 @@ Map unsafeMap = new HashMap();
 Map threadSafeMap = Collections.synchronizedMap(unsafeMap);
 ```
 但是它实际上是用一个包装类包装了非线程安全的Map，然后对所有读写方法都用synchronized加锁，这样获得的线程安全集合的性能比java.util.concurrent集合要低很多，一般不推荐使用。
+
+例如: 
+
+```
+private static class SynchronizedMap<K,V>
+    implements Map<K,V>, Serializable {
+    private final Map<K,V> m;     // Backing Map
+    final Object      mutex;        // Object on which to synchronize
+    // …
+    public int size() {
+        synchronized (mutex) {return m.size();}
+    }
+ // … 
+}
+
+```
+
 
 # Collections
 

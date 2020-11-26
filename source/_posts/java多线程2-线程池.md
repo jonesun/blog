@@ -514,7 +514,8 @@ public ScheduledThreadPoolExecutor(int corePoolSize) {
 
 ## newWorkStealingPool
 
-具有抢占式操作的线程池，任务的执行是无序的，哪个线程抢到任务，就由它执行
+Java 8新增的具有抢占式操作的线程池，其内部会构建ForkJoinPool，利用Work-Stealing算法，并行地处理任务，不保证处理顺序，哪个线程抢到任务，就由它执行
+
 ```
 //创建方式
 ExecutorService executorService = Executors.newWorkStealingPool();
