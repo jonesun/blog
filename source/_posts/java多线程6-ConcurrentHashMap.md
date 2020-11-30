@@ -233,3 +233,26 @@ public interface ConcurrentMap<K, V> extends Map<K, V> {
 ConcurrentSkipListMap是ConcurrentNavigableMap的一个实现类。
 
 ConcurrentSkipListMap的key是有序的, 所以在多线程程序中，如果需要对Map的键值进行排序时，请尽量使用ConcurrentSkipListMap，可能得到更好的并发度
+
+# 其他
+
+WeakHashMap
+
+在Java集合中有一种特殊的Map类型—WeakHashMap，在这种Map中存放了键对象的弱引用，当一个键对象被垃圾回收器回收时，那么相应的值对象的引用会从Map中删除。WeakHashMap能够节约存储空间，可用来缓存那些非必须存在的数据
+
+```
+@Test
+    public void test(){
+        Map map;
+        map = new WeakHashMap<String,Object>();
+        for (int i =0;i<10000;i++){
+            map.put("key"+i,new byte[i]);
+        }
+//        map = new HashMap<String,Object>();
+//        for (int i =0;i<10000;i++){
+//            map.put("key"+i,new byte[i]);
+//        }
+    }
+
+```
+　　使用-Xmx2M限定堆内存，使用WeakHashMap的代码正常运行结束，而使用HashMap的代码段抛出异常：java.lang.OutOfMemoryError: Java heap space。由此可见，WeakHashMap会在系统内存紧张时使用弱引用，自动释放掉持有弱引用的内存数据。但如果WeakHashMap的key都在系统内持有强引用，那么WeakHashMap就退化为普通的HashMap，因为所有的数据项都无法被自动清理。

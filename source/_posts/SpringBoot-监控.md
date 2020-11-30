@@ -368,6 +368,22 @@ management:
 
 ![springboot-admin](springboot-admin.png)
 
+
+如果存在Spring Security，则需要添加自定义安全配置，以允许对端点进行未经身份验证的访问
+
+```
+@Configuration
+public class ActuatorSecurity extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.requestMatcher(EndpointRequest.toAnyEndpoint()).authorizeRequests()
+            .anyRequest().permitAll()
+    }
+
+}
+```
+
 ## 告警
 
 可以结合spring-boot-starter-mail进行告警

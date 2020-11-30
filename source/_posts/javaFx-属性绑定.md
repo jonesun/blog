@@ -311,3 +311,13 @@ bind(): 单向绑定
 
 bindBidirectional(): 双向绑定
 
+addListener()：添加监听
+
+> The ObservableValue stores a strong reference to the listener which will prevent the listener from being garbage collected and may result in a memory leak. It is recommended to either unregister a listener by calling removeListener after use or to use an instance of WeakChangeListener avoid this situation.它是一个强引用的Listener，有可能会引起内存泄露，推荐的解决办法是使用完之后调用removeListener，或者使用WeakChangeListener这个弱引用的监听。
+
+```
+styleTypeToggleGroup.selectedToggleProperty().addListener(new WeakChangeListener<>((observable, oldValue, newValue) -> {
+            updateView();
+        }));
+```
+

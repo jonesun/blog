@@ -36,7 +36,52 @@ JavaFX可在Windows、Mac OS X和Linux上运行，利用 JavaFX 能够非常轻�
 
 [TestOpenJfx14](https://gitee.com/sunr7/TestOpenjfx14)
 
+
+```
+@SpringBootApplication
+public class MyApplication extends Application {
+
+    private ConfigurableApplicationContext springContext;
+
+    @Override
+    public void init() {
+        springContext = SpringApplication.run(MyApplication.class);
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource(fxml), null, null, springContext::getBean);
+        //或者
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
+        fxmlLoader.setControllerFactory(springContext::getBean);
+        root = fxmlLoader.load();
+
+        primaryStage.setTitle("xxx");
+        primaryStage.setScene(new Scene(root, 800, 700));
+        primaryStage.show();
+    }
+
+                
+
+    @Override
+    public void stop(){
+        springContext.close();
+    }
+
+
+    public static void main(String[] args) {
+        launch();
+    }
+
+}
+```
+
 > 支持自动更新
 
 java8使用[fxlauncher](https://github.com/edvin/fxlauncher), java9+使用[update4j](https://github.com/update4j/update4j)
 
+
+```
+//bufferedImage转image java11+需引用javafx-swing
+new ImageView(SwingFXUtils.toFXImage(bufferedImage, null))
+```
