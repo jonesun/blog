@@ -7,7 +7,9 @@ tags: [java, javafx]
 
 ## javaFx发展
 
-从 JDK 11 开始，Oracle 将从 JDK 中删除 JavaFX，但在 2022 年之前，Oracle 还会继续为 JDK 8 中的 JavaFX 提供商业支持。2011 年，JavaFX 成为 Open JDK 的一部分开源，这项技术的发展现在由 [OpenFX](https://openjfx.io/) ( [国内网站](https://openjfx.cn/) )社区负责
+从 JDK 11 开始，Oracle 将从 JDK 中删除 JavaFX，但在 2022 年之前，Oracle 还会继续为 JDK 8 中的 JavaFX 提供商业支持。2011 年，JavaFX 成为 Open JDK 的一部分开源，这项技术的发展现在由 [OpenFX](https://openjfx.io/) ([国内网站](https://openjfx.cn/) )社区负责
+
+当然如果是基于高版本的jdk开发, 推荐使用[Liberica JDK-不仅包含了 JavaFX，还继续为 Windows 以及 Linux 提供 32 位构建](https://bell-sw.com/pages/java-8u242/), 下载Full version版本就可以无缝切换
 
  <!-- more -->
 

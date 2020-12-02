@@ -255,7 +255,7 @@ public class SoftReferenceCache<K, V> {
 //输出
 1str: abc weakReference>>: abc
 2str: null weakReference>>: abc
-3str: null weakReference>>: abc
+3str: null weakReference>>: null
 ```
 
 如果一个对象是偶尔(很少)的使用，并且希望在使用时随时就能获取到，但又不想影响此对象的垃圾收集，那么你应该用Weak Reference来记住此对象
