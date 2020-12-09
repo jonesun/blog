@@ -36,6 +36,8 @@ JavaFX可在Windows、Mac OS X和Linux上运行，利用 JavaFX 能够非常轻�
 
 - 可充分使用Spring Boot各类支持库
 
+[javafx-test-with-javapackager](https://github.com/jonesun/javafx-test-with-javapackager)
+
 [TestOpenJfx14](https://gitee.com/sunr7/TestOpenjfx14)
 
 
