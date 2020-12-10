@@ -28,6 +28,8 @@ top: 999
 
 [SpringBoot-监控](/2020/11/20/SpringBoot-监控)
 
+[SpringBoot-集成flyway实现数据库版本控制](/2020/12/09/SpringBoot-集成flyway实现数据库版本控制)
+
 ## 开发小技巧
 
 [SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties](/2020/08/31/SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties)

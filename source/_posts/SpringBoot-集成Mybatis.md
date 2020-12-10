@@ -52,6 +52,15 @@ MyBatis 是一款优秀的持久层框架，它支持自定义 SQL、存储过�
 
 为演示方便，这里使用H2来代替Mysql
 
+H2可以兼容很多数据库, 通过url后缀MODE参数来设置：
+
+```
+Oracle jdbc:h2:~/test;MODE=Oracle或SQL语句SET MODE Oracle
+Mysql jdbc:h2:~/test;MODE=MySQL;DATABASE_TO_LOWER=TRUE
+PostgreSQL jdbc:h2:~/test;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+MS SQL Server jdbc:h2:~/test;MODE=MSSQLServer或SQL语句SET MODE MSSQLServer
+```
+
 ## 配置
 
 ### yml配置
