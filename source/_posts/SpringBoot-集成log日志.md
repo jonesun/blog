@@ -154,6 +154,8 @@ logger.info("Set score {} for Person {} ok.", score, p.getName());
 
 日常开发中有些童鞋在跟进bug时会习惯性的使用**System.out.println()**来打印log日志，然后再删除掉，下次再出现问题再打印，可以自己考虑哪个更好
 
+[springboot官网配置](https://www.baeldung.com/spring-boot-logging)
+
 ## 异步日志
 
 > 官方建议一般程序员查看的日志改成异步方式，一些运营日志改成同步。日志异步输出的好处在于，使用单独的进程来执行日志打印的功能，可以提高日志执行效率，减少日志功能对正常业务的影响。

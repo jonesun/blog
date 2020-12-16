@@ -75,7 +75,7 @@ java -jar springboot-demo-jar-1.0-SNAPSHOT.jar
 ```
 
 如果不喜欢默认的项目名+版本号作为运行jar文件名，可以加一个配置指定文件名:
-```
+``` xml
 <project ...>
     ...
     <build>
@@ -134,7 +134,7 @@ loggers endpoint也允许你在运行时改变应用的日志等级。
 
 举个例子，为了改变root logger的等级为DEBUG ，发送一个POST请求到http://localhost:8080/actuator/loggers/root，加入如下参数:
 
-```
+```json
 {
    "configuredLevel": "DEBUG"
 }
@@ -143,4 +143,13 @@ loggers endpoint也允许你在运行时改变应用的日志等级。
 **这个功能对于线上问题的排查非常有用。**
 
 同时，你可以通过传递null值给configuredLevel来重置日志等级。
+
+
+> spring-boot-autoconfigure 包含了Spring Boot对于第三方库的自动配置，在编写自定义配置时可以参考使用
+
+如果是idea使用gradle编译的话，如果出现中文乱码则打开Help>Edit Custom VM Options，在最后一行加上:
+
+```
+-Dfile.encoding=UTF-8
+```
 

@@ -21,7 +21,7 @@ tags: [java, 多线程, 线程池]
 
 ## 线程池设计
 
-![excutorUML](excutorUML.png) 
+![executorUML](excutorUML.png) 
 
  <!-- more -->
 
@@ -167,7 +167,7 @@ keepAliveTime的单位, TimeUnit是一个枚举类型, 其包括：
 
 > 无界队列：指的是没有设置固定大小的队列。这些队列的特点是可以直接入列，直到溢出。当然现实几乎不会有到这么大的容量（超过 Integer.MAX_VALUE），所以从使用者的体验上，就相当于 “无界”。比如没有设定固定大小的 LinkedBlockingQueue
 
-#### ThreadFactory threadFactory
+#### ThreadFactory
 
 线程工厂, 用于创建线程, 一般用默认即可；通过自定义ThreadFactory, 可以按需要对线程池中创建的线程进行一些特殊的设置, 如命名、优先级等
 
