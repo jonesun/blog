@@ -234,3 +234,16 @@ baidu_url_submit:
   path: baidu_urls.txt ## 文本文档的地址， 新链接会保存在此文本文档里
 
 ```
+
+## hexo 创建草稿
+
+使用草稿新建的文章就不会发布，会存放在/source/_drafts路径下：
+```
+hexo new draft <title>
+```
+
+发布草稿，会把/source/_drafts下的文章移到/source/_posts下：
+
+```
+hexo publish <title>
+```

@@ -36,12 +36,16 @@ top: 999
 
 [SpringBoot开发小技巧-打印Mybatis中的sql语句](/2020/08/17/SpringBoot开发小技巧-打印Mybatis中的sql语句)
 
+[screw-简洁好用的数据库表结构文档生成工具](https://toscode.gitee.com/leshalv/screw/tree/master)
+
 <!-- more -->
 
 
 ## 推荐idea插件
 
 * Maven Helper: 查看Maven引入的jar包是否有冲突
+* Codota: 右键选中代码会提示很多相关API用法，节省不少查阅资料的时间
+* IntelliJad：是一个Java class文件的反编译工具，可以对Jar选择class文件右键Decompile，会出现反编译的结果
 
 ## 开发者工具
 
@@ -87,7 +91,7 @@ java -jar springboot-demo-jar-1.0-SNAPSHOT.jar
 
 ## 运行监控
 
-Spring Boot内置了一个监控功能Actuato:
+Spring Boot内置了一个监控功能Actuator:
 
 ```
 <dependency>
