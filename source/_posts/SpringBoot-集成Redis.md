@@ -25,7 +25,7 @@ Redis 的应用场景包括：缓存系统（“热点”数据：高频读、�
 ## 引入
 
 在pom.xml中加入
-```
+```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -45,7 +45,7 @@ Redis 的应用场景包括：缓存系统（“热点”数据：高频读、�
 
 所以如果要继续使用jedis的话需要改为:
 
-```
+```xml
 <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -68,7 +68,7 @@ Redis 的应用场景包括：缓存系统（“热点”数据：高频读、�
 
 如果使用默认lettuce的话，直接在application.yml配置redis服务连接基本参数即可(spring-boot-starter-xx的好处之一):
 
-```
+```yaml
 spring:
   ## Redis 配置
   redis:
@@ -86,7 +86,7 @@ spring:
 
 - 使用lettuce：
 
-```
+```yaml
 lettuce:
     pool:
     ## 连接池最大连接数（使用负值表示没有限制） 默认8
@@ -101,7 +101,7 @@ lettuce:
 
 - 使用jedis
 
-```
+```yaml
 jedis:
     pool:
     ## 连接池最大连接数（使用负值表示没有限制）
@@ -122,7 +122,7 @@ jedis:
 
 ### 编写公共配置
 
-```
+```java
 @EnableCaching
 @Configuration
 public class CacheConfig extends CachingConfigurerSupport {
@@ -204,8 +204,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 
 - 注解使用
 
-```
-Service
+```java
 @CacheConfig(cacheNames = "user")
 public class UserServiceImpl implements UserService {
 
@@ -290,7 +289,7 @@ public class UserServiceImpl implements UserService {
 
 注解方式适合逻辑不是很复杂的情况，当业务逻辑需要更加灵活的控制缓存处理时，可使用CacheManager来管理
 
-```
+```java
 @Service
 public class LockGoodsNumServiceImpl implements LockGoodsNumService {
 
@@ -395,7 +394,7 @@ public class LockGoodsNumServiceImpl implements LockGoodsNumService {
 
 - 直接使用RedisTemplate
 
-当然如果直接使用RedisTemplate也是可以的，不过一般不推荐
+当然如果直接使用RedisTemplate也是可以的，不过一般不推荐(除非想单独设置一个缓存值的有效期，或者并不想缓存方法的返回值，亦或者想缓存方法中产生的中间值)
 
 # 注意要点
 

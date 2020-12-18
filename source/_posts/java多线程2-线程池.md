@@ -529,6 +529,12 @@ public static ExecutorService newWorkStealingPool() {
     }
 ```
 
+> Executors有一个静态方法,该方法可以对现有的ExecutorService进行包装,使其只暴露出ExecutorService的方法,因此不能对其进行配置,如果我们需要创建不可更改的线程池,可以使用这个方法:
+```
+Executors.unconfigurableExecutorService(executorService);//不可配置的线程池
+Executors.unconfigurableScheduledExecutorService(scheduledExecutorService);//不可配置的调度线程池
+```
+
 # 四、配置线程池
 
 ## 为何不推荐java提供的几种线程池

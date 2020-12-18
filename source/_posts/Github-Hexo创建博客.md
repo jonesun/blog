@@ -247,3 +247,23 @@ hexo new draft <title>
 ```
 hexo publish <title>
 ```
+
+## 显示字数及阅读时长
+
+安装hexo-symbols-count-time
+```
+npm install hexo-symbols-count-time --save
+```
+
+next主题中_config.yml中配置
+```yml
+symbols_count_time:
+  separated_meta: true     # 是否另起一行（true的话不和发表时间等同一行）
+  item_text_post: true     # 首页文章统计数量前是否显示文字描述（本文字数、阅读时长）
+  item_text_total: false   # 页面底部统计数量前是否显示文字描述（站点总字数、站点阅读时长）
+  awl: 4                   # Average Word Length
+  wpm: 275                 # Words Per Minute（每分钟阅读词数）
+  suffix: mins.
+```
+
+> 如果显示为阅读时长NaN:aN, 执行 hexo clean即可
