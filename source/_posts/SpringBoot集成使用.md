@@ -89,6 +89,32 @@ java -jar springboot-demo-jar-1.0-SNAPSHOT.jar
 </project>
 ```
 
+## 测试
+
+> springboot2.x的版本, 默认使用的是junit5版本, junit4和junit5两个版本差别比较大，需要注意下用法
+
+![junit5vsjunit4](junit5vsjunit4.png)
+
+```java
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+
+@SpringBootTest
+class MySpringTestBeanTest {
+
+    @Autowired
+    XXX xxx;
+
+    @Test
+    public void xxxTest() {
+        xxx.sayHello();
+    }
+
+}
+```
+
 ## 运行监控
 
 Spring Boot内置了一个监控功能Actuator:
@@ -156,4 +182,35 @@ loggers endpoint也允许你在运行时改变应用的日志等级。
 ```
 -Dfile.encoding=UTF-8
 ```
+## 最佳实践
 
+推荐使用@Autowired(@Qualifier告诉Spring具体去装配哪个对象), @Resource(javax.annotation.Resource) 在 Jdk 11中已经移除，如果要使⽤，需要单独引⼊jar包：
+
+```xml
+<dependency>
+    <groupId>javax.annotation</groupId>
+    <artifactId>javax.annotation-api</artifactId>
+    <version>1.3.2</version>
+</dependency>
+```
+
+@Component注解默认实例化的对象是单例，如果想声明成多例对象可以使用@Scope(“prototype”), Scope的全部可选项
+* singleton 全局只有一个实例，即单例模式
+* prototype 每次注入Bean都是一个新的实例
+* request 每次HTTP请求都会产生新的Bean
+* session 每次HTTP请求都会产生新的Bean，该Bean在仅在当前session内有效
+* global session 每次HTTP请求都会产生新的Bean，该Bean在 当前global Session（基于portlet的web应用中）内有效
+
+对于不常使⽤的 Bean 设置延迟加载，这样偶尔使⽤的时候再加载，不必要从⼀开始该 Bean 就占 ⽤资源
+
+在Bean的初始化和清理方法上标记@PostConstruct和@PreDestroy
+
+先使用@PropertySource读取配置文件，然后通过@Value以${key:defaultValue}的形式注入，可以极大地简化读取配置的麻烦
+
+Profile: 创建某个Bean时，Spring容器可以根据注解@Profile来决定是否创建
+
+Conditional: Spring还可以根据@Conditional决定是否创建某个Bean
+
+FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以借助于它⾃定义Bean的创建过程，实现FactoryBean接口即可(获取FactoryBean，需要在id之前添加“&”)。
+
+如果你想要将第三方库中的组件装配到你的应用中，在这种情况下，是没有办法在它的类上添加@Component注解的，因此就不能使用自动化装配的方案了，但是我们可以使用@Bean。

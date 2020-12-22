@@ -453,3 +453,46 @@ while(referenceQueue.poll()!=null){
 ```
 
 > ReferenceQueue引用队列用来记录被回收的引用为用户线程做额外操作作铺垫 
+
+# VisualVM使用
+
+VisualVM是集成JDK命令行工具和轻量级分析功能的可视化分析工具，设计用于开发和生产时间的使用。它提供了一个可视化界面，用于查看基于Java技术、运行于JVM上的应用程序(Java应用程序)的详细信息。
+
+oracle版本的JDK 6〜8默认在bin目录下的jvisualvm.exe, 从Oracle JDK 9中开始已经不再内置visualvm(openjdk默认也是不包含的), 可以自己下载安装
+
+## 下载安装
+
+官网下载[最新版本](https://visualvm.github.io/releases.html)
+
+直接双击打开bin目录下的visualvm.exe
+
+> 如果出现cannot find java 1.8 or higher等问题的话, 则需要在etc目录下的visualvm.conf文件中加入jdk的目录，如：
+
+```
+visualvm_jdkhome="C:\Users\jone.sun\.jdks\adopt-openjdk-1.8.0_275"
+```
+
+### IDEA中使用
+
+打开IDEA的插件设置页面，搜索VisualVM Launcher，进行安装
+
+![VisualVM Launcher](VisualVM Launcher.png)
+
+完毕后即可通过IDEA启动VisualVM和自己的应用程序, 初次使用可能需要设置下路径:
+
+![VisualVM Launcher Setting](VisualVM Launcher Setting.png)
+
+之后就可以直接使用了![VisualVM Launcher Run](VisualVM Launcher Run.png)
+
+
+## 功能介绍
+
+### Sampler(抽样器)
+
+点击CPU，就可以看到各个类以及方法执行的时间，可以监控哪个类的方法执行时间较长，可以定位到具体的异常方法。
+
+点击内存，很直观的能找到哪个位置可能存在内存泄漏的情况。
+
+通过 Applications 窗口右击应用程序节点来启用"Heap Dump on OOME(在出现 OOME 时生成堆 Dump)"功能，当应用程序出现 OutOfMemory 例外时，VisualVM 将自动生成一个堆转储。
+
+> 除了监控本地的应用程序，同样可以远程监控局域网内的服务器

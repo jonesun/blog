@@ -225,4 +225,55 @@ public class LocalDateFactoryTest {
 
 > 需要注意得是，如果不是特别复杂得工厂产品创建，一般静态工厂方法就够了，只有像多个供应商负责提供一系列类型的产品时才需要用到抽象工厂模式
 
-> 见名思意，无论是自己编写还是看到别人代码中的类是以Factory结尾的都应联想到是否是使用了工厂方法模式
+> 见名思意，无论是自己编写还是看到别人代码中的类是以Factory结尾的都应联想到是否是使用了工厂模式
+
+# Spring中使用
+
+改写Sender的两个实现类，加上@Component：
+```java
+@Component("email")
+public class EmailSender implements Sender {
+    @Override
+    public void send(String s) {
+        System.out.println("通过邮件发送: " + s);
+    }
+}
+
+@Component("SMS")
+public class SMSSender implements Sender {
+    @Override
+    public void send(String s) {
+        System.out.println("通过短信发送: " + s);
+    }
+}
+```
+
+工厂类实现
+
+```java
+@Component
+public class SpringSenderFactory {
+
+    @Autowired
+    private Map<String , Sender> senderMap;
+
+    public Sender getSenderByName(String name){
+        return senderMap.get(name);
+    }
+
+}
+
+
+@SpringBootTest
+class SpringSenderFactoryTest {
+
+    @Autowired
+    private SpringSenderFactory senderFactory;
+
+    @Test
+    void getSenderByName() {
+        senderFactory.getSenderByName("email").send("hello world");
+        senderFactory.getSenderByName("SMS").send("hello world");
+    }
+}
+```

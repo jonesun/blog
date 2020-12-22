@@ -102,7 +102,65 @@ public class LazySingleton {
 }
 ```
 
-**Spring框架下使用@Component即可，不需要刻意去实现**
+# Spring中使用
+
+**Spring框架下使用@Component即可实现单例，不需要刻意去实现**，如果需要懒加载再加上@Lazy，即实现了Bean对象在第一次使用时才创建
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.stereotype.Component;
+
+@Component
+@Lazy
+public class MySpringTestBean {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    public MySpringTestBean() {
+        logger.info("执行构造函数");
+    }
+
+    public void sayHello() {
+        logger.info("hello world");
+    }
+}
+
+//测试
+
+```
+
+测试类
+```java
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+
+
+@SpringBootTest
+class MySpringTestBeanTest {
+
+    @Autowired
+    MySpringTestBean mySpringTestBean;
+
+    @Test
+    public void mySpringTestBeanTest() {
+        mySpringTestBean.sayHello();
+    }
+
+}
+```
+
+常用注解的默认实例化方式:
+
+* @Component默认单例
+* @Bean默认单例
+* @Repository默认单例
+* @Service默认单例
+* @Controller默认多例
+
+> 如果想声明成多例对象可以使用@Scope(“prototype”)
 
 另外如果需要保证每个线程中都只有一个的话，借助[ThreadLocal](/2020/08/24/java多线程10-ThreadLocal)：
 
