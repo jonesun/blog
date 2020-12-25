@@ -148,3 +148,4 @@ public class DecoratorTest {
 
 或者不想有车贴，直接去除CarStickerDecorator即可
 
+> Spring中用到的包装器模式在类名上有两种表现：一种是类名中含有Wrapper，另一种是类名中含有Decorator

@@ -115,6 +115,8 @@ class MySpringTestBeanTest {
 }
 ```
 
+测试样例可以参考[官方教程](https://docs.spring.io/spring-framework/docs/current/reference/html/testing.html#spring-mvc-test-framework)
+
 ## 运行监控
 
 Spring Boot内置了一个监控功能Actuator:

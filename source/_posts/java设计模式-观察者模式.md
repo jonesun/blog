@@ -191,3 +191,5 @@ SubmissionPublisher(Executor executor, int maxBufferCapacity, BiConsumer<? super
 - 自定义需要发布的事件类，需要继承 ApplicationEvent 类或 PayloadApplicationEvent (该类也仅仅是对 ApplicationEvent 的一层封装)
 - 使用 @EventListener 来监听事件或者实现 ApplicationListener 接口。
 - 使用 ApplicationEventPublisher 来发布自定义事件（@Autowired注入即可）
+
+> spring的事件驱动模型使用的是 观察者模式 ，Spring中Observer模式常用的地方是listener的实现。
