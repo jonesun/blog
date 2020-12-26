@@ -267,3 +267,5 @@ symbols_count_time:
 ```
 
 > 如果显示为阅读时长NaN:aN, 执行 hexo clean即可
+
+在 Hexo 更新至 5.x 版本，Next 更新至 7.x 版本后，会出现文章的中文目录点击跳转失效的 bug, 参见[Github Issues](https://github.com/theme-next/hexo-theme-next/pull/1540/files)
