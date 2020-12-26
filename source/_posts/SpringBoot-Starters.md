@@ -9,6 +9,8 @@ tags: [java, springboot]
 
 使用Spring Boot Starters可以快速集成相关组件，无需编写复杂的配置，在引入某项技术框架时，一个比较好的习惯就是看有没有xxx-starter
 
+<!-- more -->
+
 ## 一、官方提供的starts
 
 > 以下基于Spring Boot 2.4.0版本，后续版本可能会有新增和删除，有兴趣可以到spring-boot-autoconfigure中查看最新版本
