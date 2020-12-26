@@ -451,31 +451,41 @@ index.html **ajax请求需加上withCredentials以便支持跨域请求(将cooki
 
 还有一种支持跨域访问的方式就是[nginx](SpringBoot 实现前后端分离的跨域访问（Nginx）)]了，有兴趣可以了解下
 
-> 如果不使用cors的话，可以使用数据库或者redis等方式将session缓存起来，然后编写过滤器进行校验。另一种方式就是JWT了。
-
 关于cors的介绍可以参考[跨域资源共享 CORS 详解](http://www.ruanyifeng.com/blog/2016/04/cors.html)
+
+使用这种方式的好处在于: cookie+sessionId的维护由浏览器自动完成，无需额外编写代码
+
+> 如果是一般的中小型项目，这种方式就行了，而如果项目访问量较大, 或者需要支持分布式的话，会面临以下问题:
+* 服务端保存大量数据，增加服务端压力
+* 服务端保存用户状态，不支持集群化部署
+
+这个时候可以进行改造采用redis将session缓存起来，配合一些分布式session共享技术
 
 [示例源码-web-rest](https://github.com/jonesun/spring-security-demo/tree/master/web-rest)
 
 ## 前后端分离-为app、桌面程序或者小程序等提供服务
 
-因为不是基于浏览器，无法使用session, 这里就需要引入jwt等技术了
+因为不是基于浏览器，无法使用session, 这里就需要引入[jwt](https://jwt.io/)技术了，但JWT是一种规范，并没有和某一种语言绑定在一起，实际使用过程中可根据自己需要选择相应库：
+
+- com.auth0: ava-jwt 
+- org.bitbucket.b_c: jose4j 
+- com.nimbusds: nimbus-jose-jwt
+- io.jsonwebtoken: jjwt-root
+- io.fusionauth: fusionauth-jwt
+- io.vertx: vertx-auth-jwt 
+- ......
+
+[示例源码-jwt](https://github.com/jonesun/spring-security-demo/tree/master/jwt)
+
+> 如果是spring cloud推荐使用 OAuth2 中的 password 模式, 如果需要提供给多个服务，就需要OAuth2了
 
 ## 同时支持web表单、web前后端分离和jwt
-
-
 
 ## 使用MySql
 
 ## 使用Mybatis
 
 ## 授权相关
-
-pom.xml加入MySql依赖:
-
-```xml
-
-```
 
 [官网教程](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#features)
 
@@ -835,5 +845,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 }
 
 ```
+
+> Spring cloud 2020.0.0版本已经将Spring Cloud Security 这个项目删除了，其代码已经移到了 Spring Cloud 各个子项目中了。
 
 spring-security-data

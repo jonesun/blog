@@ -10,6 +10,8 @@ top: 999
 
 > SpringBoot版本为2.x
 
+[SpringBoot-Starters](/2020/12/26/SpringBoot-Starters)
+
 ## 第三方组件
 
 [SpringBoot-集成log日志](/2020/07/24/SpringBoot-集成log日志)
@@ -20,7 +22,7 @@ top: 999
 
 [SpringBoot-集成Redis](/2020/08/26/SpringBoot-集成Redis)
 
-[SpringBoot-SpringSecurity整合](/2020/07/22/SpringBoot-SpringSecurity整合)
+[SpringBoot-SpringSecurity5整合](/2020/07/22/SpringBoot-SpringSecurity整合)
 
 [SpringBoot-集成websocket](/2020/09/04/SpringBoot-集成websocket)
 
@@ -29,6 +31,8 @@ top: 999
 [SpringBoot-监控](/2020/11/20/SpringBoot-监控)
 
 [SpringBoot-集成flyway实现数据库版本控制](/2020/12/09/SpringBoot-集成flyway实现数据库版本控制)
+
+[SpringBoot-SpringInitializr说明](/2020/12/07/SpringBoot-SpringInitializr说明)
 
 ## 开发小技巧
 
