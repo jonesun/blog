@@ -372,7 +372,7 @@ back2top:
   # Back to top in sidebar.
   sidebar: false
   # Scroll percent label in b2t button.
-  scrollpercent: false
+  scrollpercent: true
 
 # Reading progress bar
 reading_progress:
@@ -717,12 +717,11 @@ firestore:
 busuanzi_count:
   enable: true
   total_visitors: true
-  total_visitors_icon: fas fa-user
+  total_visitors_icon: fa fa-user
   total_views: true
-  total_views_icon: fas fa-eye
+  total_views_icon: fa fa-eye
   post_views: true
-  post_views_icon: fas fa-eye
-
+  post_views_icon: fa fa-eye
 
 # ---------------------------------------------------------------
 # Search Services
@@ -743,7 +742,7 @@ algolia_search:
 # Local Search
 # Dependencies: https://github.com/theme-next/hexo-generator-searchdb
 local_search:
-  enable: false
+  enable: true
   # If auto, trigger search by changing input.
   # If manual, trigger search by pressing enter key or search button.
   trigger: auto
