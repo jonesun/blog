@@ -41,7 +41,7 @@ Java标准库虽然提供了java.util.Observer和java.util.Observable这两个�
 
 > 当bean很多的时候特别好用，用propertyChangeEvent.getSource()就能区分是哪个bean
 
-```
+```java
 public class Product {
 
     private Integer id;
@@ -100,11 +100,11 @@ public class ObserverTest {
 }
 
 //输出打印
-发生了变化: id 旧值: null 新值: 1
-发生了变化: name 旧值: null 新值: admin
-name发生了变化: name 旧值: null 新值: admin
-发生了变化: name 旧值: admin 新值: user1
-name发生了变化: name 旧值: admin 新值: user1
+//发生了变化: id 旧值: null 新值: 1
+//发生了变化: name 旧值: null 新值: admin
+//name发生了变化: name 旧值: null 新值: admin
+//发生了变化: name 旧值: admin 新值: user1
+//name发生了变化: name 旧值: admin 新值: user1
 ```
 
 > 需要注意的是初次赋值时oldvalue是null，记得判空，否则会导致后续监听失败
@@ -186,10 +186,113 @@ SubmissionPublisher(Executor executor, int maxBufferCapacity, BiConsumer<? super
 
 **注意实际使用观察者模式需关注背压问题(即消费速度赶不上生产速度)**
 
+# Spring中使用
+
 如果是使用的Spring框架，推荐直接使用Spring中实现的观察者模式：
 
 - 自定义需要发布的事件类，需要继承 ApplicationEvent 类或 PayloadApplicationEvent (该类也仅仅是对 ApplicationEvent 的一层封装)
 - 使用 @EventListener 来监听事件或者实现 ApplicationListener 接口。
 - 使用 ApplicationEventPublisher 来发布自定义事件（@Autowired注入即可）
+
+## 示例
+
+* 编写自定义事件
+
+```java
+import org.springframework.context.ApplicationEvent;
+
+public class MyApplicationEvent extends ApplicationEvent {
+    /**
+     * Create a new {@code ApplicationEvent}.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     */
+    public MyApplicationEvent(Object source) {
+        super(source);
+    }
+}
+
+```
+
+* 编写自定义listener, 收到事件后的处理
+
+```java
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationListener;
+
+public class MyApplicationListener implements ApplicationListener<MyApplicationEvent> {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    private String name;
+
+
+    public MyApplicationListener(String name) {
+        this.name = name;
+    }
+
+//    @Async
+    @Override
+    public void onApplicationEvent(MyApplicationEvent event) {
+        String source = (String) event.getSource();
+        logger.info("我是: {}, 收到更新数据为：{}s\n", this.name, source);
+    }
+}
+
+```
+
+* 模拟定义几个事件接收者
+
+```java
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class ObserverConfiguration {
+    
+    @Bean
+    public MyApplicationListener readerListener1(){
+        return new MyApplicationListener("张三");
+    }
+
+    @Bean
+    public MyApplicationListener readerListener2(){
+        return new MyApplicationListener("李四");
+    }
+
+    @Bean
+    public MyApplicationListener readerListener3(){
+        return new MyApplicationListener("王五");
+    }
+
+}
+
+```
+
+* 编写测试代码
+
+```java
+@SpringBootTest
+class SpringObserverTest extends AbstractJUnit4SpringContextTests {
+
+    @Test
+    void publishEventTest() {
+        applicationContext.publishEvent(new MyApplicationEvent("Hello World"));
+    }
+}
+```
+
+运行测试用例，可以在控制台中看到打印了
+
+```
+我是: 张三, 收到更新数据为：Hello Worlds
+
+我是: 李四, 收到更新数据为：Hello Worlds
+
+我是: 王五, 收到更新数据为：Hello Worlds
+```
 
 > spring的事件驱动模型使用的是 观察者模式 ，Spring中Observer模式常用的地方是listener的实现。
