@@ -176,7 +176,7 @@ starter是一个空jar。它的唯一目的是提供使用库所必需的依赖�
 
 用于示例
 
-#### mybatis-spring-boot-starter-test
+#### xxx-spring-boot-starter-test
 
 测试
 
