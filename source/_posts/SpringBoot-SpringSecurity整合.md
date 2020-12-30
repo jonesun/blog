@@ -1062,10 +1062,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author jone.sun
- * @date 2020-12-28 15:09
- */
 @Configuration
 public class MultiHttpSecurityConfig {
 
@@ -1447,21 +1443,19 @@ public class MultiHttpSecurityConfig {
 
 > 如果是企业内部需要使用域账户来控制的，可以结合Spring LDAP使用，具体代码可自己搜索下
 
-[官网教程](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#features)
-
 # Test
 
 > 要使用Spring Security测试支持，必须加入spring-security-test依赖项
 
 具体查看[官方教程](https://docs.spring.io/spring-security/site/docs/current/reference/html5/#test)
 
-# Spring Security with oauth2
+# Spring Security with OAuth2
 
-以上都是单体应用的权限管理，现在Spring Cloud比较火，下面我们就看下如何在Spring Cloud下或者或者编写一个专门用于权限认证的微服务，这里就会涉及到Oauth2的概念了，推荐看下[OAuth 2.0 的一个简单解释](http://www.ruanyifeng.com/blog/2019/04/oauth_design.html)
+以上都是单体应用的权限管理，现在Spring Cloud比较火，下面我们就看下如何在Spring Cloud下或者或者编写一个专门用于权限认证的微服务，这里就会涉及到OAuth2的概念了，推荐看下[OAuth 2.0 的一个简单解释](http://www.ruanyifeng.com/blog/2019/04/oauth_design.html)
 
 ## 选择哪个库?
 
-使用SpringSecurity来实现oauth2，之前网上的文章中大都推荐使用[spring-security-oauth](https://github.com/spring-projects/spring-security-oauth)，但目前(2020年12月)在其github上看到了这个: 
+使用SpringSecurity来实现OAuth2，之前网上的文章中大都推荐使用[spring-security-oauth](https://github.com/spring-projects/spring-security-oauth)，但目前(2020年12月)在其github上看到了这个: 
 
 > The Spring Security OAuth project is deprecated. The latest OAuth 2.0 support is provided by Spring Security. See the OAuth 2.0 Migration Guide for further details.
 
@@ -1509,41 +1503,382 @@ spring-cloud-starter-security也是依赖这个包的也尽量不要用。里面
 
 > 补充一点，最近发布的Spring cloud 2020.0.0版本已经将Spring Cloud Security这个项目删除了，其代码已经移到了 Spring Cloud 各个子项目中了。
 
-## 开始使用oauth2
+## 开始使用OAuth2
 
-### 实现oauth2客户端和资源服务器
+* OAuth2 Client: 需要访问Resource Sever受保护资源的应用
+* OAuth2 Resource Server: 资源服务器, 包含受保护资源的应用，Client使用Access Token访问Resource Server的受保护资源
+* OAuth2 Authorization Server: 授权服务器，提供访问授权的应用，Client使用某种Grant Type向Authorization Server获取Access Token
+
+### 实现OAuth2客户端
+
+#### 使用Github作为授权服务器
+
+1. 首先在Github中新增[OAuth App](https://github.com/settings/developers)
+
+![github-new-oauth](github-new-oauth.png)
+
+默认情况下，Spring Boot将此重定向URI配置为/login/oauth2/code/{registrationId}。因此回调地址填: http://localhost:8080/oauth2-client/login/oauth2/code/github
+
+> 地址取决于你项目的配置，这里只是演示
+
+2. 新建好Spring Boot项目，pom.xml中加入：
 
 ```xml
 <dependencies>
     <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-security</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-oauth2-client</artifactId>
-    </dependency>
-    <dependency>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
     </dependency>
 </dependencies>
 
 ```
 
-### 实现oauth2授权服务器
+> spring-boot-starter-oauth2-client，默认已经引用了Spring Security，因此不需要显式添加它
 
-[spring-authorization-server](https://github.com/spring-projects-experimental/spring-authorization-server)
+4. application.yml中加入配置
 
-> 期待下正式版
+```yaml
+server:
+  port: 8080
+  servlet:
+    context-path: /oauth2-client
 
-#### 接入github、KeyCloak
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: <your client id>
+            client-secret: <your client secret>
+```
+
+> client-id和client-secret从第一步中创建好的Github的OAuth App中获取
+
+5. 创建测试Controller:
+```java
+@RestController
+public class HelloController {
+
+    @GetMapping
+    public String sayHello() {
+        return "hello world";
+    }
+
+}
+```
+
+打开浏览器访问http://localhost:8080/oauth2-client/，页面将会跳转到Github的授权页面，确认后即可访问api
+
+> 除了GitHub外，Spring Security项目还包含Google、Facebook和Okta的默认配置。
+
+#### 使用码云Gitee作为授权服务器
+
+1. 类似Github，在码云中[创建第三方应用](https://gitee.com/oauth/applications/new)
+
+![gitee-new-oauth](gitee-new-oauth.png)
+
+回调地址写http://localhost:8080/oauth2-client/login/oauth2/code/gitee
+
+2. application.yml中加入配置
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: <your client id>
+            client-secret: <your client secret>
+          gitee:
+            client-id: <your client id>
+            client-secret: <your client id>
+```
+
+> client-id和client-secret从第一步中创建好的码云中的第三方应用中获取
+
+3. 由于官方没有默认提供Gitee的配置，故需要自己编写配置(参考org.springframework.security.config.oauth2.client.CommonOAuth2Provider):
+
+```java
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 
 
+public enum MyCommonOAuth2Provider {
 
 
+    GITEE {
+        @Override
+        public ClientRegistration.Builder getBuilder(String registrationId) {
+            ClientRegistration.Builder builder = getBuilder(registrationId, ClientAuthenticationMethod.BASIC,
+                    DEFAULT_REDIRECT_URL);
+            builder.scope("user_info");
+            builder.authorizationUri("https://gitee.com/oauth/authorize");
+            builder.tokenUri("https://gitee.com/oauth/token");
+            builder.userInfoUri("https://gitee.com/api/v5/user");
+            builder.userNameAttributeName("name");
+            builder.clientName("Gitee");
+            return builder;
+        }
+
+    };
+
+    private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
+
+    protected final ClientRegistration.Builder getBuilder(String registrationId, ClientAuthenticationMethod method,
+                                                          String redirectUri) {
+        ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(registrationId);
+        builder.clientAuthenticationMethod(method);
+        builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
+        builder.redirectUri(redirectUri);
+        return builder;
+    }
+    
+    public abstract ClientRegistration.Builder getBuilder(String registrationId);
+
+}
+
+```
+
+4. 新建OAuth2ClientBeanConfig，配置好支持的授权服务：
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
+import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+@Configuration
+public class OAuth2ClientBeanConfig {
+
+    private static final String CLIENT_PROPERTY_KEY = "spring.security.oauth2.client.registration.";
+
+    private static final List<String> clients = Arrays.asList("github", "gitee");
+
+    @Bean
+    public ClientRegistrationRepository clientRegistrationRepository() {
+        //todo 这里可以通过动态获取CLIENT_PROPERTY_KEY对应配置，更加灵活的设置ClientRegistrationRepository
+        List<ClientRegistration> registrations = clients.stream()
+                .map(this::getRegistration)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+
+        return new InMemoryClientRegistrationRepository(registrations);
+    }
+
+    @Autowired
+    private Environment environment;
+
+    private ClientRegistration getRegistration(String client) {
+        String clientId = environment.getProperty(
+                CLIENT_PROPERTY_KEY + client + ".client-id");
+
+        if (clientId == null) {
+            return null;
+        }
+
+        String clientSecret = environment.getProperty(
+                CLIENT_PROPERTY_KEY + client + ".client-secret");
+
+        if (client.equals("github")) {
+            return CommonOAuth2Provider.GITHUB.getBuilder(client)
+                    .clientId(clientId).clientSecret(clientSecret).build();
+        }
+        if (client.equals("gitee")) {
+            return MyCommonOAuth2Provider.GITEE.getBuilder(client)
+                    .clientId(clientId).clientSecret(clientSecret).build();
+        }
+        return null;
+    }
+
+    @Bean
+    public OAuth2AuthorizedClientService authorizedClientService() {
+        return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository());
+    }
+
+}
+
+```
+
+5. 修改SecurityConfig，支持自定义的授权配置
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 
 
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    ClientRegistrationRepository clientRegistrationRepository;
+
+    @Autowired
+    OAuth2AuthorizedClientService authorizedClientService;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests().anyRequest().authenticated()
+                .and()
+                .oauth2Login()
+                .clientRegistrationRepository(clientRegistrationRepository)
+                .authorizedClientService(authorizedClientService);
+    }
+
+}
+
+```
+
+6. 打开浏览器访问http://localhost:8080/oauth2-client/，页面将会Spring Security默认的OAuth 2.0的登录页，选择Gitee，确认后即可访问api
+
+#### 自定义登录页
+
+实际项目中肯定不会直接用默认的登录页, 需要实现自己的登录页
+
+1. 编写LoginController，用于映射页面(为了方便读取数据pom.xml中引入thymeleaf)
+
+```java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ResolvableType;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.HashMap;
+import java.util.Map;
+
+@Controller
+public class WebController {
+
+    private static final String authorizationRequestBaseUri = "oauth2/authorization";
+    Map<String, String> oauth2AuthenticationUrls = new HashMap<>();
+
+    @Autowired
+    private ClientRegistrationRepository clientRegistrationRepository;
+
+    @GetMapping("/login")
+    public String getLoginPage(Model model) {
+        //将可用的客户端及其授权端点的映射发送到view
+        Iterable<ClientRegistration> clientRegistrations = null;
+        ResolvableType type = ResolvableType.forInstance(clientRegistrationRepository).as(Iterable.class);
+        if (type != ResolvableType.NONE &&
+                ClientRegistration.class.isAssignableFrom(type.resolveGenerics()[0])) {
+            clientRegistrations = (Iterable<ClientRegistration>) clientRegistrationRepository;
+        }
+
+        clientRegistrations.forEach(registration ->
+                oauth2AuthenticationUrls.put(registration.getClientName(),
+                        authorizationRequestBaseUri + "/" + registration.getRegistrationId()));
+        model.addAttribute("urls", oauth2AuthenticationUrls);
+
+        return "login";
+    }
+}
+
+
+```
+
+2. 编写自定义的登录页login.html
+
+```html
+<!DOCTYPE html>
+<html lang="en" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义OAuth2登录页</title>
+</head>
+<body>
+    <h3>Login with:</h3>
+    <p th:each="url : ${urls}">
+        <a th:text="${url.key}" th:href="${url.value}">Client</a>
+    </p>
+</body>
+</html>
+```
+
+3. 修改SecurityConfig配置
+
+```java
+@Configuration
+public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    ClientRegistrationRepository clientRegistrationRepository;
+
+    @Autowired
+    OAuth2AuthorizedClientService authorizedClientService;
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.authorizeRequests()
+                .antMatchers("/login")
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                .and()
+                .oauth2Login()
+                .loginPage("/login")
+                .clientRegistrationRepository(clientRegistrationRepository)
+                .authorizedClientService(authorizedClientService);
+    }
+
+}
+
+```
+
+4. 打开浏览器访问http://localhost:8080/oauth2-client/，页面就显示我们自己的OAuth 2.0的登录页了，后面也可以同时支持用户名/密码登录的方式(MultiHttpSecurityConfig)
+
+
+#### 自定义身份验证成功和失败
+
+可以使用不同的方法来控制验证后的行为：
+
+- defaultSuccessUrl() 和failureUrl() –将用户重定向到给定的URL
+- successHandler() 和failureHandler() –在身份验证过程之后执行自定义逻辑
+
+> 创建一个实现AuthenticationSuccessHandler或AuthenticationFailureHandler接口的类，重写继承的方法，然后使用successHandler() 和failureHandler()方法设置bean即可
+
+[示例源码-oauth2-client](https://github.com/jonesun/spring-security-demo/tree/master/oauth2/oauth2-client)
+
+### 实现OAuth2资源服务器
+
+资源服务器是通过OAuth令牌保护资源的应用程序。这些令牌通常由授权服务器发布给客户端应用程序。资源服务器的工作是在向客户端提供资源之前验证令牌。
+
+> spring-boot-starter-oauth2-resource-server, 默认已经引用了Spring Security，因此不需要显式添加它
+
+### 实现OAuth2授权服务器
+
+如果要自己实现OAuth2 的授权服务器，一个选择就是用第三方的例如[KeyCloak](https://www.keycloak.org/)，
+另外可以尝鲜[Spring Authorization Server](https://github.com/spring-projects-experimental/spring-authorization-server) -期待下正式版
+
+> 另外还有一些授权服务器的提供商Okta，Keycloak和ForgeRock等，有兴趣可以了解下
+
+#### 使用KeyCloak搭建OAuth2授权服务器
+
+Keycloak是RedHat管理的开源身份和访问管理解决方案，由JBoss用Java开发。Spring Boot可以嵌入Keycloak, 当然Keycloak也可以作为独立服务器运行
+
+[嵌入在Spring Boot应用程序中的Keycloak](https://www.baeldung.com/keycloak-embedded-in-spring-boot-app)
+
+#### 使用Spring Authorization Server搭建OAuth2授权服务器
 
 > 以下为笔者草稿，不建议阅读，文章整理好后会进行删除
 
@@ -1766,4 +2101,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 spring-security-data
 
-**security-spring的使用参考[Spring Security Reference 官方网站](https://docs.spring.io/spring-security/site/docs/current/reference/html5/)和大神baeldung的文章[baeldung-security-spring](https://www.baeldung.com/security-spring)**
+**security-spring的使用参考[Spring Security Reference 官方网站](https://docs.spring.io/spring-security/site/docs/current/reference/html5/)
+和大神baeldung的文章[Spring Security OAuth 2指南](https://www.baeldung.com/spring-security-oauth)**
