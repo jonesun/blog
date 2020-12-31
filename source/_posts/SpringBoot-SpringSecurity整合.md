@@ -465,15 +465,14 @@ Spring Security的默认设置是禁用缓存以保护用户的内容。
 
 使用这种方式的好处在于: cookie+sessionId的维护由浏览器自动完成，无需额外编写代码
 
+[示例源码-web-rest](https://github.com/jonesun/spring-security-demo/tree/master/web-rest)
+
 > 如果是一般的中小型项目，这种方式就行了，而如果项目访问量较大, 或者需要支持分布式的话，会面临以下问题:
 
 * 服务端保存大量数据，增加服务端压力
 * 服务端保存用户状态，不支持集群化部署
 
 这个时候可以进行改造采用redis将session缓存起来，配合一些分布式session共享技术
-
-
-[示例源码-web-rest](https://github.com/jonesun/spring-security-demo/tree/master/web-rest)
 
 ## 前后端分离-为app、桌面程序或者小程序等提供服务
 
@@ -487,7 +486,7 @@ Spring Security的默认设置是禁用缓存以保护用户的内容。
 - io.vertx: vertx-auth-jwt 
 - ......
 
-之前看到Spring Security中使用的是nimbus-jose-jwt，我们就以这个库来举下例子
+之前看到Spring Security OAuth中使用的是nimbus-jose-jwt，我们就以这个库来举下例子
 
 1. pom.xml中加入依赖:
 
@@ -1505,11 +1504,32 @@ spring-cloud-starter-security也是依赖这个包的也尽量不要用。里面
 
 ## 开始使用OAuth2
 
-* OAuth2 Client: 需要访问Resource Sever受保护资源的应用
-* OAuth2 Resource Server: 资源服务器, 包含受保护资源的应用，Client使用Access Token访问Resource Server的受保护资源
-* OAuth2 Authorization Server: 授权服务器，提供访问授权的应用，Client使用某种Grant Type向Authorization Server获取Access Token
+OAuth2.0 定义了四个角色:
 
-### 实现OAuth2客户端
+- Client：客户端，第三方应用程序。
+- Resource Owner：资源所有者，授权 Client 访问其帐户的用户。
+- Authorization server：授权服务器，服务商专用于处理用户授权认证的服务器。
+- Resource server：资源服务器，服务商用于存放用户受保护资源的服务器，它**可以与授权服务器是同一台服务器，也可以是不同的服务器**。
+
+oauth2-server专用术语:
+
+- Access token：用于访问受保护资源的令牌。
+- Authorization code：发放给应用程序的中间令牌，客户端应用使用此令牌交换 access token。
+- Scope：授予应用程序的权限范围。
+- JWT：Json Web Token 是一种用于安全传输的数据传输格式
+
+OAuth2.0 定义了四种授权模式，以应对不同情况时的授权:
+
+- authorization_code: 授权码模式(功能最完整、流程最严密的授权模式，第三方如github提供的默认模式)
+- implicit: 隐式授权模式(现已不推荐)
+- password: 密码模式
+- client_credentials: 客户端模式
+
+> 刷新访问令牌(access token): 访问令牌有一个较短的存活时间，在过期后，客户端通过刷新令牌来获得新的访问令牌与刷新令牌。当用户长时间不活跃，刷新令牌也过期后，就需要重新获取授权
+
+### 实现OAuth2客户端 spring-boot-starter-oauth2-client
+
+以下都默认采用authorization_code授权码的方式
 
 #### 使用Github作为授权服务器
 
@@ -1580,7 +1600,7 @@ public class HelloController {
 
 回调地址写http://localhost:8080/oauth2-client/login/oauth2/code/gitee
 
-2. application.yml中加入配置
+2. application.yml中改写配置(由于官方并没有gitee的默认配置，故需要自己配置provider)
 
 ```yaml
 spring:
@@ -1592,161 +1612,26 @@ spring:
             client-id: <your client id>
             client-secret: <your client secret>
           gitee:
+            provider: gitee
             client-id: <your client id>
-            client-secret: <your client id>
+            client-secret: <your client secret>
+            authorizationGrantType: authorization_code
+            redirectUri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            clientName: '码云'
+        provider:
+          gitee:
+            authorization-uri: https://gitee.com/oauth/authorize
+            token-uri: https://gitee.com/oauth/token
+            user-info-uri: https://gitee.com/api/v5/user
+            user-name-attribute: "name"
+
 ```
 
 > client-id和client-secret从第一步中创建好的码云中的第三方应用中获取
 
-3. 由于官方没有默认提供Gitee的配置，故需要自己编写配置(参考org.springframework.security.config.oauth2.client.CommonOAuth2Provider):
+3. 打开浏览器访问http://localhost:8080/oauth2-client/，页面将会Spring Security默认的OAuth 2.0的登录页，选择码云，确认后即可访问api
 
-```java
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.core.AuthorizationGrantType;
-import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
-
-
-public enum MyCommonOAuth2Provider {
-
-
-    GITEE {
-        @Override
-        public ClientRegistration.Builder getBuilder(String registrationId) {
-            ClientRegistration.Builder builder = getBuilder(registrationId, ClientAuthenticationMethod.BASIC,
-                    DEFAULT_REDIRECT_URL);
-            builder.scope("user_info");
-            builder.authorizationUri("https://gitee.com/oauth/authorize");
-            builder.tokenUri("https://gitee.com/oauth/token");
-            builder.userInfoUri("https://gitee.com/api/v5/user");
-            builder.userNameAttributeName("name");
-            builder.clientName("Gitee");
-            return builder;
-        }
-
-    };
-
-    private static final String DEFAULT_REDIRECT_URL = "{baseUrl}/{action}/oauth2/code/{registrationId}";
-
-    protected final ClientRegistration.Builder getBuilder(String registrationId, ClientAuthenticationMethod method,
-                                                          String redirectUri) {
-        ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(registrationId);
-        builder.clientAuthenticationMethod(method);
-        builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
-        builder.redirectUri(redirectUri);
-        return builder;
-    }
-    
-    public abstract ClientRegistration.Builder getBuilder(String registrationId);
-
-}
-
-```
-
-4. 新建OAuth2ClientBeanConfig，配置好支持的授权服务：
-
-```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
-import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-@Configuration
-public class OAuth2ClientBeanConfig {
-
-    private static final String CLIENT_PROPERTY_KEY = "spring.security.oauth2.client.registration.";
-
-    private static final List<String> clients = Arrays.asList("github", "gitee");
-
-    @Bean
-    public ClientRegistrationRepository clientRegistrationRepository() {
-        //todo 这里可以通过动态获取CLIENT_PROPERTY_KEY对应配置，更加灵活的设置ClientRegistrationRepository
-        List<ClientRegistration> registrations = clients.stream()
-                .map(this::getRegistration)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        return new InMemoryClientRegistrationRepository(registrations);
-    }
-
-    @Autowired
-    private Environment environment;
-
-    private ClientRegistration getRegistration(String client) {
-        String clientId = environment.getProperty(
-                CLIENT_PROPERTY_KEY + client + ".client-id");
-
-        if (clientId == null) {
-            return null;
-        }
-
-        String clientSecret = environment.getProperty(
-                CLIENT_PROPERTY_KEY + client + ".client-secret");
-
-        if (client.equals("github")) {
-            return CommonOAuth2Provider.GITHUB.getBuilder(client)
-                    .clientId(clientId).clientSecret(clientSecret).build();
-        }
-        if (client.equals("gitee")) {
-            return MyCommonOAuth2Provider.GITEE.getBuilder(client)
-                    .clientId(clientId).clientSecret(clientSecret).build();
-        }
-        return null;
-    }
-
-    @Bean
-    public OAuth2AuthorizedClientService authorizedClientService() {
-        return new InMemoryOAuth2AuthorizedClientService(clientRegistrationRepository());
-    }
-
-}
-
-```
-
-5. 修改SecurityConfig，支持自定义的授权配置
-
-```java
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-
-
-@Configuration
-public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    ClientRegistrationRepository clientRegistrationRepository;
-
-    @Autowired
-    OAuth2AuthorizedClientService authorizedClientService;
-
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().anyRequest().authenticated()
-                .and()
-                .oauth2Login()
-                .clientRegistrationRepository(clientRegistrationRepository)
-                .authorizedClientService(authorizedClientService);
-    }
-
-}
-
-```
-
-6. 打开浏览器访问http://localhost:8080/oauth2-client/，页面将会Spring Security默认的OAuth 2.0的登录页，选择Gitee，确认后即可访问api
+码云相关配置可参考[官网-OAuth文档](https://gitee.com/api/v5/oauth_doc#/) ，其他第三方如QQ、微信、新浪微博等都提供了OAuth2的授权服务，可以到各自官方网站查看说明即可
 
 #### 自定义登录页
 
@@ -1859,18 +1744,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 [示例源码-oauth2-client](https://github.com/jonesun/spring-security-demo/tree/master/oauth2/oauth2-client)
 
-### 实现OAuth2资源服务器
-
-资源服务器是通过OAuth令牌保护资源的应用程序。这些令牌通常由授权服务器发布给客户端应用程序。资源服务器的工作是在向客户端提供资源之前验证令牌。
-
-> spring-boot-starter-oauth2-resource-server, 默认已经引用了Spring Security，因此不需要显式添加它
-
 ### 实现OAuth2授权服务器
 
-如果要自己实现OAuth2 的授权服务器，一个选择就是用第三方的例如[KeyCloak](https://www.keycloak.org/)，
+如果要自己实现OAuth2 的授权服务器，一个选择就是用第三方的例如[KeyCloak](https://www.keycloak.org/) ,
 另外可以尝鲜[Spring Authorization Server](https://github.com/spring-projects-experimental/spring-authorization-server) -期待下正式版
 
-> 另外还有一些授权服务器的提供商Okta，Keycloak和ForgeRock等，有兴趣可以了解下
+> 另外还有一些授权服务器的提供商Keycloak和ForgeRock等，有兴趣可以了解下
 
 #### 使用KeyCloak搭建OAuth2授权服务器
 
@@ -1878,10 +1757,117 @@ Keycloak是RedHat管理的开源身份和访问管理解决方案，由JBoss用J
 
 [嵌入在Spring Boot应用程序中的Keycloak](https://www.baeldung.com/keycloak-embedded-in-spring-boot-app)
 
+Keycloak目前的访问类型共有3种，可根据自己项目的需要进行配置：
+- confidential：适用于服务端应用，且需要浏览器登录以及需要通过密钥获取access token的场景。典型的使用场景就是服务端渲染的web系统。
+- public：适用于客户端应用，且需要浏览器登录的场景。典型的使用场景就是前端web系统，包括采用vue、react实现的前端项目等。
+- bearer-only：适用于服务端应用，不需要浏览器登录，只允许使用bearer token请求的场景。典型的使用场景就是restful api。
+
+1. 配置并添加Client(可参考网上一些教程)
+![keycloak-new-client](keycloak-new-client.png)
+   
+2. OAuth2 Client项目中配置
+
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            provider: keycloak
+            client-id: oauth2-client
+            client-secret: d7a1acbc-40c8-4c68-a903-b5d01dac2a35
+            authorizationGrantType: authorization_code
+            redirectUri: "{baseUrl}/{action}/oauth2/code/{registrationId}"
+            clientName: 'keycloak'
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8083/auth/realms/jonesun
+            authorization-uri: http://localhost:8083/auth/realms/jonesun/protocol/openid-connect/auth
+            token-uri: http://localhost:8083/auth/realms/jonesun/protocol/openid-connect/token
+            jwk-set-uri: http://localhost:8083/auth/realms/jonesun/protocol/openid-connect/certs
+            user-info-uri: http://localhost:8083/auth/realms/jonesun/protocol/openid-connect/userinfo
+```
+
+> client-id默认为我们在keycloak创建的client名称、client-secret可以打开credentialsTab栏获取
+
+3. 与之前使用github一样，打开浏览器测试OAuth2 Client项目即可，这里可以在Controller中获取到token信息client.getAccessToken().getTokenValue()，有了token就可以在任意资源服务器中获取资源了
+
 #### 使用Spring Authorization Server搭建OAuth2授权服务器
 
-> 以下为笔者草稿，不建议阅读，文章整理好后会进行删除
+先占个坑，刚在github看到目前的[0.0.3版本暂时还不支持Spring Boot 2.4.0](https://github.com/spring-projects-experimental/spring-authorization-server/issues/154)，等这个项目发布更稳定的版本后再研究下
 
+> **以下为笔者草稿，不建议阅读，文章整理好后会进行删除**
+
+### 实现OAuth2资源服务器 spring-boot-starter-oauth2-resource-server
+
+1. pom.xml中加入引用
+```xml
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+</dependency>
+```
+> spring-boot-starter-oauth2-resource-server, 默认已经引用了Spring Security，因此不需要显式添加它
+
+2. application.yml中加入配置:
+
+```yaml
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # 授权服务器将颁发的JWT令牌的iss声明中包含的值
+          issuer-uri: http://localhost:8083/auth/realms/jonesun
+          jwk-set-uri: http://localhost:8083/auth/realms/jonesun/protocol/openid-connect/certs
+```
+
+3. 配置ResourceServerConfig：
+
+```java
+@Configuration
+public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .mvcMatcher("/api/**")
+                .authorizeRequests()
+                .anyRequest().permitAll()
+                .and()
+                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+    }
+}
+
+```
+
+4. 编写测试ApiController
+
+```java
+@RestController
+@RequestMapping("/api")
+public class ApiController {
+    
+    @GetMapping("/hello")
+    public String apiHelloWorld() {
+        return "apiHelloWorld";
+    }
+
+}
+```
+
+5. 使用测试工具如postman或编写测试代码，那之前OAuth2 Client登录获取到的token添加到Header中即可访问资源服务器受保护的资源
+
+```
+GET http://localhost:8180/oauth2-resource-server/api/hello
+authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJJYV9uS2NHY1hkR3FNbWFTQ0RySkR2ZzNzYS1lN21RX2xRLTNnQkhocDAwIn0.eyJleHAiOjE2MDk0MDQ5MzUsImlhdCI6MTYwOTQwNDYzNSwiYXV0aF90aW1lIjoxNjA5NDAzODk0LCJqdGkiOiI1NzAwZTkwNS04ZmE1LTRkOWItOTdiYy1kYzVlYjIzZDY1ZjIiLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwODMvYXV0aC9yZWFsbXMvam9uZXN1biIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiJkYmYyMDE5Yi05N2U4LTQzZDQtOWEyNi00YTQzZGVhZmU5NjMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJvYXV0aDItY2xpZW50Iiwic2Vzc2lvbl9zdGF0ZSI6IjM3MmNlYmE3LThlZGItNDFhNi1iNWIwLWQxYTdmYThhMGNmMyIsImFjciI6IjAiLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCBqb25lc3Vuc2VjdXJpdHkiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsIm5hbWUiOiJqb25lIHN1biIsInByZWZlcnJlZF91c2VybmFtZSI6ImpvbmVzdW4iLCJnaXZlbl9uYW1lIjoiam9uZSIsImZhbWlseV9uYW1lIjoic3VuIiwiZW1haWwiOiJzdW5qb25lcjdAZ21haWwuY29tIn0.XuqlW8Ry9Le7_0Aao8e1WGfUmSnEz27P3vFK44toQJaN7XVNqVkdOKTt36JgV6ctguRyaDT1xmow78Y1yZM-5_Ki74aLHWsHgt9aITxdMRNygW6WC3dY3y9-8EcHkh8WgvDbTr58JNEmerSCkC7UFPvhKPcvfQGTjG1XmDwmTDTP7umhZBK408HxLjqJWr6GulIGya_QCJrLCCoO5QDhsiT5tfGqaANtQapfC-TS11NvEoPP9U2oqUtJ6xdosT9AIj9BZbpezCQ5nsE5zb5XvKvmph45VDPa2l9y9YMpdnECTvIX7hEyyMEu_nQfZcyASUazOpyv7Q95fCBEhABUcg
+Content-Type: application/x-www-form-urlencoded
+```
+
+综上，**就可以实现在OAuth Client中使用OAuth授权服务器(或第三方授权登录)，拿到token后访问OAuth资源服务器中的相关资源**
+
+![OAuth2流程](OAuth2流程.png)
 
 # SpringSecurity核心类
 
