@@ -457,7 +457,7 @@ CORS: 跨域资源共享, 它允许浏览器向跨源服务器，发出XMLHttpRe
 
 Spring Security的默认设置是禁用缓存以保护用户的内容。
 
-> **cors实现了直接跨域,安全性和灵活性更高**,关键在配置好AllowedOrigin
+> **cors实现了直接跨域,安全性和灵活性更高**,关键在配置好AllowedOrigin。CORS需要浏览器和服务器同时支持。它的通信过程，都是浏览器自动完成，不需要用户参与。
 
 还有一种支持跨域访问的方式就是[nginx](SpringBoot 实现前后端分离的跨域访问（Nginx）)]了，有兴趣可以了解下
 
@@ -1500,7 +1500,7 @@ spring-cloud-starter-security也是依赖这个包的也尽量不要用。里面
 </dependency>
 ```
 
-> 补充一点，最近发布的Spring cloud 2020.0.0版本已经将Spring Cloud Security这个项目删除了，其代码已经移到了 Spring Cloud 各个子项目中了。
+> 补充一点，最近发布的Spring cloud 2020.0.0版本已经[将Spring Cloud Security这个项目删除了](https://spring.io/blog/2020/12/22/spring-cloud-2020-0-0-aka-ilford-is-available) ，其代码已经移到了 Spring Cloud 各个子项目中了。
 
 ## 开始使用OAuth2
 
