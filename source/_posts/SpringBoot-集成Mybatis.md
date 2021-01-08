@@ -18,37 +18,42 @@ MyBatis 是一款优秀的持久层框架，它支持自定义 SQL、存储过�
 ## 引入
 
 在pom.xml中加入
-```
-<dependency>
+```xml
+<dependencys>
+  <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-web</artifactId>
-</dependency>
+  </dependency>
 
-<!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
-<dependency>
+  <!-- https://mvnrepository.com/artifact/org.mybatis.spring.boot/mybatis-spring-boot-starter -->
+  <dependency>
     <groupId>org.mybatis.spring.boot</groupId>
     <artifactId>mybatis-spring-boot-starter</artifactId>
     <version>2.1.3</version>
-</dependency>
+  </dependency>
 
-<dependency>
+  <dependency>
     <groupId>com.h2database</groupId>
     <artifactId>h2</artifactId>
     <scope>runtime</scope>
-</dependency>
-<dependency>
+  </dependency>
+  <dependency>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-test</artifactId>
     <scope>test</scope>
-    <exclusions>
-        <exclusion>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
+<!--    <exclusions>-->
+<!--      <exclusion>-->
+<!--        <groupId>org.junit.vintage</groupId>-->
+<!--        <artifactId>junit-vintage-engine</artifactId>-->
+<!--      </exclusion>-->
+<!--    </exclusions>-->
+  </dependency>
+
+</dependencys>
 
 ```
+
+> Vintage Engine属于Junit5的一个模块，它的作用是：允许用JUnit 5运行用JUnit 4编写的测试，从而提供了向下兼容的能力。Spring Boot 2.4.0开始Vintage Engine已从spring-boot-starter-test正式移除，故不再需要排除Vintage Engine
 
 为演示方便，这里使用H2来代替Mysql
 

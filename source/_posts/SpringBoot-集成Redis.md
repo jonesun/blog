@@ -478,3 +478,5 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 [IBM开发者文章-了解 Redis 并在 Spring Boot 项目中使用 Redis](https://developer.ibm.com/zh/languages/java/articles/know-redis-and-use-it-in-springboot-projects/)
 
 
+> Spring Boot 2.4.0「新增RedisCacheMetrics」：用于监控使用redis时的puts、gets、deletes以及缓存命中率等信息
+此指标信息默认不开启，需你增加配置spring.cache.redis.enable-statistics = true

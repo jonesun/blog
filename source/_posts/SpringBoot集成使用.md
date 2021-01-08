@@ -8,7 +8,7 @@ top: 999
 
 # 目录
 
-> SpringBoot版本为2.x
+> SpringBoot版本为2.x, 2.4.0开始版本号没有.RELEASE后缀
 
 [SpringBoot-Starters](/2020/12/26/SpringBoot-Starters)
 

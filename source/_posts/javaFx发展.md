@@ -41,7 +41,7 @@ JavaFX可在Windows、Mac OS X和Linux上运行，利用 JavaFX 能够非常轻�
 [TestOpenJfx14](https://gitee.com/sunr7/TestOpenjfx14)
 
 
-```
+```java
 @SpringBootApplication
 public class MyApplication extends Application {
 
@@ -54,7 +54,7 @@ public class MyApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource(fxml), null, null, springContext::getBean);
+        //Parent root = FXMLLoader.load(getClass().getResource("/fxml/main.fxml"), null, null, springContext::getBean);
         //或者
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);

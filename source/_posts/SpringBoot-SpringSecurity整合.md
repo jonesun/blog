@@ -2087,5 +2087,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 spring-security-data
 
-**security-spring的使用参考[Spring Security Reference 官方网站](https://docs.spring.io/spring-security/site/docs/current/reference/html5/)
+**security-spring的使用参考[Spring Security Reference 官方网站](https://docs.spring.io/spring-security/site/docs/current/reference/html5/) 、
+[官方Github-sample](https://github.com/spring-projects/spring-security-samples)
 和大神baeldung的文章[Spring Security OAuth 2指南](https://www.baeldung.com/spring-security-oauth)**
