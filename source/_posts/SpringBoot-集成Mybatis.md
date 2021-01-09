@@ -7,7 +7,7 @@ tags: [java, springboot]
 
 # 简介
 
-MyBatis 是一款优秀的持久层框架，它支持自定义 SQL、存储过程以及高级映射。MyBatis 免除了几乎所有的 JDBC 代码以及设置参数和获取结果集的工作。MyBatis 可以通过简单的 XML 或注解来配置和映射原始类型、接口和 Java POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。
+[MyBatis](https://mybatis.org/mybatis-3/zh/index.html) 是一款优秀的持久层框架，它支持自定义 SQL、存储过程以及高级映射。MyBatis 免除了几乎所有的 JDBC 代码以及设置参数和获取结果集的工作。MyBatis 可以通过简单的 XML 或注解来配置和映射原始类型、接口和 Java POJO（Plain Old Java Objects，普通老式 Java 对象）为数据库中的记录。
 
 <!-- more -->
 
@@ -72,7 +72,7 @@ MS SQL Server jdbc:h2:~/test;MODE=MSSQLServer或SQL语句SET MODE MSSQLServer
 
 application.yml中
 
-```
+```yaml
 spring:
   profiles:
     active: dev
@@ -90,7 +90,7 @@ mybatis:
 
 application-dev.yml中
 
-```
+```yaml
 # 应用名称
 spring:
   application:
@@ -125,7 +125,7 @@ logging:
 
 初始化数据库：db/schema-h2.sql
 
-```
+```sql
 DROP TABLE IF EXISTS users;
 
 CREATE TABLE users
@@ -141,7 +141,7 @@ CREATE TABLE users
 
 初始化表数据: db/data-h2.sql
 
-```
+```sql
 DELETE FROM users;
 
 INSERT INTO users (id, `name`, age, email, create_time) VALUES
@@ -158,7 +158,7 @@ INSERT INTO users (id, `name`, age, email, create_time) VALUES
 
 **实体类**
 
-```
+```java
 package com.jonesun.mybatis.entity;
 
 public class User implements Serializable {
@@ -175,7 +175,7 @@ public class User implements Serializable {
 
 **dao**
 
-```
+```java
 package com.jonesun.mybatis.dao;
 
 public interface UserDao {
@@ -198,7 +198,7 @@ public interface UserDao {
 
 resources\mapper\user\UserMapper.xml
 
-```
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jonesun.mybatis.dao.UserDao">
@@ -261,7 +261,7 @@ resources\mapper\user\UserMapper.xml
 
 ![junit5vsjunit4](junit5vsjunit4.png)
 
-```
+```java
 package com.jonesun.mybatis.dao;
 
 import com.jonesun.mybatis.entity.User;
@@ -330,7 +330,7 @@ class UserDaoTest {
 
 只有判断条件为true才会执行其中的SQL语句
 
-```
+```xml
 <update id="update" parameterType="com.jonesun.springredis.entity.User">
     UPDATE
     users
@@ -345,7 +345,7 @@ class UserDaoTest {
 
 当if中出现多个判断条件时, 使用and:
 
-```
+```xml
 <update id="update" parameterType="com.jonesun.springredis.entity.User">
     UPDATE
     users
@@ -359,7 +359,7 @@ class UserDaoTest {
 ```
 
 > XML中对大于＞、＜这种特殊字符串需要做转义处理:
-```
+```xml
 <if test='id != null and id gt 28'></if>
 
 大于：&gt;
@@ -374,7 +374,7 @@ sql中也可以使用  <![CDATA[ >= ]]>
 
 有时候，我们不想使用所有的条件，而只是想从多个条件中选择一个使用。针对这种情况，MyBatis 提供了 choose 元素，它有点像 Java 中的 switch 语句，choose 为 switch，when 为 case，otherwise 则为default:
 
-```
+```xml
  <select id="list" resultMap="defaultDetailMap">
     select
     users.*
@@ -400,7 +400,7 @@ where 元素只会在子元素返回任何内容的情况下才插入 WHERE 子�
 
 当遇到如下场景，status恰好为空时，则会报错(where后面没有条件了): 
 
-```
+```xml
 <select id="findActiveBlogLike" resultType="Blog">
   SELECT * FROM BLOG
   WHERE
@@ -418,7 +418,7 @@ where 元素只会在子元素返回任何内容的情况下才插入 WHERE 子�
 
 此时使用<where>可解决：
 
-```
+```xml
 <select id="findActiveBlogLike"  resultType="Blog">
   SELECT * FROM BLOG
   <where>
@@ -441,7 +441,7 @@ where 元素只会在子元素返回任何内容的情况下才插入 WHERE 子�
 
 当遇到如下场景，hobby恰好为空时，则会报错(最后会多一个,): 
 
-```
+```xml
 <update id="updateStudent" parameterType="Object">
     UPDATE STUDENT    <set>
         <if test="name!=null and name!='' ">
@@ -457,7 +457,7 @@ where 元素只会在子元素返回任何内容的情况下才插入 WHERE 子�
 
 此时使用<set>可解决：
 
-```
+```xml
 <update id="updateStudent" parameterType="Object">
     UPDATE STUDENT    <set>
         <if test="name!=null and name!='' ">
@@ -477,7 +477,7 @@ foreach是用来对集合的遍历，这个和Java中的功能很类似。通常
 
 你可以将任何可迭代对象（如 List、Set 等）、Map 对象或者数组对象作为集合参数传递给 foreach。当使用可迭代对象或者数组时，index 是当前迭代的序号，item 的值是本次迭代获取到的元素。当使用 Map 对象（或者 Map.Entry 对象的集合）时，index 是键，item 是值：
 
-```
+```xml
 <select id="list" resultMap="defaultDetailMap">
     select
     users.*
@@ -503,7 +503,7 @@ foreach是用来对集合的遍历，这个和Java中的功能很类似。通常
 
 当多种类型的查询语句的查询字段或者查询条件相同时，可以将其定义为常量，方便调用。为求 <select> 结构清晰也可将 sql 语句分解
 
-```
+```xml
 <!-- 查询字段 -->
 <sql id="Base_Column_List">
     id,birthday,name,status</sql>
@@ -530,7 +530,7 @@ foreach是用来对集合的遍历，这个和Java中的功能很类似。通常
 
 include用于引用sql标签定义的常量。比如引用上面sql标签定义的常量，如下:
 
-```
+```xml
 <select id="selectAll" resultMap="BaseResultMap">
     SELECT    <include refid="Base_Column_List" />
     FROM student    <include refid="Example_Where_Clause" />
@@ -539,7 +539,7 @@ include用于引用sql标签定义的常量。比如引用上面sql标签定义�
 
 如果遇到resultMap或者<sql>片段已经在另外一个xxxMapper.xml中已经定义过了，此时当前的xml还需要用到，Mybatis中也是支持引用其他Mapper文件中的SQL片段的(类似于Java中的全类名):
 
-```
+```xml
 <include refid="com.xxx.dao.xxMapper.Base_Column_List"></include>
 ```
 
@@ -547,14 +547,17 @@ include用于引用sql标签定义的常量。比如引用上面sql标签定义�
 
 > 当遇到表字段冲突时，如users表和user_detail表都有status时，可在字段前加上表名:
 
+```xml
 <sql id="Base_Column_List">
     ID,MAJOR,BIRTHDAY,AGE,NAME,HOBBY,users.status</sql>
+```
+
 
 ## 常量定义
 
 开过阿里巴巴开发手册的大概都知道代码中是不允许出现魔数的，何为魔数？简单的说就是一个数字，一个只有你知道，别人不知道这个代表什么意思的数字。通常我们在Java代码中都会定义一个常量类专门定义这些数字。在Mybatis中同样可以使用(@+全类名+@+常量)：
 
-```
+```xml
 <if test="type!=null and type==@com.xxx.core.Constants.CommonConstants@DOC_TYPE">
     -- ....获取医生的权限</if>
 <if test="type!=null and type==@com.xxx.core.Constants.CommonConstants@NUR_TYPE">
@@ -567,7 +570,7 @@ include用于引用sql标签定义的常量。比如引用上面sql标签定义�
 
 假如有些数据库不支持自增主键，或者说我们想插入自定义的主键，而又不想在业务代码中编写逻辑，那么就可以通过MyBatis的selectKey来获取：
 
-```
+```xml
 <insert id="insert2"  useGeneratedKeys="true" keyProperty="address">
     <selectKey keyProperty="address" resultType="String" order="BEFORE">
         select uuid() from lw_user_address
@@ -593,10 +596,14 @@ Mybatis提供了一级缓存和二级缓存的支持
 
 * *在开启事物的情况之下，spring使用threadLocal获取当前资源绑定同一个sqlSession，因此此时一级缓存是有效的
 
-```
-@Test
-@Transactional
-void cacheTest() {
+```java
+
+@SpringBootTest
+class MybatisApplicationTests {
+    
+  @Test
+  @Transactional
+  void cacheTest() {
     List<User> list1 = userDao.selectList();
     assertFalse(list1.isEmpty(), "列表为空");
     log.debug(list1.toString());
@@ -604,8 +611,8 @@ void cacheTest() {
     List<User> list2 = userDao.selectList();
     assertFalse(list2.isEmpty(), "列表为空");
     log.debug(list2.toString());
+  }
 }
-
 //这样就只会访问一次数据库
 ```
 
@@ -615,7 +622,7 @@ void cacheTest() {
 
 Mybatis 的二级缓存需要手动开启才能启动，与一级缓存的最大区别就在于二级缓存的作用范围比一级缓存大，二级缓存是多个 sqlSession 可以共享一个 Mapper 的二级缓存区域，二级缓存作用的范围是 Mapper 中的同一个命名空间（namespace）的 statement 。在配置文件默认开启了二级缓存的情况下，如果每一个 namespace 都开启了二级缓存，则都对应有一个二级缓存区，同一个 namespace 共用一个二级缓存区
 
-```
+```xml
 <mapper namespace="cn.jonesun.mybatis.mapper.UserMapper">
     <!-- 开启本mapper的namespace下的二级缓存
     type：指定cache接口的实现类的类型，mybatis默认使用PerpetualCache
@@ -642,7 +649,7 @@ eviction | 缓存收回策略。LRU（最近最少使用的），FIFO（先进�
 
 为了避免这个问题，在多个mapper.xml中如果要一起使用二级缓存，可以使用cache-ref引用别的命名空间的Cache配置，两个命名空间的操作使用的是同一个Cache，这样两个映射文件对应的Sql操作都使用的是同一块缓存了:
 
-```
+```xml
 <cache-ref namespace="mapper.StudentMapper"/>
 ```
 
@@ -658,7 +665,7 @@ eviction | 缓存收回策略。LRU（最近最少使用的），FIFO（先进�
 
 * pom.xml中加入引用
 
-```
+```xml
 <dependency>
     <groupId>com.github.pagehelper</groupId>
     <artifactId>pagehelper-spring-boot-starter</artifactId>
@@ -668,7 +675,7 @@ eviction | 缓存收回策略。LRU（最近最少使用的），FIFO（先进�
 
 * service层使用
 
-```
+```java
 public interface UserService {
     PageInfo<User> getAllUsersForPage(int pageNo, int pageSize);
 }
@@ -713,7 +720,7 @@ class UserServiceTest {
 
 * pom.xml中加入引用
 
-```
+```xml
 <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
 <dependency>
     <groupId>mysql</groupId>
@@ -724,7 +731,7 @@ class UserServiceTest {
 
 * 修改对应application-xx.yml
 
-```
+```yaml
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
@@ -745,7 +752,7 @@ spring:
 
 SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义配置:
 
-```
+```yaml
   datasource:
     url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
     username: root
@@ -772,7 +779,7 @@ SpringBoot 默认数据库连接池是Hikari,可以根据项目需要自定义�
 
 大多数线上应用可以使用如下的Hikari配置:
 
-```
+```yaml
 maximumPoolSize: 20
 minimumIdle: 10
 connectionTimeout: 30000
@@ -786,7 +793,7 @@ maxLifetime: 1800000
 
 * pom文件加入引用
 
-```
+```xml
 <!-- https://mvnrepository.com/artifact/com.alibaba/druid-spring-boot-starter -->
 <dependency>
     <groupId>com.alibaba</groupId>
@@ -797,7 +804,7 @@ maxLifetime: 1800000
 
 * 对应application-xx.yml中加入配置
 
-```
+```yaml
   datasource:
     url: jdbc:mysql://localhost:3306/xxx?serverTimezone=UTC&useUnicode=true&characterEncoding=utf8&useSSL=true
     username: root
@@ -876,7 +883,7 @@ maxLifetime: 1800000
 
 去除原有mybatis相关依赖，加入:
 
-```
+```xml
 <!--        <dependency>-->
 <!--            <groupId>org.mybatis.spring.boot</groupId>-->
 <!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
@@ -915,7 +922,7 @@ maxLifetime: 1800000
 
 [sharding-jdbc](https://shardingsphere.apache.org/document/current/cn/user-manual/shardingsphere-jdbc/configuration/spring-boot-starter/)
 
-```
+```xml
 <dependency>
     <groupId>io.shardingsphere</groupId>
     <artifactId>sharding-jdbc-spring-boot-starter</artifactId>
@@ -936,3 +943,17 @@ mybatis架构自下而上分为基础支撑层、数据处理层、API接口层�
 * 基础支撑层，主要是用来做连接管理、事务管理、配置加载、缓存管理等最基础组件，为上层提供最基础的支撑。
 * 数据处理层，主要是用来做参数映射、sql解析、sql执行、结果映射等处理，可以理解为请求到达，完成一次数据库操作的流程。
 * API接口层，主要对外提供API，提供诸如数据的增删改查、获取配置等接口。
+
+# Mybatis Dynamic Sql
+
+我们常用的xml配置属于MyBatis3风格，官方推出了一个新的风格MyBatis3DynamicSql(java+注解)，感兴趣可以参考[官方Github](https://github.com/mybatis/mybatis-dynamic-sql)
+
+pom.xml需加入
+
+```xml
+<dependency>
+  <groupId>org.mybatis.dynamic-sql</groupId>
+  <artifactId>mybatis-dynamic-sql</artifactId>
+  <version>1.2.1</version>
+</dependency>
+```
