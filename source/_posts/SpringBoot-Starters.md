@@ -172,13 +172,7 @@ starter集成入应用有两种方式：
 
 starter是一个空jar。它的唯一目的是提供使用库所必需的依赖项。删除掉src文件夹，在pom文件中加入xxx-spring-boot-autoconfigure依赖(普通maven项目即可)
 
-#### xxx-spring-boot-samples
+[示例-jonesun-sample-spring-boot](https://github.com/jonesun/jonesun-sample-spring-boot)
 
-用于示例
-
-#### xxx-spring-boot-starter-test
-
-测试
-
-> 可以参考市场上较流行的非官方starter的编写，如[mybatis-spring-boot-starter](https://github.com/mybatis/spring-boot-starter)
+> 可以参考[spring官方提供的文章](https://docs.spring.io/spring-boot/docs/2.4.1/reference/html/spring-boot-features.html#boot-features-developing-auto-configuration) ,还有市场上较流行的非官方starter的编写，如[mybatis-spring-boot-starter](https://github.com/mybatis/spring-boot-starter)
 
