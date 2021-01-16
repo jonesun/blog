@@ -1797,8 +1797,6 @@ spring:
 
 先占个坑，刚在github看到目前的[0.0.3版本暂时还不支持Spring Boot 2.4.0](https://github.com/spring-projects-experimental/spring-authorization-server/issues/154)，等这个项目发布更稳定的版本后再研究下
 
-> **以下为笔者草稿，不建议阅读，文章整理好后会进行删除**
-
 ### 实现OAuth2资源服务器 spring-boot-starter-oauth2-resource-server
 
 1. pom.xml中加入引用
@@ -1868,6 +1866,8 @@ Content-Type: application/x-www-form-urlencoded
 综上，**就可以实现在OAuth Client中使用OAuth授权服务器(或第三方授权登录)，拿到token后访问OAuth资源服务器中的相关资源**
 
 ![OAuth2流程](OAuth2流程.png)
+
+> **以下为笔者草稿，不建议阅读，文章整理好后会进行删除**
 
 # SpringSecurity核心类
 
