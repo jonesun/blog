@@ -220,3 +220,21 @@ Conditional: Spring还可以根据@Conditional决定是否创建某个Bean
 FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以借助于它⾃定义Bean的创建过程，实现FactoryBean接口即可(获取FactoryBean，需要在id之前添加“&”)。
 
 如果你想要将第三方库中的组件装配到你的应用中，在这种情况下，是没有办法在它的类上添加@Component注解的，因此就不能使用自动化装配的方案了，但是我们可以使用@Bean。
+
+# pom中使用阿里云镜像
+
+```xml
+<repositories>
+    <repository>
+        <id>nexus-aliyun</id>
+        <name>nexus-aliyun</name>
+        <url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+    </repository>
+</repositories>
+```
