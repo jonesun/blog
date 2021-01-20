@@ -160,7 +160,7 @@ Grafana支持的告警渠道非常丰富，例如邮件、钉钉、Slack、Webho
 
 # 方式二 Spring Boot Admin
 
-Spring Boot Admin是一个开源社区项目，用于管理和监控SpringBoot应用程序。 应用程序作为Spring Boot Admin Client向为Spring Boot Admin Server注册（通过HTTP）或使用SpringCloud注册中心（例如Eureka，Consul）发现。 UI是的AngularJs应用程序，展示Spring Boot Admin Client的Actuator端点上的一些监控。
+[Spring Boot Admin](https://codecentric.github.io/spring-boot-admin/current/) 是一个开源社区项目，用于管理和监控SpringBoot应用程序。 应用程序作为Spring Boot Admin Client向为Spring Boot Admin Server注册（通过HTTP）或使用SpringCloud注册中心（例如Eureka，Consul）发现。 UI是的AngularJs应用程序，展示Spring Boot Admin Client的Actuator端点上的一些监控。
 
 ## 搭建
 
@@ -560,18 +560,43 @@ client-server中application.yml加入:
 
 如果不支持的话，则可以定制 HttpHeadersProvider来达到效果
 
-[示例源码](https://github.com/jonesun/spring-admin-demo)
+> 示例源码
 
-## Spring cloud下的应用
+[admin-server](https://github.com/jonesun/spring-admin-demo/tree/master/admin-server)
 
-集成了Spring Cloud Discovery (eureka、consul等)到应用程序后，则不需要 Spring Boot Admin 客户端。
-只需将 DiscoveryClient 添加到 Spring Boot Admin Server即可，其余的事情通过自动配置完成
+[client-server](https://github.com/jonesun/spring-admin-demo/tree/master/client-server)
+
+## Spring Cloud下的应用
+
+集成了Spring Cloud Discovery (如eureka)到应用程序后，则不需要 Spring Boot Admin 客户端。
+只需在DiscoveryClient中添加Spring Boot Admin Server，其他新增应用的话直接注册到DiscoveryServer即可。
+
+> 示例源码
+
+[eureka-server](https://github.com/jonesun/spring-admin-demo/tree/master/eureka-server)
+
+[eureka-client-with-admin-server](https://github.com/jonesun/spring-admin-demo/tree/master/eureka-client-with-admin-server)
+
+[eureka-client](https://github.com/jonesun/spring-admin-demo/tree/master/eureka-client)
 
 
-与Spring Boot Admin类似的还有[skywalking](https://skywalking.apache.org/) 利用的java agent， 可以监控任意的java应用，感兴趣可以了解下
+与Spring Boot Admin类似的还有[Apache Skywalking](https://skywalking.apache.org/) 利用的java agent， 可以监控任意的java应用，感兴趣可以了解下
 
 ## 常见问题
 
 * 监控页面对应信息一栏显示: 未提供任何信息，需要使用spring-boot的插件，运行spring-boot:build-info，生成Actuator使用的构建信息文件build-info.properties, 再次运行就可以看到了
 
 ![spring-boot-admin-info](spring-boot-admin-info.png)
+
+或者在application.yml中加入:
+
+```yaml
+info:
+  version: @project.version@
+  name: @project.artifactId@
+  group: @project.groupId@
+  description: @project.description@
+  #还可以自定义信息
+  author: jone sun
+  blog: https://jonesun.github.io/
+```
