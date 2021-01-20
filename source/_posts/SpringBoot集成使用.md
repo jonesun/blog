@@ -238,3 +238,32 @@ FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以�
     </repository>
 </repositories>
 ```
+
+# 中文乱码解决
+
+> spring boot 2.4.2 如果控制台存在中文乱码问题，需修改application.yml:
+
+```yaml
+logging:
+  charset:
+    console: gbk
+```
+
+[use 2.4.2 print log garbled](https://github.com/spring-projects/spring-boot/issues/24894)
+
+* 使用spring-boot:run时控制台输出乱码
+
+pom.xml中修改
+
+```xml
+<plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+    <!-- spring-boot:run 中文乱码解决 -->
+    <configuration>
+        <fork>true</fork>
+        <!--增加jvm参数-->
+        <jvmArguments>-Dfile.encoding=UTF-8</jvmArguments>
+    </configuration>
+</plugin>
+```

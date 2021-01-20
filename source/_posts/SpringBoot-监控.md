@@ -429,9 +429,11 @@ logging:
 
 > 注意logging.file.name不支持表达式，所以项目中无论是使用默认logback还是log4j2，都需要匹配好日志路径及名称
 
-这样就可以在admin-server中查看日志,无需登录到服务器上查看了
+这样就可以在admin-server中查看日志,无需登录到服务器上查看了，甚至可以利用日志配置，在线实时调整日志的显示级别(内部原理也是actuator)，方便在出现异常情况下查看详细的日志打印
 
 ![spring-boot-admin-log](spring-boot-admin-log.png)
+
+![spring-boot-admin-log-config](spring-boot-admin-log-config.png)
 
 ## 告警
 
@@ -538,5 +540,38 @@ spring:
 
 ![spring-boot-admin-login](spring-boot-admin-login.png)
 
+
+> 如果client-server也使用了security
+
+则首先需支持HTTP BASIC 方式访问端点(默认是支持的)，然后将元数据提供给admin-server
+
+client-server中application.yml加入:
+
+```yaml
+ spring:
+    boot:
+      admin:
+        client:
+          instance:
+            metadata:
+              user.name: ${spring.security.user.name}
+              user.password: ${spring.security.user.password} 
+```
+
+如果不支持的话，则可以定制 HttpHeadersProvider来达到效果
+
 [示例源码](https://github.com/jonesun/spring-admin-demo)
 
+## Spring cloud下的应用
+
+集成了Spring Cloud Discovery (eureka、consul等)到应用程序后，则不需要 Spring Boot Admin 客户端。
+只需将 DiscoveryClient 添加到 Spring Boot Admin Server即可，其余的事情通过自动配置完成
+
+
+与Spring Boot Admin类似的还有[skywalking](https://skywalking.apache.org/) 利用的java agent， 可以监控任意的java应用，感兴趣可以了解下
+
+## 常见问题
+
+* 监控页面对应信息一栏显示: 未提供任何信息，需要使用spring-boot的插件，运行spring-boot:build-info，生成Actuator使用的构建信息文件build-info.properties, 再次运行就可以看到了
+
+![spring-boot-admin-info](spring-boot-admin-info.png)
