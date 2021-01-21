@@ -13,7 +13,7 @@ tags: [java, springboot]
 
 > 一种 NoSQL（not-only sql，泛指非关系型数据库）的数据库，性能优秀，数据在内存中，读写速度非常快，支持并发 10W QPS
 
-Redis 的应用场景包括：缓存系统（“热点”数据：高频读、低频写）、计数器、消息队列系统、排行榜、社交网络和实时系统。
+[Redis](https://redis.io/) 的应用场景包括：缓存系统（“热点”数据：高频读、低频写）、计数器、消息队列系统、排行榜、社交网络和实时系统。
 
 ## 为什么要使用redis
 
@@ -32,27 +32,73 @@ mysql支持并发访问的能力有限(当然现在一般会使用一些数据�
 
 # 集成方式
 
-先安装好并运行redis(使用安装方式或者docker都可以)
+## 下载安装
 
-访问Redis，直接引入spring-boot-starter-data-redis依赖即可(它实际上是Spring Data的一个子项目——Spring Data Redis)
+### windows
+
+截至2021年1月，官方也没提供windows版本的下载，如果是为了学习需要，可以到[MicrosoftArchive Github](https://github.com/MicrosoftArchive/redis/releases) 上下载(最后的更新时间为2016年)
+
+下载后像常用的软件类似：双击redis-server.exe即可启动redis服务器, 可参考[Redis下载及安装(windows版)](https://www.cnblogs.com/xing-nb/p/12146449.html)
+
+> 此版本对应的是redis的3.2.1版本，而目前redis已经发展到了6.x，故生产环境不建议使用，自己学习就好;
+> 当然如果生产环境中的服务器恰好是windows的，小型项目使用也可以(毕竟没那么多并发量)，但还是建议使用下面的docker方式安装，使用较新的稳定版本
+
+### linux
+
+直接输入命令: 
+```
+sudo apt-get install redis-server
+```
+安装完成后，Redis服务器会自动启动。
+
+使用
+```
+ps -aux|grep redis
+```
+可以看到服务器系统进程默认端口6379
+
+需要手动下载安装包并运行的话，可参考[Ubuntu安装Redis及使用](https://blog.csdn.net/hzlarm/article/details/99432240)
+
+
+### docker
+
+使用docker:
+
+下载镜像
+```
+docker pull redis
+```
+
+运行
+
+```
+$ docker run --name some-redis -d redis
+```
+
+其他定制配置可参考[hub.docker](https://hub.docker.com/_/redis/)
 
 ## 引入
 
+访问Redis，直接引入spring-boot-starter-data-redis依赖即可(它实际上是Spring Data的一个子项目——Spring Data Redis)
+
 在pom.xml中加入
 ```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-redis</artifactId>
-</dependency>
-<!-- lettuce pool 缓存连接池 如果不需要在yml中自定义pool配置, 则不需要引用-->
-<dependency>
-    <groupId>org.apache.commons</groupId>
-    <artifactId>commons-pool2</artifactId>
-    <version>2.5.0</version>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+    </dependency>
+    <!-- lettuce pool 缓存连接池 如果不需要在yml中自定义pool配置, 则不需要引用-->
+    <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-pool2</artifactId>
+        <version>2.5.0</version>
+    </dependency>
+</dependencies>
+
 ```
 
-> Springboot2以后，底层访问redis已经不再是jedis了，而是lettuce
+> Springboot2以后，底层访问redis已经不再是jedis了，而是默认lettuce
 
 - 使用jedis：当多线程使用同一个连接时，是线程不安全的。所以要使用连接池，为每个jedis实例分配一个连接。
 - 使用Lettuce：当多线程使用同一连接实例时，是线程安全的。是采用netty连接redis server，实例可以在多个线程间共享，不存在线程不安全的情况，这样可以减少线程数量
@@ -216,7 +262,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 
 > 注意推荐使用SpringCache中的注解和类，这样就算后期不使用redis，改用mongodb或者其他缓存中间件时，业务代码都不需要变更，这里体现了Java中的门面模式(外观模式)
 
-- 注解使用
+#### 注解使用
 
 ```java
 @CacheConfig(cacheNames = "user")
@@ -299,7 +345,7 @@ public class UserServiceImpl implements UserService {
 
 ```
 
-- 使用CacheManager
+#### 使用CacheManager
 
 注解方式适合逻辑不是很复杂的情况，当业务逻辑需要更加灵活的控制缓存处理时，可使用CacheManager来管理
 
@@ -406,9 +452,91 @@ public class LockGoodsNumServiceImpl implements LockGoodsNumService {
 }
 ```
 
-- 直接使用RedisTemplate
+
+#### @RedisHash
+
+参考[Introduction to Spring Data Redis](https://www.baeldung.com/spring-data-redis-tutorial) 可以像其他数据库一样继承CrudRepository来操作对象
+
+如果需要将某个属性标识为唯一id，添加@Id注解即可
+
+如果需要在redis存储中拥有生命周期，添加@TimeToLive注解；以秒为单位，可根据需要设置其失效时间: 
+
+```java
+@RedisHash("Student")
+public class Student implements Serializable {
+
+    @Id
+    private String id;
+    private String name;
+    private Gender gender;
+    private int grade;
+
+    /**
+     * 以秒为单位，失效时间
+     */
+    @TimeToLive
+    private Long time;
+
+    public enum Gender {
+        MALE, FEMALE
+    }
+
+    //.......
+
+}
+```
+
+当然如果对一个类想要整体设置过期时间，可以使用@RedisHash(value = "Student", timeToLive = 20L)
+
+
+#### 直接使用RedisTemplate
 
 当然如果直接使用RedisTemplate也是可以的，不过一般不推荐(除非想单独设置一个缓存值的有效期，或者并不想缓存方法的返回值，亦或者想缓存方法中产生的中间值)
+
+## 分布式锁实现
+
+* 使用redis实现, 参考[使用 Spring Boot AOP 实现 Web 日志处理和分布式锁](https://developer.ibm.com/zh/articles/j-spring-boot-aop-web-log-processing-and-distributed-locking/)
+
+```java
+class RedisUtils {
+
+    private String getLock(String key, long timeout, TimeUnit timeUnit) {
+        try {
+            String value = UUID.randomUUID().toString();
+            Boolean lockStat = stringRedisTemplate.execute((RedisCallback< Boolean>)connection ->
+                    connection.set(key.getBytes(Charset.forName("UTF-8")), value.getBytes(Charset.forName("UTF-8")),
+                            Expiration.from(timeout, timeUnit), RedisStringCommands.SetOption.SET_IF_ABSENT));
+            if (!lockStat) {
+                // 获取锁失败。
+                return null;
+            }
+            return value;
+        } catch (Exception e) {
+            logger.error("获取分布式锁失败，key={}", key, e);
+            return null;
+        }
+    }
+
+    private void unLock(String key, String value) {
+        try {
+            String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
+            boolean unLockStat = stringRedisTemplate.execute((RedisCallback< Boolean>)connection ->
+                    connection.eval(script.getBytes(), ReturnType.BOOLEAN, 1,
+                            key.getBytes(Charset.forName("UTF-8")), value.getBytes(Charset.forName("UTF-8"))));
+            if (!unLockStat) {
+                logger.error("释放分布式锁失败，key={}，已自动超时，其他线程可能已经重新获取锁", key);
+            }
+        } catch (Exception e) {
+            logger.error("释放分布式锁失败，key={}", key, e);
+        }
+    }
+}
+
+```
+
+* 使用redisson
+
+> redis也支持发布和订阅的功能convertAndSend
 
 # 注意要点
 
