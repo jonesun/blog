@@ -79,7 +79,7 @@ $ docker run --name some-redis -d redis
 
 ## 引入
 
-访问Redis，直接引入spring-boot-starter-data-redis依赖即可(它实际上是Spring Data的一个子项目——Spring Data Redis)
+访问Redis，直接引入spring-boot-starter-data-redis依赖即可(它实际上是Spring Data的一个子项目——[Spring Data Redis](https://docs.spring.io/spring-data/data-redis/docs/current/reference/html/#preface))
 
 在pom.xml中加入
 ```xml
@@ -262,7 +262,7 @@ public class CacheConfig extends CachingConfigurerSupport {
 
 > 注意推荐使用SpringCache中的注解和类，这样就算后期不使用redis，改用mongodb或者其他缓存中间件时，业务代码都不需要变更，这里体现了Java中的门面模式(外观模式)
 
-#### 注解使用
+#### 使用@CacheConfig相关注解
 
 ```java
 @CacheConfig(cacheNames = "user")
@@ -453,7 +453,7 @@ public class LockGoodsNumServiceImpl implements LockGoodsNumService {
 ```
 
 
-#### @RedisHash
+#### 通过@RedisHash注解存储实体到redis
 
 参考[Introduction to Spring Data Redis](https://www.baeldung.com/spring-data-redis-tutorial) 可以像其他数据库一样继承CrudRepository来操作对象
 
@@ -622,3 +622,5 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 
 > Spring Boot 2.4.0「新增RedisCacheMetrics」：用于监控使用redis时的puts、gets、deletes以及缓存命中率等信息
 此指标信息默认不开启，需你增加配置spring.cache.redis.enable-statistics = true
+
+[Redis vs MongoDB](https://www.baeldung.com/java-redis-mongodb)
