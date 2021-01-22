@@ -25,7 +25,7 @@ java1开始，常见的两种创建线程的方式。一种是直接继承Thread
 
  <!-- more -->
 
-```
+```java
 public class Thread implements Runnable {
     private Runnable target;
 
@@ -55,38 +55,41 @@ public class Thread implements Runnable {
 
 - 无法抛出异常
 
-```
- public static void main(String[] args) {
-        System.out.println("starting");
+```java
+class Test {
+   public static void main(String[] args) {
+      System.out.println("starting");
 
-        System.out.println("准备执行thread....");
-        handleWithThread();
+      System.out.println("准备执行thread....");
+      handleWithThread();
 //        handleWithoutThread();
-        System.out.println("thread执行完成");
+      System.out.println("thread执行完成");
 
-        //执行结果，可以发现线程中出现异常后，主线程并不会停止
-    }
+      //执行结果，可以发现线程中出现异常后，主线程并不会停止
+   }
 
-    private static void handleWithThread() {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                makeNPE();
-            }
-        });
-        thread.start();
-    }
+   private static void handleWithThread() {
+      Thread thread = new Thread(new Runnable() {
+         @Override
+         public void run() {
+            makeNPE();
+         }
+      });
+      thread.start();
+   }
 
-    private static void handleWithoutThread() {
-        makeNPE();
-    }
+   private static void handleWithoutThread() {
+      makeNPE();
+   }
 
-    private static void makeNPE(){
-        String s = null;
-        if(s.equals("abc")) {
-            //do something
-        }
-    }
+   private static void makeNPE(){
+      String s = null;
+      if(s.equals("abc")) {
+         //do something
+      }
+   }
+}
+
 ```
 
 > 中断线程interrupt: 调用 interrupt() 方法，表示向当前线程打个招呼，告诉其可以中断线程了，至于什么时候终止，取决于当前线程自己，其实原理跟自定义标志位相似，只是打一个停止的标志，并不会去真的停止线程。这种通过标志位或中断操作的方式能够使线程在终止时可以继续执行内部逻辑，而不是立即停止线程，所以，这种中断线程的方式更加的优雅安全，推荐此种方式：
@@ -115,7 +118,7 @@ thread.interrupt();
 
 为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call() 方法签名有 throws，所以它可以处理受检异常：
 
-```
+```java
 @FunctionalInterface
 public interface Callable<V> {
     /**
@@ -144,7 +147,7 @@ Future<?> submit(Runnable task);
 
 Future与Callable一样都是java1.5开始引入的。同Callable与Runable一样，Future也是一个接口类：
 
-```
+```java
 public interface Future<V> {
 
     /**

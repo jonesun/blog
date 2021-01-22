@@ -72,7 +72,7 @@ docker pull redis
 运行
 
 ```
-$ docker run --name some-redis -d redis
+docker run --name my-redis -p 6379:6379 -d redis
 ```
 
 其他定制配置可参考[hub.docker](https://hub.docker.com/_/redis/)
@@ -203,8 +203,9 @@ public class CacheConfig extends CachingConfigurerSupport {
         };
     }
 
+
     @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
 
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
@@ -229,22 +230,25 @@ public class CacheConfig extends CachingConfigurerSupport {
     }
 
     @Bean
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManager(RedisTemplate<String, Object> objectRedisTemplate, RedisConnectionFactory redisConnectionFactory) {
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration
                 .defaultCacheConfig()
 //                .entryTtl(Duration.ofDays(1))
                 .disableCachingNullValues()
                 .computePrefixWith(cacheName -> "spring-redis".concat(":").concat(cacheName).concat(":"))
-                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()));
+                .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(objectRedisTemplate.getStringSerializer()))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(objectRedisTemplate.getValueSerializer()));
 
         Set<String> cacheNames = new HashSet<>();
         cacheNames.add("user");
         cacheNames.add("test");
 
+
         // 对每个缓存空间应用不同的配置
         Map<String, RedisCacheConfiguration> configMap = new HashMap<>();
         configMap.put("user", cacheConfiguration.entryTtl(Duration.ofSeconds(120)));
         configMap.put("test", cacheConfiguration.entryTtl(Duration.ofSeconds(2)));
+
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(cacheConfiguration)
                 .initialCacheNames(cacheNames)
@@ -254,7 +258,6 @@ public class CacheConfig extends CachingConfigurerSupport {
                 .build();
     }
 
-
 }
 ```
 
@@ -263,6 +266,8 @@ public class CacheConfig extends CachingConfigurerSupport {
 > 注意推荐使用SpringCache中的注解和类，这样就算后期不使用redis，改用mongodb或者其他缓存中间件时，业务代码都不需要变更，这里体现了Java中的门面模式(外观模式)
 
 #### 使用@CacheConfig相关注解
+
+**一定要加上@EnableCaching**
 
 ```java
 @CacheConfig(cacheNames = "user")
@@ -536,6 +541,8 @@ class RedisUtils {
 
 * 使用redisson
 
+使用redis做分布式锁时容易发生死锁情况，实际项目还是推荐使用redission来实现，可参考[基于Redisson的分布式锁优化秒杀逻辑](https://zhuanlan.zhihu.com/p/99187446)
+
 > redis也支持发布和订阅的功能convertAndSend
 
 # 注意要点
@@ -624,3 +631,5 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 此指标信息默认不开启，需你增加配置spring.cache.redis.enable-statistics = true
 
 [Redis vs MongoDB](https://www.baeldung.com/java-redis-mongodb)
+
+[本文示例源码](https://github.com/jonesun/spring-boot-redis-demo)
