@@ -488,7 +488,16 @@ public class RedisTemplateUserService implements UserService {
 
 ## 分布式锁实现
 
-* 使用redis实现, 参考[使用 Spring Boot AOP 实现 Web 日志处理和分布式锁](https://developer.ibm.com/zh/articles/j-spring-boot-aop-web-log-processing-and-distributed-locking/)
+单机情况下使用jvm提供的锁机制即可
+- 方式一: 直接在方法上加上synchronized(或者在关键代码上使用)，缺点购买多个商品时效率会较低(当然因为java8对于synchronized做了很多优化，效率也不会有多差相较于lock)
+- 方式二: 使用lock, 缺点如果逻辑上出现异常(未捕获的)导致锁未及时释放的话，会导致后面的请求都会由于获取不到锁而失败，一个商品抢购还好，如果好多商品，会因为某一个异常导致所有商品都失败
+- 方式三(推荐)：使用ConcurrentHashMap，一个商品一个锁(或者一段数量一个锁)，这样可以在某个商品秒杀出现异常时，不影响其他商品
+
+> 如果是单机环境的话，使用ConcurrentHashMap是不错的选择，不过如果是集群情况下(部署到多个服务器上)，使用jvm的锁机制就满足不了需求了
+
+### 使用redis实现
+
+可参考[使用 Spring Boot AOP 实现 Web 日志处理和分布式锁](https://developer.ibm.com/zh/articles/j-spring-boot-aop-web-log-processing-and-distributed-locking/)
 
 ```java
 @Component
@@ -534,11 +543,133 @@ public class RedisLockUtils {
 
 ```
 
-* 使用redisson
+### 使用redisson
 
 使用redis做分布式锁时容易发生死锁等未知情况，实际项目还是推荐使用[redisson](https://redisson.pro/) 来实现 分布式分段锁
 
-> 再进阶的话就可以在封装一层读写锁
+pom.xml中引入
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>org.redisson</groupId>
+        <artifactId>redisson-spring-boot-starter</artifactId>
+        <version>3.14.0</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.redisson</groupId>
+                <artifactId>redisson-spring-data-23</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.redisson</groupId>
+        <artifactId>redisson-spring-data-24</artifactId>
+        <version>3.14.0</version>
+    </dependency>
+</dependencies>
+
+```
+
+> redisson-spring-data-24, 取决于项目中使用的SpringBoot版本，因为我使用了SpringBoot 2.4.2，故引用24，而redisson-spring-boot-starter的3.14.0版本默认引用的是23，故需排除
+
+resource下新建redisson-single.yml(单机版):
+
+```yaml
+ngleServerConfig:
+  # 连接空闲超时，单位：毫秒
+  idleConnectionTimeout: 10000
+  # 连接超时，单位：毫秒
+  connectTimeout: 10000
+  # 命令等待超时，单位：毫秒
+  timeout: 3000
+  # 命令失败重试次数,如果尝试达到 retryAttempts（命令失败重试次数） 仍然不能将命令发送至某个指定的节点时，将抛出错误。
+  # 如果尝试在此限制之内发送成功，则开始启用 timeout（命令等待超时） 计时。
+  retryAttempts: 3
+  # 命令重试发送时间间隔，单位：毫秒
+  retryInterval: 1500
+  #  # 重新连接时间间隔，单位：毫秒
+  #  reconnectionTimeout: 3000
+  #  # 执行失败最大次数
+  #  failedAttempts: 3
+  # 密码
+  password:
+  # 单个连接最大订阅数量
+  subscriptionsPerConnection: 5
+  # 客户端名称
+  clientName: null
+  #  # 节点地址
+  address: "redis://127.0.0.1:6379"
+  # 发布和订阅连接的最小空闲连接数
+  subscriptionConnectionMinimumIdleSize: 1
+  # 发布和订阅连接池大小
+  subscriptionConnectionPoolSize: 50
+  # 最小空闲连接数
+  connectionMinimumIdleSize: 32
+  # 连接池大小
+  connectionPoolSize: 64
+  # 数据库编号
+  database: 2
+  # DNS监测时间间隔，单位：毫秒
+  dnsMonitoringInterval: 5000
+# 线程池数量,默认值: 当前处理核数量 * 2
+threads: 0
+# Netty线程池数量,默认值: 当前处理核数量 * 2
+nettyThreads: 0
+# 编码
+codec: !<org.redisson.codec.JsonJacksonCodec> {}
+# 传输模式
+transportMode : "NIO"
+```
+
+在application.yml中加入:
+
+```yaml
+spring:
+  ## Redis 配置
+  redis:
+
+    # redisson相关配置, 会导致redis原有配置失效，使用时需注意
+    redisson:
+      file: "classpath:redisson-single.yml"
+```
+
+> 这样的好处在于，不想引用redisson的话，只要去除pom中的引用并去除spring.redis.redisson配置即可
+
+即可使用RedissonClient获取分布式锁:
+
+```java
+@Service
+class TestService {
+    
+    @Autowired(required = false)
+    private RedissonClient redissonClient;
+
+    private boolean buyWithRedissonLock(Long productId) {
+        if(redissonClient == null) {
+            logger.error("未配置RedissonClient");
+            return false;
+        }
+        String key = "xxx_lock_" + productId;
+        RLock lock = redissonClient.getLock(key);
+        try {
+            if(lock.tryLock(2, TimeUnit.SECONDS)) {
+                return normalBuy(productId);
+            }
+            logger.error("获取不到锁");
+            return false;
+        } catch (Exception e) {
+            e.printStackTrace();
+            logger.error("获取锁异常", e);
+            return false;
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+> 再进阶的话就可以再封装一层读写锁
 
 > 另外redis和redisson也支持发布和订阅的功能convertAndSend，有兴趣可以了解下
 
@@ -605,7 +736,7 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 
 ## sentinel(哨兵)模式
 
-部署在多台服务器中, 心跳机制+投票裁决，是建立在主从模式的基础上，这也是目前的**主流方案**
+部署在多台服务器中, 心跳机制+投票裁决，是建立在主从模式的基础上，这也是目前的**主流方案**, 可参考[官方文章-Redis Sentinel文档](https://redis.io/topics/sentinel)
 
 **优点**
 

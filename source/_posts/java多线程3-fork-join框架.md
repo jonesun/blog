@@ -156,8 +156,8 @@ public class Test {
 
 ## 注意要点
 
-- 需使用合理的阈值将ForkJoingTask拆分为子任务
-- 避免在 ForkJoingTasks中出现任何阻塞
+- 需使用合理的阈值将ForkJoinTask拆分为子任务
+- 避免在 ForkJoinTask中出现任何阻塞
 
 ForkJoinTask在执行的时候可能会抛出异常，在主线程中是无法直接获取的，但是可以通过ForkJoinTask提供的isCompletedAbnormally()方法来检查任务是否已经抛出异常或已经被取消了
 

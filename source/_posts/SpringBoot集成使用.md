@@ -97,7 +97,7 @@ java -jar springboot-demo-jar-1.0-SNAPSHOT.jar
 
 > springboot2.x的版本, 默认使用的是junit5版本, junit4和junit5两个版本差别比较大，需要注意下用法
 
-![junit5vsjunit4](junit5vsjunit4.png)
+![junit5 vs junit4](junit5vsjunit4.png)
 
 ```java
 import org.junit.jupiter.api.Test;
@@ -190,15 +190,48 @@ loggers endpoint也允许你在运行时改变应用的日志等级。
 ```
 ## 最佳实践
 
-推荐使用@Autowired(@Qualifier告诉Spring具体去装配哪个对象), @Resource(javax.annotation.Resource) 在 Jdk 11中已经移除，如果要使⽤，需要单独引⼊jar包：
+### 关于@Autowired与@Resource
 
-```xml
-<dependency>
-    <groupId>javax.annotation</groupId>
-    <artifactId>javax.annotation-api</artifactId>
-    <version>1.3.2</version>
-</dependency>
+如果在idea中使用类似:
+```java
+class UserServiceImpl {
+    @Autowire
+    private UserDao userDao;
+}
+
 ```
+基于字段的依赖注入方式时会有黄色警告(不建议使用字段注入)：
+* 对于必需的依赖项，建议使用基于构造函数的注入，以使它们成为不可变的，并防止它们为null。
+* 对于可选的依赖项，建议使用基于Setter的注入
+
+```java
+
+
+public class UserServiceImpl {
+
+    private UserDao userDao;
+
+    //基于构造函数的依赖注入
+    @Autowire
+    public UserServiceImpl(UserDao userDao){
+        this.userDao = userDao;
+    }
+     
+    //setter方式
+     @Autowire
+     public serUserDao(UserDao userDao){
+         this.userDao = userDao;
+     }
+ }
+```
+> @Autowired通过类型装配，若注入类型一样的对象就无法选择具体注入哪一个，则要配合@Qualifiler结合使用；@Resource默认通过类型名注入
+
+一般模块间的依赖推荐使用：
+
+* 存在多态，推荐使用@Resource
+* 允许不存在，推荐@Autowired并设置required属性为false
+
+### @Component
 
 @Component注解默认实例化的对象是单例，如果想声明成多例对象可以使用@Scope(“prototype”), Scope的全部可选项
 * singleton 全局只有一个实例，即单例模式
@@ -221,7 +254,7 @@ FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以�
 
 如果你想要将第三方库中的组件装配到你的应用中，在这种情况下，是没有办法在它的类上添加@Component注解的，因此就不能使用自动化装配的方案了，但是我们可以使用@Bean。
 
-# pom中使用阿里云镜像
+### pom中使用阿里云镜像
 
 ```xml
 <repositories>
@@ -239,7 +272,7 @@ FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以�
 </repositories>
 ```
 
-# 中文乱码解决
+### 中文乱码解决
 
 > spring boot 2.4.2 如果控制台存在中文乱码问题，需修改application.yml:
 
