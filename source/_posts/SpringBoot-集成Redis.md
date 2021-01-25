@@ -106,20 +106,22 @@ docker run --name my-redis -p 6379:6379 -d redis
 所以如果要继续使用jedis的话需要改为:
 
 ```xml
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-data-redis</artifactId>
-    <exclusions>
-        <exclusion>
-            <groupId>io.lettuce</groupId>
-            <artifactId>lettuce-core</artifactId>
-        </exclusion>
-    </exclusions>
-</dependency>
-<dependency>
-    <groupId>redis.clients</groupId>
-    <artifactId>jedis</artifactId>
-</dependency>
+<dependencies>
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-data-redis</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>io.lettuce</groupId>
+                <artifactId>lettuce-core</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>redis.clients</groupId>
+        <artifactId>jedis</artifactId>
+    </dependency>
+</dependencies>
 ```
 
 > 推荐使用lettuce
@@ -184,53 +186,25 @@ jedis:
 
 ```java
 @EnableCaching
-@Configuration
-public class CacheConfig extends CachingConfigurerSupport {
+@Configuration("cache")
+public class RedisConfig extends CachingConfigurerSupport {
 
+    @Autowired
+    RedisConnectionFactory redisConnectionFactory;
+
+    @Bean
+    public RedisTemplate<String, Object> objectRedisTemplate() {
+        return configRedisTemplate(Object.class, redisConnectionFactory);
+    }
+    
     /**
-     * 自定义生成redis-key
+     * 可以根据自己实际项目需要，定制多个CacheManager，注解的地方可以指定使用哪个CacheManager
+     * @param objectRedisTemplate
+     * @return
      */
-    @Override
-    public KeyGenerator keyGenerator() {
-        return (o, method, objects) -> {
-            StringBuilder sb = new StringBuilder();
-            sb.append(o.getClass().getName()).append(".");
-            sb.append(method.getName()).append(".");
-            for (Object obj : objects) {
-                sb.append(obj.toString());
-            }
-            return sb.toString();
-        };
-    }
-
-
     @Bean
-    public RedisTemplate<String, Object> objectRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-
-        Jackson2JsonRedisSerializer<Object> j2jrs = new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper om = new ObjectMapper();
-        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        // 解决jackson2无法反序列化LocalDateTime的问题
-        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        om.registerModule(new JavaTimeModule());
-//        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
-                ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
-        j2jrs.setObjectMapper(om);
-        // 序列化 value 时使用此序列化方法
-        redisTemplate.setValueSerializer(j2jrs);
-        redisTemplate.setHashValueSerializer(j2jrs);
-
-
-        return redisTemplate;
-    }
-
-    @Bean
-    public CacheManager cacheManager(RedisTemplate<String, Object> objectRedisTemplate, RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManager(RedisTemplate<String, Object> objectRedisTemplate) {
+        //如果支持使用objectRedisTemplate，没有用注解或者cacheManager方式的话，则此配置不生效，即key相关的规则，需使用者自己定义
         RedisCacheConfiguration cacheConfiguration = RedisCacheConfiguration
                 .defaultCacheConfig()
 //                .entryTtl(Duration.ofDays(1))
@@ -241,15 +215,13 @@ public class CacheConfig extends CachingConfigurerSupport {
 
         Set<String> cacheNames = new HashSet<>();
         cacheNames.add("user");
-        cacheNames.add("test");
 
 
         // 对每个缓存空间应用不同的配置
         Map<String, RedisCacheConfiguration> configMap = new HashMap<>();
         configMap.put("user", cacheConfiguration.entryTtl(Duration.ofSeconds(120)));
-        configMap.put("test", cacheConfiguration.entryTtl(Duration.ofSeconds(2)));
 
-        return RedisCacheManager.builder(redisConnectionFactory)
+        return RedisCacheManager.builder(Objects.requireNonNull(objectRedisTemplate.getConnectionFactory()))
                 .cacheDefaults(cacheConfiguration)
                 .initialCacheNames(cacheNames)
                 .withInitialCacheConfigurations(configMap)
@@ -258,7 +230,35 @@ public class CacheConfig extends CachingConfigurerSupport {
                 .build();
     }
 
+    private <T> RedisTemplate<String, T> configRedisTemplate(Class<T> clazz, RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, T> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+
+        Jackson2JsonRedisSerializer<T> j2jrs = new Jackson2JsonRedisSerializer<>(clazz);
+        ObjectMapper om = new ObjectMapper();
+        // 指定要序列化的域，field,get和set,以及修饰符范围，ANY是都有包括private和public
+        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        // 解决jackson2无法反序列化LocalDateTime的问题
+        om.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        om.registerModule(new JavaTimeModule());
+
+        // 指定序列化输入的类型，类必须是非final修饰的，final修饰的类，比如String,Integer等会跑出异常
+//        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        om.activateDefaultTyping(LaissezFaireSubTypeValidator.instance,
+                ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.PROPERTY);
+        j2jrs.setObjectMapper(om);
+
+        redisTemplate.setKeySerializer(RedisSerializer.string());
+        redisTemplate.setHashKeySerializer(RedisSerializer.string());
+        redisTemplate.setValueSerializer(j2jrs);
+        redisTemplate.setHashValueSerializer(j2jrs);
+        redisTemplate.afterPropertiesSet();
+
+        return redisTemplate;
+    }
+
 }
+
 ```
 
 ### service中使用
@@ -267,16 +267,14 @@ public class CacheConfig extends CachingConfigurerSupport {
 
 #### 使用@CacheConfig相关注解
 
-**一定要加上@EnableCaching**
+**项目中一定要加上@EnableCaching**
 
 ```java
+@Service("cacheAnnotationUserService")
 @CacheConfig(cacheNames = "user")
-public class UserServiceImpl implements UserService {
+public class CacheAnnotationUserService implements UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
-
-    @Autowired
-    UserDao userDao;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
      * Cacheable[] cacheable() default {}; //声明多个@Cacheable
@@ -284,17 +282,10 @@ public class UserServiceImpl implements UserService {
      * CacheEvict[] evict() default {};    //声明多个@CacheEvict
      * 插入用户
      */
-    @Caching(
-            put = {
-//                    @CachePut(key = "#user.id"),
-                    @CachePut(key = "#user.username"),
-                    @CachePut(value = "user1", key = "#user.username")
-            }
-    )
+    @Caching(put = {@CachePut(key = "#user.id")})
     @Override
     public User saveUser(User user) {
-        System.out.println("插入用户..." + user.getUsername());
-        userDao.insert(user);
+        logger.info("插入用户: {}", user.getUsername());
         return user;
     }
 
@@ -304,12 +295,11 @@ public class UserServiceImpl implements UserService {
      * --key是[命名空间]::[@Cacheable的key或者KeyGenerator生成的key](@Cacheable的key优先级高,KeyGenerator不配置走默认KeyGenerator SimpleKey [])
      * 使用 sync = true保证只有一个线程访问数据库，避免缓存击穿 ，注意sync = true不能与unless="#result == null"一起使用
      */
-    @Cacheable(key = "#username", sync = true)
+    @Cacheable(key = "#userId", sync = true)
     @Override
-    public User findUser(String username) {
-        //并发时，不加缓存，使用默认mybatis连接池HikariPool(springboot2默认使用HikariPool连接池) 会报错(Failed to obtain JDBC Connection; nested exception is java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 30007ms.)
-        System.out.println("执行方法...");
-        return userDao.getByUsername(username);
+    public User findUser(Long userId) {
+        logger.info("查找用户: {}", userId);
+        return null;
     }
 
     /**
@@ -320,11 +310,17 @@ public class UserServiceImpl implements UserService {
      * 注意返回值必须是要修改后的数据
      */
     @Override
-    @CachePut(key = "#user.username")
+    @CachePut(key = "#user.id")
     public User updateUser(User user) {
-        System.out.println("更新用户...：" + user.getUsername());
-        userDao.update(user);
+        logger.info("更新用户：{}", user.getId());
         return user;
+    }
+
+    @Override
+    @CacheEvict(key = "#userId")
+    public User deleteById(Long userId) {
+        logger.info("删除用户：{}", userId);
+        return null;
     }
 
     /**
@@ -334,16 +330,8 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @CacheEvict(allEntries = true)
-    public void clearUsers() {
-        System.out.println("清除缓存...");
-        userDao.deleteAll();
-    }
-
-    @Cacheable(sync = true)
-    @Override
-    public Map<String, BigDecimal> sumMoneyGroupBySex() {
-        //注意如果 此处获取的是缓存中的信息，则方法内部不会被执行到
-        return userDao.sumMoneyGroupBySex();
+    public void clear() {
+        logger.info("清除所有");
     }
 
 }
@@ -355,106 +343,48 @@ public class UserServiceImpl implements UserService {
 注解方式适合逻辑不是很复杂的情况，当业务逻辑需要更加灵活的控制缓存处理时，可使用CacheManager来管理
 
 ```java
-@Service
-public class LockGoodsNumServiceImpl implements LockGoodsNumService {
+@Service("cacheManagerUserService")
+public class CacheManagerUserService implements UserService {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final String TEST_KEY = "goods-1";
-
-    @Resource
+    @Autowired
     private CacheManager cacheManager;
 
-    private Lock lock = new ReentrantLock();
-
-
     @Override
-    public void initData(int num) {
-        Cache goodsCache = getGoodsCache();
-        goodsCache.put(TEST_KEY, num);
-        logger.info("初始化成功: 库存数量为: " + goodsCache.get(TEST_KEY, Integer.class));
+    public User saveUser(User user) {
+        getUserCache().put(user.getId(), user);
+        logger.info("保存用户: {}", user);
+        return user;
     }
 
     @Override
-    public boolean buy() {
-//        //非并发情况下
-//        return normalBuy(getGoodsCache());
-
-//        //单机并发-使用jvm锁
-//        return withLock(getGoodsCache());
-//
-        //多台机器(分布式)并发-使用redis的key作为全局锁
-        return withRedisLockKey(getGoodsCache());
+    public User findUser(Long userId) {
+        return getUserCache().get(userId, User.class);
     }
 
-    private boolean normalBuy(Cache goodsCache) {
-        //        synchronized (this) {
-        Integer num = goodsCache.get(TEST_KEY, Integer.class);
-        //操作原子性
-        if (num != null && num > 0) {
-            //购买
-            num = num - 1;
-            goodsCache.put(TEST_KEY, num);
-            logger.info("购买成功，还剩: " + num);
-            return true;
-        } else {
-            logger.error("购买失败，库存不足！");
-            return false;
-        }
+    @Override
+    public User updateUser(User user) {
+        getUserCache().put(user.getId(), user);
+        return user;
     }
 
-    /***
-     * 使用JVM相关锁
-     * @param goodsCache
-     * @return
-     */
-    private boolean withLock(Cache goodsCache) {
-        lock.lock();
-        try {
-            //        synchronized (this) {
-            return normalBuy(goodsCache);
-//        }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            lock.unlock();
-        }
+    @Override
+    public User deleteById(Long userId) {
+        getUserCache().evict(userId);
+        return null;
     }
 
-    /**
-     * 使用redis的key作为lock锁
-     *
-     * @param goodsCache
-     * @return
-     */
-    private boolean withRedisLockKey(Cache goodsCache) {
-        String clientId = UUID.randomUUID().toString();
-        final String lockName = "goods-lock";
-        try {
-            Cache.ValueWrapper result = goodsCache.putIfAbsent(lockName, clientId);
-            //这里可以加入过期时间，防止较长时间未解锁
-            if (result != null) {
-                //说明该锁已存在
-                logger.error("购买失败，请刷新后重试！");
-                return false;
-            }
-            return normalBuy(goodsCache);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            if (clientId.equals(goodsCache.get(lockName, String.class))) {
-                goodsCache.evict(lockName);
-            }
-        }
-
+    @Override
+    public void clear() {
+        getUserCache().clear();
     }
 
-    private Cache getGoodsCache() {
-        return cacheManager.getCache("goods");
+    private Cache getUserCache() {
+        return cacheManager.getCache("user");
     }
 }
+
 ```
 
 
@@ -496,20 +426,84 @@ public class Student implements Serializable {
 
 #### 直接使用RedisTemplate
 
-当然如果直接使用RedisTemplate也是可以的，不过一般不推荐(除非想单独设置一个缓存值的有效期，或者并不想缓存方法的返回值，亦或者想缓存方法中产生的中间值)
+当然如果直接使用RedisTemplate也是可以的，不过需要注意的是一旦直接使用了RedisTemplate，则cacheManager相关的配置将不会生效，包含CachingConfigurerSupport相关的也不会生效，如发生异常时将不会回调CacheErrorHandler
+
+```java
+@Service("redisTemplateUserService")
+public class RedisTemplateUserService implements UserService {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public final String PREFIX_CACHE_REDIS_KEY_USER = "spring-redis:user:";
+
+    @Autowired
+    RedisTemplate<String, User> userRedisTemplate;
+
+    @Override
+    public User saveUser(User user) {
+        userRedisTemplate.opsForValue().set(getRealKeyById(user.getId()), user);
+        return null;
+    }
+
+    @Override
+    public User findUser(Long userId) {
+        return userRedisTemplate.opsForValue().get(getRealKeyById(userId));
+    }
+
+    @Override
+    public User updateUser(User user) {
+        userRedisTemplate.opsForValue().set(getRealKeyById(user.getId()), user);
+        return null;
+    }
+
+    @Override
+    public User deleteById(Long userId) {
+        Boolean result = userRedisTemplate.delete(getRealKeyById(userId));
+        logger.info("删除结果: {}", result);
+        return null;
+    }
+
+    @Override
+    public void clear() {
+        Set<String> keys = userRedisTemplate.keys(PREFIX_CACHE_REDIS_KEY_USER + "*");
+        if (keys != null) {
+            userRedisTemplate.delete(keys);
+        }
+    }
+
+    /**
+     * 获取真实key
+     *
+     * @param userId
+     * @return
+     */
+    private String getRealKeyById(Long userId) {
+        return PREFIX_CACHE_REDIS_KEY_USER + userId;
+    }
+}
+
+```
+
+> key需要自己定义前缀，当然之间使用RedisTemplate可以直接控制更加底层的api
 
 ## 分布式锁实现
 
 * 使用redis实现, 参考[使用 Spring Boot AOP 实现 Web 日志处理和分布式锁](https://developer.ibm.com/zh/articles/j-spring-boot-aop-web-log-processing-and-distributed-locking/)
 
 ```java
-class RedisUtils {
+@Component
+public class RedisLockUtils {
 
-    private String getLock(String key, long timeout, TimeUnit timeUnit) {
+    @Autowired
+    RedisTemplate<String, Object> redisTemplate;
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    public String getLock(String key, long timeout, TimeUnit timeUnit) {
         try {
             String value = UUID.randomUUID().toString();
-            Boolean lockStat = stringRedisTemplate.execute((RedisCallback< Boolean>)connection ->
-                    connection.set(key.getBytes(Charset.forName("UTF-8")), value.getBytes(Charset.forName("UTF-8")),
+            Boolean lockStat = redisTemplate.execute((RedisCallback< Boolean>) connection ->
+                    connection.set(key.getBytes(StandardCharsets.UTF_8), value.getBytes(StandardCharsets.UTF_8),
                             Expiration.from(timeout, timeUnit), RedisStringCommands.SetOption.SET_IF_ABSENT));
             if (!lockStat) {
                 // 获取锁失败。
@@ -522,12 +516,12 @@ class RedisUtils {
         }
     }
 
-    private void unLock(String key, String value) {
+    public void unLock(String key, String value) {
         try {
             String script = "if redis.call('get', KEYS[1]) == ARGV[1] then return redis.call('del', KEYS[1]) else return 0 end";
-            boolean unLockStat = stringRedisTemplate.execute((RedisCallback< Boolean>)connection ->
+            boolean unLockStat = redisTemplate.execute((RedisCallback< Boolean>)connection ->
                     connection.eval(script.getBytes(), ReturnType.BOOLEAN, 1,
-                            key.getBytes(Charset.forName("UTF-8")), value.getBytes(Charset.forName("UTF-8"))));
+                            key.getBytes(StandardCharsets.UTF_8), value.getBytes(StandardCharsets.UTF_8)));
             if (!unLockStat) {
                 logger.error("释放分布式锁失败，key={}，已自动超时，其他线程可能已经重新获取锁", key);
             }
@@ -535,15 +529,18 @@ class RedisUtils {
             logger.error("释放分布式锁失败，key={}", key, e);
         }
     }
+
 }
 
 ```
 
 * 使用redisson
 
-使用redis做分布式锁时容易发生死锁情况，实际项目还是推荐使用redission来实现，可参考[基于Redisson的分布式锁优化秒杀逻辑](https://zhuanlan.zhihu.com/p/99187446)
+使用redis做分布式锁时容易发生死锁等未知情况，实际项目还是推荐使用[redisson](https://redisson.pro/) 来实现 分布式分段锁
 
-> redis也支持发布和订阅的功能convertAndSend
+> 再进阶的话就可以在封装一层读写锁
+
+> 另外redis和redisson也支持发布和订阅的功能convertAndSend，有兴趣可以了解下
 
 # 注意要点
 

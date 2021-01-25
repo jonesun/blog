@@ -160,6 +160,8 @@ starter集成入应用有两种方式：
 - 主动生效，使用@Import注解，集成后在Spring Boot中加入自定义的@Enablexxx就会生效
 - 被动生效, 在autoconfigure资源包下新建META-INF/spring.factories写入XXXAutoConfiguration全限定名, 这样在starter组件集成入Spring Boot应用后就会生效
 
+> 核心要点是@ConditionalOnMissingBean等注解的用法
+
 比较好的习惯，编写自定义starter时最好包含以下模块
 
 #### xxx-spring-boot-autoconfigure
