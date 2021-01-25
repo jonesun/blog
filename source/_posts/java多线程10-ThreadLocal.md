@@ -76,7 +76,7 @@ ThreadLocalMap是ThreadLocal类的一个静态内部类，它实现了键值对�
 
 > 虽然ThreadLocalMap是ThreadLocal的静态内部类，但它们的实例对象并不存在继承或者包裹关系。完全可以当成两个独立的实例
 
-```
+```java
 static class ThreadLocalMap {
 
     static class Entry extends WeakReference<ThreadLocal<?>> {
@@ -189,7 +189,7 @@ String dateString = simpleDateFormatThreadLocal.get().format(calendar.getTime())
 每个线程内需要保存全局变量（例如在拦截器中获取用户信息），可以让不同方法直接使用，避免参数传递的麻烦。Web开发时，有些信息需要从controller传到service传到dao，甚至传到util类。看起来非常不优雅，这时便可以使用ThreadLocal来优雅的实现：在拦截器的preHandle()中set，在afterCompletion()中remove()：
 
 定义保存用户用的线程上下文
-```
+```java
 public class UserContext {
 
     //把构造函数私有化，外部不能new
@@ -228,7 +228,7 @@ public class UserContext {
 
 拦截器中设置和管理
 
-```
+```java
 public class ResourceInterceptor implements HandlerInterceptor {
 
 
@@ -283,7 +283,7 @@ LoginUser user = UserContext.get();
 
 > 为了保证能释放ThreadLocal关联的实例，我们可以通过AutoCloseable接口配合try (resource) {...}结构，让编译器自动为我们关闭
 
-```
+```java
 public class UserContext implements AutoCloseable {
 
     static final ThreadLocal<String> ctx = new ThreadLocal<>();
@@ -332,7 +332,7 @@ public void doHandle3() {
 
 下面是一个使用 RequestContextHolder 重写的例子：
 
-```
+```java
 public class SecurityContextHolder {
     private static final String SECURITY_CONTEXT_ATTRIBUTES = "SECURITY_CONTEXT";
     public static void setContext(SecurityContext context) {
@@ -352,7 +352,7 @@ public class SecurityContextHolder {
 
 > Spring Security的基本组件SecurityContextHolder默认也是使用ThreadLocal策略来存储认证信息，在Web场景下的使用Spring Security，在用户登录时自动绑定认证信息到当前线程，在用户退出时，自动清除当前线程的认证信息(有兴趣可以看看SecurityContextHolder源码)，这里举个使用样例:
 
-```
+```java
 //Spring Security获取有关当前用户的信息
 Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -373,7 +373,7 @@ InheritableThreadLocal用于子线程能够拿到父线程往ThreadLocal里设�
 
 由于每个Thread一个ThreadLocalMap, 而线程池是会复用线程的，故需要注意的是，线程中的逻辑执行完毕后(类似lock的使用在finally中的处理)，一定要remove相关key，避免数据混乱
 
-```
+```java
 class MyThreadPoolExecutor extends ThreadPoolExecutor {  
   
     public MyThreadPoolExecutor(int i, int j, int k, TimeUnit seconds,  
@@ -407,7 +407,7 @@ class MyThreadPoolExecutor extends ThreadPoolExecutor {
 
 > pom.xml中加入引用
 
-```
+```xml
 <!-- https://mvnrepository.com/artifact/com.alibaba/transmittable-thread-local -->
 <dependency>
     <groupId>com.alibaba</groupId>
@@ -421,7 +421,7 @@ class MyThreadPoolExecutor extends ThreadPoolExecutor {
 
 线程池中传输必须配合 TransmittableThreadLocal 和 TtlExecutors 使用
 
-```
+```java
 @EnableAsync
 @Configuration
 public class TaskExecutorConfig implements AsyncConfigurer {
@@ -453,7 +453,7 @@ public class TaskExecutorConfig implements AsyncConfigurer {
 
 > 修改ThreadLocal
 
-```
+```java
 public class UserContext {
 
     //把构造函数私有化，外部不能new

@@ -229,7 +229,7 @@ public interface Future<V> {
 
 由此可以知道Future可以对于具体的Runnable或者Callable任务的执行结果进行**取消**、查询是否完成、获取结果：
 
-```
+```java
 public class FutureAndCallableTest {
     
     public static void main(String[] args) {

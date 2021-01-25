@@ -4,7 +4,7 @@ date: 2020-10-22 14:24:50
 tags:
 ---
 
-InputStream代表输入字节流，OuputStream代表输出字节流
+InputStream代表输入字节流，OutputStream代表输出字节流
 
 如果读写的是文本文件则可使用 Reader和Writer表示字符流，字符流传输的最小数据单位是char
 

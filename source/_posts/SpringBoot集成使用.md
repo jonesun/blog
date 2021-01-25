@@ -272,6 +272,8 @@ FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以�
 </repositories>
 ```
 
+> 第三方库想找到最新版本，除到各自官网查找外，可以到[Maven Central Repository Search](https://search.maven.org/) 中搜索
+
 ### 中文乱码解决
 
 > spring boot 2.4.2 如果控制台存在中文乱码问题，需修改application.yml:
