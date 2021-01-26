@@ -35,4 +35,4 @@ top: 1000
 [java8开发小技巧-获取两个时间的时间差](/2020/08/12/java8开发小技巧-获取两个时间的时间差)
 
 
-> 使用```System.getProperties().list(System.out);```可输出可用的环境信息列表
+> 使用```System.getProperties().list(System.out);```可输出可用的环境信息列表, 或者使用System.getenv()获取map
