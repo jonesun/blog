@@ -414,6 +414,7 @@ LOGGER.info("一共处理了【{}】", (end - start));
 
 对于尚未执行的任务全部取消, 正在执行的任务全部发出interrupt(), 停止执行 
 
+> invokeAll: ExecutorService使用invokeAll()启动集合中的每个Callable, 只有在所有任务完成后，invokeAll() 才会返回一个 Future 列表，每个任务一个 Future。但java8后推荐使用CompletableFuture
 
 下面我们来看看java默认提供的几个线程池
 

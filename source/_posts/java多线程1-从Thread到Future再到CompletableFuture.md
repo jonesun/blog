@@ -789,7 +789,7 @@ CompletableFuture.supplyAsync(() -> {});
 
 结合源码来看一下：
 
-```
+```java
 public class CompletableFuture<T> implements Future<T>, CompletionStage<T> { 
     private static final boolean USE_COMMON_POOL =
         (ForkJoinPool.getCommonPoolParallelism() > 1);

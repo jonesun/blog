@@ -1,7 +1,7 @@
 ---
-title: java设计模式-状态模式
-date: 2020-11-05 11:12:01
-categories: [java, 设计模式] 
+title: java设计模式-状态模式 
+date: 2020-11-05 11:12:01 
+categories: [java, 设计模式]
 tags: [java, 设计模式]
 ---
 
@@ -15,7 +15,7 @@ tags: [java, 设计模式]
 
  <!-- more -->
 
- # 实现
+# 实现
 
 * 定义几种状态
 
@@ -202,3 +202,22 @@ public class StateTest {
 ```
 
 所以状态模式的核心是定义一个上下文，根据传递对象的不同状态，切换不同处理(行为)，后续加入新的状态，再新增对应状态的处理逻辑(行为)即可
+
+> 状态模式可以使用枚举定义value的方式,逐级加1以便进入下个状态
+
+```java
+public enum Step {
+    DOUGH(4), ROLLED(1), SAUCED(1), CHEESED(2),
+    TOPPED(5), BAKED(2), SLICED(1), BOXED(0);
+    int effort;// Needed to get to the next step
+
+    Step(int effort) {
+        this.effort = effort;
+    }
+
+    Step forward() {
+        if (equals(BOXED)) return BOXED;
+        return values()[ordinal() + 1];
+    }
+}
+```
