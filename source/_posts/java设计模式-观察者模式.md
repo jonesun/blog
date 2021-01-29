@@ -295,4 +295,24 @@ class SpringObserverTest extends AbstractJUnit4SpringContextTests {
 我是: 王五, 收到更新数据为：Hello Worlds
 ```
 
+如果业务逻辑中需要发送事件，可以实现ApplicationEventPublisherAware接口:
+
+```java
+@Service
+public class UserService implements ApplicationEventPublisherAware { // <1>
+    private Logger logger = LoggerFactory.getLogger(getClass());
+    private ApplicationEventPublisher applicationEventPublisher;
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
+    }
+    public void register(String username) {
+        // ... 执行注册逻辑
+        logger.info("[register][执行用户({}) 的注册逻辑]", username);
+        // <2> ... 发布
+        applicationEventPublisher.publishEvent(new UserRegisterEvent(this, username));
+    }
+}
+```
+
 > spring的事件驱动模型使用的是 观察者模式 ，Spring中Observer模式常用的地方是listener的实现。
