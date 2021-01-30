@@ -302,3 +302,71 @@ pom.xml中修改
     </configuration>
 </plugin>
 ```
+
+# Aware
+
+Spring框架中提供了许多实现了Aware接口的类，这些类主要是为了辅助Spring访问容器中的数据:
+
+- BeanNameAware：能够获取bean的名称
+- BeanFactoryAware：获取当前BeanFactory，这样可以调用容器的服务
+- ApplicationContextAware：获取ApplicationContext
+- MessageSourceAware：获取MessageSource相关文本信息
+- ApplicationEventPublisherAware: 获取ApplicationEventPublisher，用于发布事件
+- ResourceLoaderAware: 获取资源加载器，可以获取外部资源文件
+- ......
+
+使用时直接实现对应接口即可:
+
+```java
+@Component
+public class ApplicationContextAwareImpl implements ApplicationContextAware {
+    
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        //这里就可以获取到ApplicationContext
+    }
+}
+```
+
+# Spring Retry
+
+[spring-retry](https://github.com/spring-projects/spring-retry) 优雅引入重试机制：只需要在需要重试的方法上加上@Retryable注解并配置重试策略属性就好，不需要太多侵入代码：
+
+- delay：默认1秒
+- maxDelay：最大重试等待时间
+- multiplier：用于计算下一个延迟时间的乘数(延迟大于0时生效)
+- random：随机重试等待时间
+
+```xml
+<dependencys>
+    <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-aspects</artifactId>
+    </dependency>
+
+    <dependency>
+        <groupId>org.springframework.retry</groupId>
+        <artifactId>spring-retry</artifactId>
+    </dependency>
+</dependencys>
+
+```
+
+一定不要忘了在启动类上加上 **@EnableRetry**
+
+使用
+```java
+@Service
+class TestService {
+    
+    @Retryable(maxAttempts=5,backoff = @Backoff(delay = 100))
+    public void retrySomething() throws Exception{
+        logger.info("printSomething is called");
+        throw new SQLException();
+    }
+}
+
+```
+> 不过需要注意的是如果被 @Retryable 注解的方法的调用方和被调用方处于同一个类中，那么重试将会失效
+
+> 另外Spring的重试机制只支持对异常进行捕获，而无法对返回值进行校验判断重试。如果想要更灵活的重试策略可以使用**Guava Retry**
