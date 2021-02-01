@@ -758,6 +758,8 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 > Spring Boot 2.4.0「新增RedisCacheMetrics」：用于监控使用redis时的puts、gets、deletes以及缓存命中率等信息
 此指标信息默认不开启，需你增加配置spring.cache.redis.enable-statistics = true
 
+笔者使用了某云服务器部署了一些测试项目，结果竟然被爆出对外存在攻击行为，最后发现是被人攻占了redis的端口6379，所以**部署 redis 建议修改默认端口或者限制 IP 访问，开启密码认证功能，并使用强密码。**
+
 [Redis vs MongoDB](https://www.baeldung.com/java-redis-mongodb)
 
 [本文示例源码](https://github.com/jonesun/spring-boot-redis-demo)

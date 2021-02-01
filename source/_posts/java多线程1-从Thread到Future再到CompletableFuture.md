@@ -26,6 +26,7 @@ java1开始，常见的两种创建线程的方式。一种是直接继承Thread
  <!-- more -->
 
 ```java
+//Thread源码
 public class Thread implements Runnable {
     private Runnable target;
 
@@ -41,18 +42,19 @@ public class Thread implements Runnable {
             target.run();
         }
     }
+    
+    //......
 }
 
 
 ```
-区别在于，Thread并没有直接实现run()方法，而调用的是 Runnable 接口中的 run() 方法，也就是说此方法是由 Runnable 子类完成的，所以如果要通过继承 Thread 类实现多线程，则必须覆写 run()；
+
+区别在于，Thread并没有直接实现run()，而是调用Runnable接口中的run()，所以如果要通过继承Thread类实现多线程，则必须覆写run()方法。
 
 但这两种方式存在一些问题：
 
 - 没有参数
-
 - 没有返回值
-
 - 无法抛出异常
 
 ```java
@@ -92,7 +94,8 @@ class Test {
 
 ```
 
-> 中断线程interrupt: 调用 interrupt() 方法，表示向当前线程打个招呼，告诉其可以中断线程了，至于什么时候终止，取决于当前线程自己，其实原理跟自定义标志位相似，只是打一个停止的标志，并不会去真的停止线程。这种通过标志位或中断操作的方式能够使线程在终止时可以继续执行内部逻辑，而不是立即停止线程，所以，这种中断线程的方式更加的优雅安全，推荐此种方式：
+> 中断线程interrupt: 调用 interrupt() 方法，表示向当前线程打个招呼，告诉其可以中断线程了，至于什么时候终止，取决于当前线程自己，其实原理跟自定义标志位相似，只是打一个停止的标志，并不会去真的停止线程。
+> 这种通过标志位或中断操作的方式能够使线程在终止时可以继续执行内部逻辑，而不是立即停止线程，所以，这种中断线程的方式更加的优雅安全，推荐此种方式：
 
 ```
 Thread thread = new Thread(() -> {
@@ -112,11 +115,9 @@ thread.interrupt();
 
 ```
 
-
-
 # 二、Callable
 
-为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call() 方法签名有 throws，所以它可以处理受检异常：
+为了解决上面的问题，java5引入了Callable类。从源码中可以看到Callable的call()方法签名有throws，所以它可以处理受检异常：
 
 ```java
 @FunctionalInterface
@@ -132,7 +133,7 @@ public interface Callable<V> {
 
 ```
 
-Callable并不可以单独执行，需要ExecutorService配合线程池使用：
+但Callable并不可以单独执行，需要ExecutorService配合线程池使用：
 
 ```
 <T> Future<T> submit(Callable<T> task);
@@ -141,11 +142,11 @@ Future<?> submit(Runnable task);
 ```
 > Future<?>解释，为了可取消性而使用 Future 但又不提供可用的结果，故声明 Future<?> 形式类型、并返回 null 作为底层任务的结果
 
-可以看到使用线程池时，无论使用Runable还是Callable，都默认返回Future，下面我们就来看看这个Future是何方神圣。
+可以看到使用线程池时，无论使用Runnable还是Callable，都默认返回Future，下面我们就来看看这个Future是何方神圣。
 
 # 三、Future
 
-Future与Callable一样都是java1.5开始引入的。同Callable与Runable一样，Future也是一个接口类：
+Future与Callable一样都是java1.5开始引入的。同Callable与Runnable一样，Future也是一个接口类：
 
 ```java
 public interface Future<V> {
@@ -196,16 +197,16 @@ public interface Future<V> {
 
 这里需要着重说明下cancel(mayInterruptIfRunning)方法：
 
-1. 如果发起cancel时任务还没有开始运行，则随后任务就不会被执行；
-1. 如果发起cancel时，任务已经执行完成了，则返回false
-1. 如果发起cancel时，任务已经被取消过了，则返回false
-1. 如果发起cancel时任务已经在运行了，则这时就需要看 mayInterruptIfRunning 参数了：
+* 如果发起cancel时任务还没有开始运行，则随后任务就不会被执行
+* 如果发起cancel时，任务已经执行完成了，则返回false
+* 如果发起cancel时，任务已经被取消过了，则返回false
+* 如果发起cancel时任务已经在运行了，则这时就需要看 mayInterruptIfRunning 参数了：
     - 如果mayInterruptIfRunning 为true, 则返回true，且当前在执行的任务会被中断
     - 如果mayInterruptIfRunning 为false, 则返回true,且正在执行的任务继续运行，直到它执行完
 
 
 ```
-//cancel源码如下
+//FutureTask中cancel源码如下
     public boolean cancel(boolean mayInterruptIfRunning) {
         if (!(state == NEW && STATE.compareAndSet
               (this, NEW, mayInterruptIfRunning ? INTERRUPTING : CANCELLED)))
@@ -236,7 +237,7 @@ public class FutureAndCallableTest {
         ExecutorService executorService = Executors.newSingleThreadExecutor();
 
         System.out.println(Thread.currentThread().getName() + "主线程开始执行");
-        Future<String> stringFuture =executorService.submit(new Callable<String>() {
+        Future<String> stringFuture = executorService.submit(new Callable<String>() {
             @Override
             public String call() throws Exception {
                 System.out.println( Thread.currentThread().getName() + "执行Callable的call方法");
@@ -287,6 +288,16 @@ public class FutureAndCallableTest {
 
 通过查看源码，可以发现FutureTask实现了RunnableFuture接口，而RunnableFuture又继承了Runnable, Future两个接口。
 
+```java
+public interface RunnableFuture<V> extends Runnable, Future<V> {
+    /**
+     * Sets this Future to the result of its computation
+     * unless it has been cancelled.
+     */
+    void run();
+}
+```
+
 所以就可以解释为什么ExecutorService会返回Future了，因为它既可以作为Runnable被线程执行，又可以作为Future得到Callable的返回值。
 
 ## Future不足
@@ -294,27 +305,32 @@ public class FutureAndCallableTest {
 以上是单个Future的使用，但在开发过程中，我们可能会有以下需求
 
 - 将两个异步计算合并为一个（这两个异步计算之间相互独立，同时第二个又依赖于第一个的结果）
-- 等待 Future 集合中的所有任务都完成
-- 仅等待 Future 集合中最快结束的任务完成，并返回它的结果
+- 等待Future集合中的所有任务都完成
+- 仅等待Future集合中最快结束的任务完成，并返回它的结果
+- ...
 
+那么单使用Future是不够的，Future很难直接表述多个Future结果之间的依赖性，没有提供方法去判断第一个完成的任务；同时Future也没有提供Callback机制，只能通过阻塞的get方法去获取结果。
 
-那么单使用Future是不够的，Future很难直接表述多个Future 结果之间的依赖性，没有提供方法去判断第一个完成的任务；同时Future也没有提供Callback机制，只能通过阻塞的get方法去获取结果。
-
-所以java8引入了CompletableFuture
+所以java8引入了**CompletableFuture**
 
 # 四、CompletableFuture
 
-CompletableFuture也实现了Future接口，另外还实现了CompletionStage接口(它里面的方法表示的是是在某个运行阶段得到了结果之后要做的事情)
+CompletableFuture实现了Future接口，另外还实现了CompletionStage接口(它里面的方法表示的是是在某个运行阶段得到了结果之后要做的事情)
 
 ## create
 
 ```
 //如果没有指定，默认会在ForkJoinPool.commonPool()中执行
-public static CompletableFuture<Void> runAsync(Runnable runnable)
-public static CompletableFuture<Void> runAsync(Runnable runnable, Executor executor)
-public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier)
-public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor)
+public static CompletableFuture<Void> runAsync(Runnable runnable);
+public static CompletableFuture<Void> runAsync(Runnable runnable, Executor executor);
+public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier);
+public static <U> CompletableFuture<U> supplyAsync(Supplier<U> supplier, Executor executor);
+
 ```
+
+
+> CompletableFuture默认运行使用的是ForkJoin的的线程池，这个线程池默认线程数是CPU的核数，所以强烈建议使用后两个方法，根据任务类型不同，主动创建线程池，进行资源隔离，避免互相干
+扰
 
 ## 常用方法
 
@@ -336,12 +352,17 @@ public <U> CompletionStage<U> thenApplyAsync(Function<? super T,? extends U> fn,
 
 > 示例
 
-```
-public void thenApply() {
+```java
+class Test {
+    
+  public void thenApply() {
     String result = CompletableFuture.supplyAsync(() -> "hello").thenApply(s -> s + " world").join();
     //同样可以使用get进行阻塞获取值，返回值需自己获取
     System.out.println(result);
+  }
+  
 }
+
 ```
 
 >! 在线程操作中，可以使用 join() 方法让一个线程强制运行，线程强制运行期间，其他线程无法运行，必须等待此线程完成之后才可以继续执行，join在遇到底层的异常时，会抛出未受查的CompletionException，get在遇到底层异常时，会抛出受查异常ExecutionException
@@ -359,12 +380,12 @@ public CompletionStage<Void> thenAcceptAsync(Consumer<? super T> action,Executor
 
 > 示例
 
-```
-
-public void thenAccept(){    
-
-    //返回值在回调中
-    CompletableFuture.supplyAsync(() -> "hello").thenAccept(s -> System.out.println(s+" world"));
+```java
+class Test {
+  public void thenAccept(){
+      //返回值在回调中
+      CompletableFuture.supplyAsync(() -> "hello").thenAccept(s -> System.out.println(s+" world"));
+  }
 }
 ```
 
@@ -380,22 +401,25 @@ public CompletionStage<Void> thenRunAsync(Runnable action,Executor executor);
 
 > 示例
 
-```
-public void thenRun(){
-    CompletableFuture.supplyAsync(() -> {
-        try {
-            //线程休眠优先使用TimeUnit的方法
-            //如果需要休眠1分钟TimeUnit.MINUTES.sleep(1);Thread.sleep(60000);明显可读性TimeUnit更强
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            //中断线程会抛出此异常
-            e.printStackTrace();
-        }
-        return "hello1";
-    }).thenRun(() -> System.out.println("hello world"));
-    //这里仅仅为测试方便让主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭。实际开发不能这么写
-    while (true){}
+```java
+class Test { 
+  public void thenRun(){
+      CompletableFuture.supplyAsync(() -> {
+          try {
+              //线程休眠优先使用TimeUnit的方法
+              //如果需要休眠1分钟TimeUnit.MINUTES.sleep(1);Thread.sleep(60000);明显可读性TimeUnit更强
+              TimeUnit.SECONDS.sleep(2);
+          } catch (InterruptedException e) {
+              //中断线程会抛出此异常
+              e.printStackTrace();
+          }
+          return "hello1";
+      }).thenRun(() -> System.out.println("hello world"));
+      //这里仅仅为测试方便让主线程不要立刻结束，否则CompletableFuture默认使用的线程池会立刻关闭。实际开发不能这么写
+      while (true){}
+  }
 }
+
 ```
 
  ### 4. thenCombine
@@ -411,31 +435,34 @@ public <U,V> CompletionStage<V> thenCombineAsync(CompletionStage<? extends U> ot
 
 > 示例
 
-```
-public void thenCombine() {
-    String result = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "hello";
-    }).thenCombine(CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "world";
-    }), (s1, s2) -> s1 + " " + s2).join();
-    System.out.println(result);
+```java
+class Test { 
+  public void thenCombine() {
+      String result = CompletableFuture.supplyAsync(() -> {
+          try {
+              TimeUnit.SECONDS.sleep(2);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
+          return "hello";
+      }).thenCombine(CompletableFuture.supplyAsync(() -> {
+          try {
+              TimeUnit.SECONDS.sleep(3);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
+          return "world";
+      }), (s1, s2) -> s1 + " " + s2).join();
+      System.out.println(result);
+  }
 }
+
 
 ```
 
  ### 5. applyToEither
  
- 两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的转化操作
+ 两个CompletionStage，谁计算的快，就用那个CompletionStage的结果进行下一步的转化操作(需要注意的是，两个CompletionStage都会执行完)
 
 ```
 //两种渠道完成同一个事情，就可以调用这个方法，找一个最快的结果进行处理返回
@@ -446,25 +473,28 @@ public <U> CompletionStage<U> applyToEitherAsync(CompletionStage<? extends T> ot
 
 > 示例
 
-```
-public void applyToEither() {
-    String result = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "s1";
-    }).applyToEither(CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "hello world";
-    }), s -> s).join();
-    System.out.println(result);
+```java
+class Test { 
+  public void applyToEither() {
+      String result = CompletableFuture.supplyAsync(() -> {
+          try {
+              TimeUnit.SECONDS.sleep(3);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
+          return "s1";
+      }).applyToEither(CompletableFuture.supplyAsync(() -> {
+          try {
+              TimeUnit.SECONDS.sleep(2);
+          } catch (InterruptedException e) {
+              e.printStackTrace();
+          }
+          return "hello world";
+      }), s -> s).join();
+      System.out.println(result);
+  }
 }
+
 ```
 
  ### 6. acceptEither
@@ -479,25 +509,27 @@ public CompletionStage<Void> acceptEitherAsync(CompletionStage<? extends T> othe
 
 > 示例
 
-```
-public static void acceptEither() {
+```java
+class Test {
+  public static void acceptEither() {
     CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "s1";
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return "s1";
     }).acceptEither(CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(2);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "hello world";
+      try {
+        TimeUnit.SECONDS.sleep(2);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return "hello world";
     }), System.out::println);
     while (!future.isDone()) {
     }
+  }
 }
 ```
 
@@ -505,25 +537,28 @@ public static void acceptEither() {
  
  两个CompletionStage都运行完后执行
 
-```
-public void runAfterBoth(){
+```java
+class Test {
+  public void runAfterBoth() {
     CompletableFuture.supplyAsync(() -> {
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "s1";
+      try {
+        Thread.sleep(2000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return "s1";
     }).runAfterBothAsync(CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "s2";
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return "s2";
     }), () -> System.out.println("hello world"));
     //这里仅仅为测试方便，实际开发不能这么写
-    while (true){}
+    while (true) {
+    }
+  }
 }
 ```
 
@@ -537,25 +572,27 @@ public CompletionStage<T> exceptionally(Function<Throwable, ? extends T> fn);
 
 > 示例
 
-```
-public void exceptionally() {
+```java
+class Test {
+  public void exceptionally() {
     String result = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (1 == 1) {
-            throw new RuntimeException("测试一下异常情况");
-        }
-        return "s1";
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      if (1 == 1) {
+        throw new RuntimeException("测试一下异常情况");
+      }
+      return "s1";
     }).exceptionally(e -> {
 
-        //修复空指针
-        System.out.println(e.getMessage());
-        return "hello world";
+      //修复空指针
+      System.out.println(e.getMessage());
+      return "hello world";
     }).join();
     System.out.println(result);
+  }
 }
 ```
  ### 9. whenComplete
@@ -571,34 +608,36 @@ public CompletionStage<T> whenCompleteAsync(BiConsumer<? super T, ? super Throwa
 
 > 示例
 
-```
-public void whenComplete() {
+```java
+class Test {
+  public void whenComplete() {
     String result = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (1 == 1) {
-            throw new RuntimeException("测试一下异常情况");
-        }
-        return "s1";
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      if (1 == 1) {
+        throw new RuntimeException("测试一下异常情况");
+      }
+      return "s1";
     }).whenComplete((s, t) -> {
-        System.out.println("whenComplete>>s: " + s);
-        if(t != null) {
-            System.out.println("whenComplete>>throwable" + t.getMessage());
-        }
+      System.out.println("whenComplete>>s: " + s);
+      if (t != null) {
+        System.out.println("whenComplete>>throwable" + t.getMessage());
+      }
     }).exceptionally(e -> {
-        System.out.println("exceptionally>>throwable: " + e.getMessage());
-        return "hello world from exceptionally";
+      System.out.println("exceptionally>>throwable: " + e.getMessage());
+      return "hello world from exceptionally";
     }).join();
     System.out.println("result: " + result);
+  }
 }
 ```
 
  ### 10. handle
  
- 运行完成时，对结果的处理
+运行完成时，对结果的处理
 
 handle 方法和 thenApply 方法处理方式基本一样。不同的是 handle 是在任务完成后再执行，还可以处理异常的任务。thenApply 只可以执行正常的任务，任务出现异常则不执行 thenApply 方法。
 
@@ -610,27 +649,29 @@ public <U> CompletionStage<U> handleAsync(BiFunction<? super T, Throwable, ? ext
 
 > 示例
 
-```
-public static void handle() {
+```java
+class Test {
+  public static void handle() {
     String result = CompletableFuture.supplyAsync(() -> {
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        //出现异常
-        if (1 == 1) {
-            throw new RuntimeException("测试一下异常情况");
-        }
-        return "s1";
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      //出现异常
+      if (1 == 1) {
+        throw new RuntimeException("测试一下异常情况");
+      }
+      return "s1";
     }).handle((s, t) -> {
-        if (t != null) {
-            return "hello world";
-        }
-        return s;
+      if (t != null) {
+        return "hello world";
+      }
+      return s;
     }).join();
     System.out.println("result: " + result);
 
+  }
 }
 ```
 
@@ -646,18 +687,20 @@ public <U> CompletableFuture<U> thenComposeAsync(Function<? super T, ? extends C
 
 > 示例
 
-```
-public void thenCompose() throws Exception {
+```java
+class Test {
+  public void thenCompose() throws Exception {
     Integer result = CompletableFuture.supplyAsync(() -> {
-        int t = new Random().nextInt(3);
-        System.out.println("t1=" + t);
-        return t;
+      int t = new Random().nextInt(3);
+      System.out.println("t1=" + t);
+      return t;
     }).thenCompose(param -> CompletableFuture.supplyAsync(() -> {
-        int t = param * 2;
-        System.out.println("t2=" + t);
-        return t;
+      int t = param * 2;
+      System.out.println("t2=" + t);
+      return t;
     })).join();
     System.out.println("result : " + result);
+  }
 }
 ```
 
@@ -671,46 +714,48 @@ public void thenCompose() throws Exception {
 
 示例
 
-```
-public void anyOf() {
+```java
+class Test {
+  public void anyOf() {
 
     CompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> {
-        System.out.println("future1执行...");
-        try {
-            TimeUnit.SECONDS.sleep(3);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("future1执行完成");
-        return "from future1";
+      System.out.println("future1执行...");
+      try {
+        TimeUnit.SECONDS.sleep(3);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      System.out.println("future1执行完成");
+      return "from future1";
     });
     CompletableFuture<String> future2 = CompletableFuture.supplyAsync(() -> {
-        System.out.println("future2执行...");
-        try {
-            TimeUnit.SECONDS.sleep(4);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("future2执行完成");
-        return "from future2";
+      System.out.println("future2执行...");
+      try {
+        TimeUnit.SECONDS.sleep(4);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      System.out.println("future2执行完成");
+      return "from future2";
     });
     CompletableFuture<String> future3 = CompletableFuture.supplyAsync(() -> {
-        System.out.println("future3执行...");
-        try {
-            TimeUnit.SECONDS.sleep(5);
-            System.out.println("future3执行完成");
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return "from future3";
+      System.out.println("future3执行...");
+      try {
+        TimeUnit.SECONDS.sleep(5);
+        System.out.println("future3执行完成");
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      return "from future3";
     });
 
-    CompletableFuture<Object> future =  CompletableFuture.anyOf(future1,future2,future3);
+    CompletableFuture<Object> future = CompletableFuture.anyOf(future1, future2, future3);
     try {
-        System.out.println(future.get());
+      System.out.println(future.get());
     } catch (InterruptedException | ExecutionException e) {
-        e.printStackTrace();
+      e.printStackTrace();
     }
+  }
 }
 ```
 
@@ -724,36 +769,43 @@ public static CompletableFuture<Void> allOf(CompletableFuture<?>... cfs){}
 
 > 示例
 
-```
-CompletableFuture<Void> future =  CompletableFuture.allOf(future1,future2,future3);
-try {
-    System.out.println(future.get()); //return null
-} catch (InterruptedException | ExecutionException e) {
-    e.printStackTrace();
+```java
+class Test {
+    void testAllOf() {
+      CompletableFuture<Void> future =  CompletableFuture.allOf(future1,future2,future3);
+      try {
+        System.out.println(future.get()); //return null
+      } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+      } 
+    }
 }
 ```
+
 可以看到使用allOf的话，默认是没有返回值的。当需要获取返回值做一些处理时，可以利用java8的Stream来组合多个future的结果
 
 > 示例
 
-```
-CompletableFuture<Void> future = CompletableFuture.allOf(future1, future2, future3)
-        .thenApply(v ->
-                Stream.of(future1, future2, future3)
-                        .map(CompletableFuture::join)
-                        .collect(Collectors.joining(" ")))
-        .thenAccept(System.out::println);
-try {
-    System.out.println(future.get(20, TimeUnit.SECONDS)); //return null
-} catch (InterruptedException | ExecutionException | TimeoutException e) {
-    e.printStackTrace();
+```java
+class Test {
+    void testAllOf() {
+      CompletableFuture<Void> future = CompletableFuture.allOf(future1, future2, future3)
+              .thenApply(v ->
+                      Stream.of(future1, future2, future3)
+                              .map(CompletableFuture::join)
+                              .collect(Collectors.joining(" ")))
+              .thenAccept(System.out::println);
+      try {
+        System.out.println(future.get(20, TimeUnit.SECONDS)); //return null
+      } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        e.printStackTrace();
+      }
+    }
 }
+
 ```
 
-> CompletableFuture默认运行使用的是ForkJoin的的线程池，这个线程池默认线程数是CPU的核数，所以强烈建议使用后两个方法，根据任务类型不同，主动创建线程池，进行资源隔离，避免互相干
-扰
-
-以上是CompletableFuture的常用方法，另外由于方法都是返回CompletableFuture，故可以通过各种排列组合，完成日常工作中的复杂逻辑。如获取商品的信息时，需要调用多个服务来处理这一个请求并返回结果。这里可能会涉及到并发编程，我们完全可以使用Java 8的CompletableFuture或者RxJava来实现
+以上是CompletableFuture的常用方法，另外由于方法都是返回CompletableFuture，故可以通过各种排列组合，完成日常工作中的复杂逻辑。如获取商品的信息时，需要调用多个服务来处理这一个请求并返回结果等
 
 ## Java9新增
 
@@ -810,11 +862,11 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
 //多核情况下，默认使用ForkJoinPool.commonPool()
 ```
 
-> parallelStream和CompletableFuture  默认使用的都是 ForkJoinPool.commonPool() 默认线程池；
+> 需要说明的是parallelStream和CompletableFuture默认使用的都是 ForkJoinPool.commonPool() 默认线程池；
 
 基于服务器内核的限制，如果你是八核，每次线程只能起八个;适用于对list密集计算操作充分利用CPU资源，如果需要调用远端服务不建议使用
 
-如果所有 CompletableFuture 都使用默认[ForkJoinPool.commonPool()](/2020/07/28/java多线程3-fork-join框架)线程池，一旦有任务执行很慢的 I/O 操作，就会导致所有线
+如果所有 CompletableFuture 都使用默认[ForkJoinPool.commonPool()](/2020/07/28/java多线程3-fork-join框架) 线程池，一旦有任务执行很慢的 I/O 操作，就会导致所有线
 程都阻塞在 I/O 操作上，进而影响系统整体性能。
 所以，建议大家在生产环境使用时，根据不同的业务类型创建不同的线程池，以避免互相影响。
 
