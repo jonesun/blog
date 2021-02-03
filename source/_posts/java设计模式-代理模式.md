@@ -30,8 +30,9 @@ tags: [java, 设计模式]
 
 > 适合预先确定了代理与被代理者的关系，需要一个接口(表示要完成的功能)，一个真实对象和一个代理对象(两者都需实现这个接口)
 
+### 示例一
 
-```
+```java
 //定义一个程序员接口
 public interface ICoder {
     
@@ -118,13 +119,67 @@ public class Customer {
 
 ```
 
+### 示例二
+
+OnJava8中的样例：
+
+```java
+interface ProxyBase {
+    void f();
+
+    void g();
+
+    void h();
+}
+
+class Proxy implements ProxyBase {
+    private ProxyBase implementation;
+
+    Proxy() {
+        implementation = new Implementation();
+    }
+    // Pass method calls to the implementation:
+    @Override
+    public void f() { implementation.f(); }
+    @Override
+    public void g() { implementation.g(); }
+    @Override
+    public void h() { implementation.h(); }
+}
+
+class Implementation implements ProxyBase {
+    public void f() {
+        System.out.println("Implementation.f()");
+    }
+
+    public void g() {
+        System.out.println("Implementation.g()");
+    }
+
+    public void h() {
+        System.out.println("Implementation.h()");
+    }
+}
+
+public class ProxyDemo {
+    public static void main(String[] args) {
+        Proxy p = new Proxy();
+        p.f();
+        p.g();
+        p.h();
+    }
+}
+```
+
+> 具体实现不需要与代理对象具有相同的接口;只要代理对象以某种方式“代表具体实现的方法调用，那么基本思想就算实现了。然而，拥有一个公共接口是很方便的，因此具体实现必须实现代理对象调用的所有方法
+
 ## 动态代理
 
 > 代理类在程序运行时创建的代理方式被成为动态代理
 
 使用java.lang.reflect 包中的 Proxy 类与 InvocationHandler 接口
 
-```
+```java
 //定义一个老师接口
 public interface Teacher {
 
@@ -194,7 +249,7 @@ public class DynamicProxyTest {
 
 其实就是JDK帮我们自动编写了类（不需要源码，可以直接生成字节码）:
 
-```
+```java
 public class HelloDynamicProxy implements Hello {
     InvocationHandler handler;
     public HelloDynamicProxy(InvocationHandler handler) {
@@ -215,7 +270,7 @@ public class HelloDynamicProxy implements Hello {
 
 如果是spring 项目直接使用就行，非spring项目可引用：
 
-```
+```xml
 <dependency>
         <groupId>cglib</groupId>
         <artifactId>cglib</artifactId>
@@ -223,7 +278,7 @@ public class HelloDynamicProxy implements Hello {
 </dependency>
 ```
 
-```
+```java
 //定义一个普通类
 public class UserService {
 
@@ -289,6 +344,8 @@ public class ProxyFactory {
 }
 
 ```
+
+# Spring中的应用
 
 在Spring的AOP编程中:
 

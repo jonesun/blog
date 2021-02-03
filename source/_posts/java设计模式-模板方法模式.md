@@ -25,7 +25,7 @@ Java标准库也有很多模板方法的应用。在集合类中，AbstractList�
 
   因为声明了抽象方法，自然整个类也必须是抽象类。如何实现init()和startPlay()、endPlay()这三个方法就交给子类了。
 
- ```
+ ```java
  /**
  * 游戏
  */
@@ -59,7 +59,7 @@ public abstract class Game {
   
 子类其实并不关心核心代码pay()的逻辑，甚至如何保存记录saveRecord()，它只需要关心如何完成三个子方法就可以了。
 
-```
+```java
 /**
  * 足球游戏
  */
@@ -86,7 +86,7 @@ public class FootballGame extends Game {
 
 * 测试验证
   
-```
+```java
 /**
  * 测试类
  */

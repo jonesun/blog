@@ -20,7 +20,7 @@ tags: [java, 设计模式]
 
 全局只有一个
 
-```
+```java
 public class Singleton {
     // 静态字段引用唯一实例:
     private static final Singleton INSTANCE = new Singleton();
@@ -48,7 +48,7 @@ public class Singleton {
 
 使用枚举实现
 
-```
+```java
 
 public enum  EnumSingleton {
 
@@ -61,9 +61,14 @@ public enum  EnumSingleton {
 
 }
 
-//使用
-EnumSingleton enumSingleton = EnumSingleton.INSTANCE;
-enumSingleton.hello();
+class Test {
+    
+    void test() {
+        //使用
+        EnumSingleton enumSingleton = EnumSingleton.INSTANCE;
+        enumSingleton.hello();
+    }
+}
 
 //编译器编译出的class大概就像这样
 public final class EnumSingleton extends Enum { // 继承自Enum，标记为final class
@@ -164,7 +169,7 @@ class MySpringTestBeanTest {
 
 另外如果需要保证每个线程中都只有一个的话，借助[ThreadLocal](/2020/08/24/java多线程10-ThreadLocal)：
 
-```
+```java
  public class ThreadSingleton {
     
     private static final ThreadLocal<ThreadSingleton> THREAD_LOCAL = ThreadLocal.withInitial(ThreadSingleton::new);

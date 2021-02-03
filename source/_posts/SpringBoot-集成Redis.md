@@ -13,7 +13,7 @@ tags: [java, springboot]
 
 > 一种 NoSQL（not-only sql，泛指非关系型数据库）的数据库，性能优秀，数据在内存中，读写速度非常快，支持并发 10W QPS
 
-[Redis](https://redis.io/) 的应用场景包括：缓存系统（“热点”数据：高频读、低频写）、计数器、消息队列系统、排行榜、社交网络和实时系统。
+[Redis](https://redis.io/) [中文网站](http://www.redis.cn/) 的应用场景包括：缓存系统（“热点”数据：高频读、低频写）、计数器、消息队列系统、排行榜、社交网络和实时系统。
 
 ## 为什么要使用redis
 
@@ -734,9 +734,79 @@ private ConcurrentHashMap<String, Lock> lockConcurrentHashMap = new ConcurrentHa
 
 master节点挂了以后，redis就不能对外提供写服务了，因为剩下的slave不能成为master
 
+### 搭建方式
+
+这里就演示windows docker desktop下的搭建方式, 以下命令都用cmd或者powerShell
+
+1. 拉取最新redis镜像 ```docker pull redis```
+
+2. 从官方下载最新的redis, 找到redis.conf文件，拷贝到本地某个文件夹下，如：D:\env\docker\redis\config\redis.conf
+
+3. 配置并运行主服务器
+
+redis.conf中找到下面的配置并修改:
+
+```
+# bind 127.0.0.1
+requirepass 123456 #给redis设置密码
+appendonly yes #redis持久化　　默认是no
+
+dir /usr/local/etc/redis/redis-master/data/ #db等相关目录位置(根据自己需要配置)
+```
+> bind配置可以修改为bind 0.0.0.0, 或者指定ip, 或者直接注释掉(这里我们选择直接注释掉，允许所有来自于可用网络接口的连接)，appendonly开启后，Redis会把每次写入的数据在接收后都写入appendonly.aof文件，每次启动时Redis都会先把这个文件的数据读入内存里
+
+实际项目中可能还需要记录日志，可配置logfile并映射本地文件即可
+
+```shell
+docker run --name redis -p 6379:6379 -v /d/env/docker/redis/conf/redis.conf:/usr/local/etc/redis/redis-master/redis.conf -v /d/env/docker/redis/data/:/usr/local/etc/redis/redis-master/data/ -d redis redis-server /usr/local/etc/redis/redis-master/redis.conf
+```
+
+> #docker run -p <容器端口>:<主机端口> --name <容器名> -v <本地配置文件映射容器配置文件> -v <本地文件夹挂载到容器文件夹> -d(表示以守护进程方式启动容器) <启动redis服务并制定配置文件(容器中的路径)>
+
+4. 使用Redis Desktop Manager测试是否连接成功
+
+5. 配置从服务器1，拷贝新的redis.conf并重命名为redis-slave-1.conf，找到下面的配置并编辑:
+
+```
+port 6380
+# bind 127.0.0.1
+requirepass 123456 #给redis设置密码
+appendonly yes #redis持久化　　默认是no
+
+masterauth 123456 #主服务器密码
+# replicaof <master ip> <master port>
+replicaof 192.168.31.13 6379 #Redis主机(Master)IP 端口
+```
+
+> replicaof为主服务器的ip+端口(在redis5.x的主从配置中，从机配置要配置 replicaof 参数。而早期版本，要配置的是slaveof参数)，如果主服务器设置了密码则需配置masterauth
+
+6. 运行从服务器1
+
+```shell
+docker run --name redis-slave-1 -p 6380:6380 -v /d/env/docker/redis/conf/redis-slave-1.conf:/usr/local/etc/redis/redis-slave-1/redis.conf -d redis redis-server /usr/local/etc/redis/redis-slave-1/redis.conf
+```
+
+7. 按照类似步骤配置并运行从服务器2
+
+为了方便，直接拷贝redis-slave-1.conf并修改port即可
+
+redis-slave-2.conf
+```
+port 6381
+```
+
+运行
+
+```shell
+docker run --name redis-slave-2 -p 6381:6381 -v /d/env/docker/redis/conf/redis-slave-2.conf:/usr/local/etc/redis/redis-slave-2/redis.conf -d redis redis-server /usr/local/etc/redis/redis-slave-2/redis.conf
+```
+
+以上便可以搭建1主2从的master/slaver(主从复制)模式, 通过向主服务器写入数据，两个从服务器即会自动同步数据
+
+
 ## sentinel(哨兵)模式
 
-部署在多台服务器中, 心跳机制+投票裁决，是建立在主从模式的基础上，这也是目前的**主流方案**, 可参考[官方文章-Redis Sentinel文档](https://redis.io/topics/sentinel)
+Sentinel 其实是运行在特殊模式下的 redis server, 部署在多台服务器中, 心跳机制+投票裁决，是建立在主从模式的基础上，这也是目前的**主流方案**, 可参考[官方文章-Redis Sentinel文档](https://redis.io/topics/sentinel)
 
 **优点**
 
@@ -745,6 +815,73 @@ master节点挂了以后，redis就不能对外提供写服务了，因为剩下
 **缺点**
 
 当数据量过大到一台服务器存放不下的情况时，主从模式或sentinel模式就不能满足需求了，这个时候需要对存储的数据进行分片，将数据存储到多个Redis实例中
+
+### 搭建方式
+
+先搭建1个主服务器和两个从服务器，搭建方式同上面的master/slaver(主从复制)模式，我们还是通过windows docker desktop的方式
+
+下面再搭建3个哨兵(一个哨兵进程对Redis服务器进行监控，可能会出现问题，为此，需要使用多个哨兵进行监控。各个哨兵之间还会进行监控，这样就形成了多哨兵模式)
+
+1. 哨兵1
+
+从官方下载最新的redis, 找到sentinel.conf文件(windows版的是没有这个文件的，需要自己新建或者官网下载linux版本)，拷贝到本地某个文件夹下，如：D:\env\docker\redis\config\sentinel-1.conf
+
+编辑文件
+
+```
+# 禁止保护模式
+protected-mode no
+# 配置监听的主服务器，这里sentinel monitor代表监控，mymaster代表服务器的名称，可以自定义，192.168.11.128代表监控的主服务器，6379代表端口，2代表只有两个或两个以上的哨兵认为主服务器不可用的时候，才会进行failover操作。
+sentinel monitor mymaster 192.168.11.128 6379 2
+# sentinel author-pass定义服务的密码，mymaster是服务名称，123456是Redis服务器密码
+# sentinel auth-pass <master-name> <password>
+sentinel auth-pass mymaster 123456
+logfile "./sentinel_log.log"
+```
+
+运行
+
+```shell
+docker run --name sentinel-1  -v  /d/env/docker/redis/conf/sentinel-1.conf:/usr/local/etc/redis/sentinel-1.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-1.conf
+```
+
+2. 哨兵2
+
+拷贝一份sentinel-1.conf, 重命名为sentinel-2.conf，修改端口号即可
+
+```shell
+port 26380
+```
+
+运行
+
+```shell
+docker run --name sentinel-2  -v  /d/env/docker/redis/conf/sentinel-2.conf:/usr/local/etc/redis/sentinel-2.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-2.conf
+```
+
+3. 哨兵3
+
+同样拷贝一份sentinel-1.conf, 重命名为sentinel-3.conf，修改端口号即可
+
+```shell
+port 26381
+```
+
+运行
+
+```shell
+docker run --name sentinel-3  -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/local/etc/redis/sentinel-3.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-3.conf
+```
+
+> 注意启动的顺序: 首先是主机的Redis服务进程，然后启动从机的服务进程，最后启动3个哨兵的服务进程
+
+测试
+
+使用redis-cli –p 26379查看信息
+
+![sentinel-info](sentinel-info.png)
+
+关闭主服务器，等待30秒
 
 ## cluster(集群)模式
 
