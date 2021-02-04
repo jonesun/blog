@@ -803,6 +803,12 @@ docker run --name redis-slave-2 -p 6381:6381 -v /d/env/docker/redis/conf/redis-s
 
 以上便可以搭建1主2从的master/slaver(主从复制)模式, 通过向主服务器写入数据，两个从服务器即会自动同步数据
 
+> 如果是本机dockers，可以在每个redis-xx.conf中修改,以便显示声明物理机的ip与port，如redis-slave-1.conf
+```
+replica-announce-ip 192.168.31.13 # 这里写自己的ip地址
+replica-announce-port 6380 # 这里写绑定的redis服务端口
+```
+
 
 ## sentinel(哨兵)模式
 
@@ -820,7 +826,7 @@ Sentinel 其实是运行在特殊模式下的 redis server, 部署在多台服�
 
 先搭建1个主服务器和两个从服务器，搭建方式同上面的master/slaver(主从复制)模式，我们还是通过windows docker desktop的方式
 
-下面再搭建3个哨兵(一个哨兵进程对Redis服务器进行监控，可能会出现问题，为此，需要使用多个哨兵进行监控。各个哨兵之间还会进行监控，这样就形成了多哨兵模式)
+下面再搭建1个哨兵
 
 1. 哨兵1
 
@@ -832,7 +838,7 @@ Sentinel 其实是运行在特殊模式下的 redis server, 部署在多台服�
 # 禁止保护模式
 protected-mode no
 # 配置监听的主服务器，这里sentinel monitor代表监控，mymaster代表服务器的名称，可以自定义，192.168.11.128代表监控的主服务器，6379代表端口，2代表只有两个或两个以上的哨兵认为主服务器不可用的时候，才会进行failover操作。
-sentinel monitor mymaster 192.168.11.128 6379 2
+sentinel monitor mymaster 192.168.11.128 6379 1
 # sentinel author-pass定义服务的密码，mymaster是服务名称，123456是Redis服务器密码
 # sentinel auth-pass <master-name> <password>
 sentinel auth-pass mymaster 123456
@@ -843,6 +849,18 @@ logfile "./sentinel_log.log"
 
 ```shell
 docker run --name sentinel-1  -v  /d/env/docker/redis/conf/sentinel-1.conf:/usr/local/etc/redis/sentinel-1.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-1.conf
+```
+
+
+
+实际环境中对于哨兵也会有多个，一个哨兵进程对Redis服务器进行监控，可能会出现问题，为此，需要使用多个哨兵进行监控。各个哨兵之间还会进行监控，这样就形成了多哨兵模式
+
+需先修改sentinel-1.conf中的sentinel monitor
+
+```
+
+# 配置监听的主服务器，这里sentinel monitor代表监控，mymaster代表服务器的名称，可以自定义，192.168.11.128代表监控的主服务器，6379代表端口，2代表只有两个或两个以上的哨兵认为主服务器不可用的时候，才会进行failover操作。
+sentinel monitor mymaster 192.168.11.128 6379 2
 ```
 
 2. 哨兵2
@@ -873,6 +891,7 @@ port 26381
 docker run --name sentinel-3  -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/local/etc/redis/sentinel-3.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-3.conf
 ```
 
+
 > 注意启动的顺序: 首先是主机的Redis服务进程，然后启动从机的服务进程，最后启动3个哨兵的服务进程
 
 测试
@@ -881,7 +900,29 @@ docker run --name sentinel-3  -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/
 
 ![sentinel-info](sentinel-info.png)
 
-关闭主服务器，等待30秒
+关闭主服务器，等待30秒， 可以看到已经切换到某个从服务器中了
+
+> > 如果是本机dockers，可以在每个sentinel-xx.conf中修改,以便显示声明物理机的ip与port，如sentinel-1.conf
+
+```
+sentinel announce-ip <ip> # 这里写自己的ip地址
+sentinel announce-port <port> # 这里写绑定的redis-sentinel服务端口
+```
+
+
+### Springboot 整合哨兵模式
+
+application.yml
+```yaml
+spring:
+  redis:
+    database: 0
+    password: 12345
+    sentinel:
+      master: mymaster ## master 名称
+      ## 哨兵节点的 ip和端口好，哨兵会托管主从的架构
+      nodes: 192.168.225.129:26379,192.168.225.132:26379,192.168.225.133:26379
+```
 
 ## cluster(集群)模式
 
