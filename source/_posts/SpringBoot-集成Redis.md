@@ -151,14 +151,14 @@ spring:
 ```yaml
 lettuce:
     pool:
-    ## 连接池最大连接数（使用负值表示没有限制） 默认8
-    max-active: 500
-    ## 连接池中的最小空闲连接 默认0
-    min-idle: 0
-    ## 连接池中的最大空闲连接 默认8
-    max-idle: 500
-    ##连接池最大阻塞等待时间（使用负值表示没有限制）
-    max-wait: 1000
+        ## 连接池最大连接数（使用负值表示没有限制） 默认8
+        max-active: 500
+        ## 连接池中的最小空闲连接 默认0
+        min-idle: 0
+        ## 连接池中的最大空闲连接 默认8
+        max-idle: 500
+        ##连接池最大阻塞等待时间（使用负值表示没有限制）
+        max-wait: 1000
 ```
 
 - 使用jedis
@@ -166,18 +166,18 @@ lettuce:
 ```yaml
 jedis:
     pool:
-    ## 连接池最大连接数（使用负值表示没有限制）
-    #spring.redis.pool.max-active=8
-    max-active: 8
-    ## 连接池最大阻塞等待时间（使用负值表示没有限制）
-    #spring.redis.pool.max-wait=-1
-    max-wait: -1
-    ## 连接池中的最大空闲连接
-    #spring.redis.pool.max-idle=8
-    max-idle: 8
-    ## 连接池中的最小空闲连接
-    #spring.redis.pool.min-idle=0
-    min-idle: 0
+        ## 连接池最大连接数（使用负值表示没有限制）
+        #spring.redis.pool.max-active=8
+        max-active: 8
+        ## 连接池最大阻塞等待时间（使用负值表示没有限制）
+        #spring.redis.pool.max-wait=-1
+        max-wait: -1
+        ## 连接池中的最大空闲连接
+        #spring.redis.pool.max-idle=8
+        max-idle: 8
+        ## 连接池中的最小空闲连接
+        #spring.redis.pool.min-idle=0
+        min-idle: 0
 ```
 
 ## 使用
@@ -826,6 +826,8 @@ Sentinel 其实是运行在特殊模式下的 redis server, 部署在多台服�
 
 先搭建1个主服务器和两个从服务器，搭建方式同上面的master/slaver(主从复制)模式，我们还是通过windows docker desktop的方式
 
+> 由于 Sentinel 启动，故障切换，日志文件创建 等情况均需要修改配置文件，因此一定要给文件读写权限，因此启动前先 chmod 777 -R /data/redis/ 给所有文件夹配置好权限
+
 下面再搭建1个哨兵
 
 1. 哨兵1
@@ -848,7 +850,7 @@ logfile "./sentinel_log.log"
 运行
 
 ```shell
-docker run --name sentinel-1  -v  /d/env/docker/redis/conf/sentinel-1.conf:/usr/local/etc/redis/sentinel-1.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-1.conf
+docker run --name sentinel-1 -p 26379:26379 -v  /d/env/docker/redis/conf/sentinel-1.conf:/usr/local/etc/redis/sentinel-1.conf -d redis redis-sentinel /usr/local/etc/redis/sentinel-1.conf
 ```
 
 
@@ -864,7 +866,7 @@ sentinel monitor mymaster 192.168.11.128 6379 2
 ```
 
 2. 哨兵2
-
+he
 拷贝一份sentinel-1.conf, 重命名为sentinel-2.conf，修改端口号即可
 
 ```shell
@@ -874,7 +876,7 @@ port 26380
 运行
 
 ```shell
-docker run --name sentinel-2  -v  /d/env/docker/redis/conf/sentinel-2.conf:/usr/local/etc/redis/sentinel-2.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-2.conf
+docker run --name sentinel-2 -p 26380:26380 -v  /d/env/docker/redis/conf/sentinel-2.conf:/usr/local/etc/redis/sentinel-2.conf -d redis redis-sentinel /usr/local/etc/redis/sentinel-2.conf
 ```
 
 3. 哨兵3
@@ -888,7 +890,19 @@ port 26381
 运行
 
 ```shell
-docker run --name sentinel-3  -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/local/etc/redis/sentinel-3.conf -d --net=host redis redis-sentinel /usr/local/etc/redis/sentinel-3.conf
+docker run --name sentinel-3 -p 26381:26381 -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/local/etc/redis/sentinel-3.conf -d redis redis-sentinel /usr/local/etc/redis/sentinel-3.conf
+```
+
+如果指定了新的dir, 如
+
+```
+#Sentinel服务运行时使用的临时文件夹
+dir /usr/local/etc/redis
+```
+则
+
+```shell
+docker run --name sentinel-3 -p 26384:26384  -v  /d/env/docker/redis/conf/sentinel-3.conf:/usr/local/etc/redis-sentinel/sentinel.conf  -v  /d/tmp:/usr/local/etc/redis -d redis redis-sentinel /usr/local/etc/redis-sentinel/sentinel.conf
 ```
 
 
@@ -921,7 +935,7 @@ spring:
     sentinel:
       master: mymaster ## master 名称
       ## 哨兵节点的 ip和端口好，哨兵会托管主从的架构
-      nodes: 192.168.225.129:26379,192.168.225.132:26379,192.168.225.133:26379
+      nodes: 127.0.0.1:26379
 ```
 
 ## cluster(集群)模式
