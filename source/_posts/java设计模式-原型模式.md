@@ -18,7 +18,7 @@ tags: [java, 设计模式]
 将一个对象复制后，基本数据类型的变量都会重新创建，而引用类型，指向的还是原对象所指向的。使用Java标准库提供的clone方法：
 
 * 定义对象
-```
+```java
 public class UserInfo {
 
     private int id;
@@ -137,7 +137,7 @@ public class User implements Cloneable {
 
 * 测试
 
-```
+```java
 
 public class PrototypeTest {
 

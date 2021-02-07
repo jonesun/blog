@@ -20,7 +20,7 @@ tags: [java, 设计模式]
 模拟xml节点：
 
 * 定义节点接口
-```
+```java
 /**
  * 节点
  */
@@ -38,7 +38,7 @@ public interface Node {
 
 * 定义容器节点
 
-```
+```java
 /**
  * 容器节点
  */
@@ -78,7 +78,7 @@ public class ElementNode implements Node{
 
 * 定义文本节点
 
-```
+```java
 /**
  * 文本节点
  */
@@ -110,7 +110,7 @@ public class TextNode implements Node {
 
 * 定义注释节点
   
-```
+```java
 /**
  * 注释节点
  */
@@ -143,7 +143,7 @@ public class CommentNode implements Node {
 
 * 测试验证
   
-```
+```java
 public class CompositeTest {
 
     public static void main(String[] args) {

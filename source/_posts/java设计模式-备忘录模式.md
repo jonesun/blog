@@ -23,7 +23,7 @@ tags: [java, 设计模式]
 
 * 定义备忘录类
 
-```
+```java
 /**
  * 备忘录
  */
@@ -45,7 +45,7 @@ public class Memento {
 
 * 定义原始类
 
-```
+```java
 /**
  * 原始类
  */
@@ -74,7 +74,7 @@ public class Originator {
 
 * 定义存取备忘录的类
 
-```
+```java
 /**
  * 存取者
  */
@@ -117,7 +117,7 @@ public class Caretaker {
 
 * 测试
 
-```
+```java
 public class MementoTest {
 
     public static void main(String[] args) {

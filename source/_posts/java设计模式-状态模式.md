@@ -19,7 +19,7 @@ tags: [java, 设计模式]
 
 * 定义几种状态
 
-```
+```java
 /**
  * 用户状态
  */
@@ -33,7 +33,7 @@ public enum  UserStatus {
 
 * 定义用户对象
 
-```
+```java
 /**
  * 用户
  */
@@ -70,7 +70,7 @@ public class User {
 
 * 定义不同状态时的处理
 
-```
+```java
 /**
  * 状态
  */
@@ -144,7 +144,7 @@ public class BusyState implements State{
 
 * 定义用于切换状态的上下文
 
-```
+```java
 /**
  * 状态切换上下文
  */
@@ -166,7 +166,7 @@ public class StateContext {
 
 * 测试
 
-```
+```java
 public class StateTest {
 
     public static void main(String[] args) {

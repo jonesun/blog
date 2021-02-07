@@ -41,7 +41,7 @@ tags: [java, 设计模式]
 
 * 定义接收者-及实际执行者Receiver
   
-```
+```java
 /**
  * Receiver是被调用者（士兵）
  */
@@ -61,7 +61,7 @@ public class Receiver {
 
 * 定义命令Command
 
-```
+```java
 /**
  * 命令
  */
@@ -100,7 +100,7 @@ public class ConcreteCommand implements Command {
 
 * Invoker调用者（司令员）
 
-```
+```java
 /**
  * 请求者-要求该命令执行这个请求
  */
@@ -131,7 +131,7 @@ public class Invoker {
 
 * 定义客户端
 
-```
+```java
 public class Client {
 
     public static void main(String[] args) {

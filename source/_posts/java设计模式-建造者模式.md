@@ -15,7 +15,7 @@ tags: [java, 设计模式]
 
 我们借助于Lombok的@Builder反编译出来的代码来看如何自己编写
 
-```
+```java
 //原始
 @Builder
 public class User {

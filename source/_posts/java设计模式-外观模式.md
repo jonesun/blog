@@ -15,7 +15,7 @@ tags: [java, 设计模式]
 
 # 实现
 
-```
+```java
 public class CPU {
     
     public void work(){

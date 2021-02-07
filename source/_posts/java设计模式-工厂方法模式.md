@@ -15,7 +15,7 @@ tags: [java, 设计模式]
 
 # 实现
 
-```
+```java
 /**
  * 产品
  *
@@ -55,7 +55,7 @@ public class SMSSender implements Sender {
 
 就是建立一个工厂类，对实现了同一接口的一些类进行实例的创建，根据传递参数绝对创建哪个产品。
 
-```
+```java
 /**
  * 产品工厂
  *
@@ -96,7 +96,7 @@ public class ProductFactoryTest {
 
 对普通工厂模式进行升级，提供多个工厂方法，分别创建对象。
 
-```
+```java
 /**
  * 产品工厂
  *
@@ -136,7 +136,7 @@ public class ProductFactoryTest {
 
 多个工厂方法模式里的方法置为静态的，不需要创建实例，直接调用即可。
 
-```
+```java
 /**
  * 产品工厂
  *
@@ -196,7 +196,7 @@ public class ProductFactoryTest {
 
 工厂方法还有一个好处是可以隐藏创建产品的细节，且不一定每次都会真正创建产品，完全可以返回缓存的产品，从而提升速度并减少内存消耗: 
 
-```
+```java
 public class LocalDateFactory {
     public static LocalDate fromInt(int yyyyMMdd) {
         //内部优化不是每次都创建对象

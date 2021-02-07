@@ -40,7 +40,7 @@ java中的string字符的不变性其实就是享元模式的应用！
 
 ## 示例一
 
-```
+```java
 /**
  * 抽象享元角色
  * 父接口，以规定出所有具体享元角色需要实现的方法
@@ -139,7 +139,7 @@ com.jonesun.tool.pattern.flyweight.ConcreteFlyweight@78e03bb5extrinsicState is :
 
 我们再看一个具体一点的例子
 
-```
+```java
 /**
  * 图书-相当于Flyweight
  */

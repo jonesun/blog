@@ -48,7 +48,7 @@ Decorator模式的目的就是把一个一个的附加功能，用Decorator的�
 
 * 定义一辆车
 
-```
+```java
 /**
  * 汽车
  */
@@ -71,7 +71,7 @@ public class AudiCar implements Car {
 
 * 定义装饰器
 
-```
+```java
 /**
  * 汽车装饰器
  */
@@ -124,7 +124,7 @@ public class CarStickerDecorator extends CarDecorator {
 
 * 测试验证
 
-```
+```java
 public class DecoratorTest {
 
     public static void main(String[] args) {

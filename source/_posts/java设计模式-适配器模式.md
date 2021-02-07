@@ -19,7 +19,7 @@ tags: [java, 设计模式]
 
 适配器是为了解决类兼容性问题的，实际上java标准库中也有很多地方使用了适配器模式，典型的线程池中为了能让Thread可以调用Callable接口使用了RunnableAdapter这个类：
 
-```
+```java
     private static final class RunnableAdapter<T> implements Callable<T> {
         private final Runnable task;
         private final T result;
@@ -44,7 +44,7 @@ tags: [java, 设计模式]
 
 * 定义220V的电源
 
-```
+```java
 
 /**
  * 中国的电源-220V
@@ -62,7 +62,7 @@ public class PowerWith220V {
 
 * 定义充电器
   
-```
+```java
 /**
  * 充电器
  */
@@ -97,7 +97,7 @@ public class ChargerImpl implements Charger {
 ```
 * 定义手机
 
-```
+```java
 /**
  * 手机
  */
@@ -118,7 +118,8 @@ public class Phone {
 ```
 
 * 模拟下手机充电
-```
+```java
+public class Test {
     public static void main(String[] args) {
         //定义一个手机
         Phone phone = new Phone("vivo");
@@ -134,6 +135,8 @@ public class Phone {
         //手机充电
         phone.charge(charger);
     }
+}
+
 
 ```
 
@@ -143,7 +146,7 @@ public class Phone {
 
 * 先定义一个110V的电源
 
-```
+```java
 public class PowerWith110V {
     
     public Integer discharge() {
@@ -156,7 +159,7 @@ public class PowerWith110V {
 ```
 * 定义适配器
 
-```
+```java
 /**
  * 新充电器
  */
@@ -202,7 +205,8 @@ public class ChargerAdapter implements NewCharger {
 
 * 继续充电
 
-```
+```java
+public class Test {
     public static void main(String[] args) {
         //定义一个手机
         Phone phone = new Phone("vivo");
@@ -229,11 +233,13 @@ public class ChargerAdapter implements NewCharger {
         //手机充电
         phone.charge(newCharger);
 
-       //同样可以接入220V电源
+        //同样可以接入220V电源
         newCharger.connectPower(powerWith220V);
 
         phone.charge(newCharger);
     }
+}
+
 ```
 
 其实这个示例中可以理解为: 
