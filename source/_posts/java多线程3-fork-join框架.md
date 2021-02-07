@@ -71,7 +71,7 @@ result = forkJoinTask.join();
 
 > fork-join的效率跟CPU的核数有直接关系，不同性能机器，测试结果会不一样
 
-```
+```java
 //定义一个简单的接口
 public interface Calculator {
 
@@ -81,7 +81,7 @@ public interface Calculator {
 
 ```
 
-```
+```java
 public class ForkJoinCalculator implements Calculator {
     private ForkJoinPool pool;
 
@@ -134,7 +134,7 @@ public class ForkJoinCalculator implements Calculator {
 
 测试代码
 
-```
+```java
 public class Test {
 
     public static void main(String[] args) {

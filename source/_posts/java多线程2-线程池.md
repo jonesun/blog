@@ -365,7 +365,7 @@ threadPool.execute(()->{
 
 ### 重写ThreadPoolExecutor的afterExecute方法，处理传递的异常引用
 
-```
+```java
 class ExtendedExecutor extends ThreadPoolExecutor {
     // 这可是jdk文档里面给的例子。。
     protected void afterExecute(Runnable r, Throwable t) {
@@ -592,7 +592,7 @@ Executors.unconfigurableScheduledExecutorService(scheduledExecutorService);//不
 
 ### 定义
 
-```
+```java
 @Configuration
 public class ThreadPoolExecutorConfig {
 
@@ -734,7 +734,7 @@ Spring框架自己实现的线程池类
 
 ### 定义
 
-```
+```java
 @EnableAsync
 @Configuration
 //实现AsyncConfigurer接口对异常线程池更加细粒度的控制
@@ -845,8 +845,7 @@ public class AsyncConfig implements AsyncConfigurer {
 
 如果需要观察线程池执行情况，继承ThreadPoolTaskExecutor，编写:
 
-```
-
+```java
 public class VisiableThreadPoolTaskExecutor extends ThreadPoolTaskExecutor {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());

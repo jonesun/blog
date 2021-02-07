@@ -203,7 +203,7 @@ map1.forEach((key, value) -> System.out.println("key=" + key + " value=" + value
 
 它是一个接口，是一个能够支持并发访问的java.util.map集合。在原有java.util.map接口基础上又新提供了4种方法，进一步扩展了原有Map的功能：
 
-```
+```java
 public interface ConcurrentMap<K, V> extends Map<K, V> {
  
     //插入元素

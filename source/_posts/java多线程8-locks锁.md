@@ -39,7 +39,7 @@ Lock接口, 提供了与synchronized一样的锁功能。虽然它失去了像sy
 
 ## Lock
 
-```
+```java
 public interface Lock {
 
     //获取锁。如果锁已被其他线程获取，则进行等待
@@ -75,17 +75,18 @@ public interface Lock {
 
 > JVM允许同一个线程重复获取同一个锁，这种能被同一个线程反复获取的锁，就叫做可重入锁
 
-```
-private ArrayList<Integer> arrayList = new ArrayList<Integer>();
-private Lock lock = new ReentrantLock(); 
+```java
+public class ReentrantLockTest1 {
+    private ArrayList<Integer> arrayList = new ArrayList<Integer>();
+    private Lock lock = new ReentrantLock();
 
-public static void main(String[] args) {
-    final LocksTest test = new LocksTest();
+    public static void main(String[] args) {
+        final LocksTest test = new LocksTest();
 
-    new Thread(() -> test.insert(Thread.currentThread())).start();
+        new Thread(() -> test.insert(Thread.currentThread())).start();
 
-    new Thread(() -> test.insert(Thread.currentThread())).start();
-}
+        new Thread(() -> test.insert(Thread.currentThread())).start();
+    }
 
     public void insert(Thread thread) {
         lock.lock();
@@ -102,41 +103,44 @@ public static void main(String[] args) {
         }
     }
 
-
-//打印
+}
 
 ```
 
 一般情况下通过tryLock来获取锁时是这样使用的
 
-```
-public void insert(Thread thread) {
-    if(lock.tryLock()) {
-        try {
-            System.out.println(thread.getName()+"得到了锁");
-            for(int i=0;i<5;i++) {
-                arrayList.add(i);
+```java
+public class ReentrantLockTest1 {
+    //......
+    public void insert(Thread thread) {
+        if(lock.tryLock()) {
+            try {
+                System.out.println(thread.getName()+"得到了锁");
+                for(int i=0;i<5;i++) {
+                    arrayList.add(i);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }finally {
+                System.out.println(thread.getName()+"释放了锁");
+                lock.unlock();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }finally {
-            System.out.println(thread.getName()+"释放了锁");
-            lock.unlock();
+        } else {
+            System.out.println(thread.getName()+"获取锁失败");
         }
-    } else {
-        System.out.println(thread.getName()+"获取锁失败");
     }
 }
 
+
 //打印
-Thread-0得到了锁
-Thread-1获取锁失败
-Thread-0释放了锁
+//Thread-0得到了锁
+//Thread-1获取锁失败
+//Thread-0释放了锁
 ```
 
 由于lockInterruptibly()的声明中抛出了异常，所以lock.lockInterruptibly()必须放在try块中或者在调用lockInterruptibly()的方法外声明抛出InterruptedException
 
-```
+```java
 public class InterruptTest {
 
     private Lock lock = new ReentrantLock();
@@ -199,7 +203,7 @@ class MyThread extends Thread {
 
 ReadWriteLock也是一个接口,只有两个方法:
 
-```
+```java
 public interface ReadWriteLock {
     /**
      * Returns the lock used for reading.
@@ -281,37 +285,40 @@ public static Object getBlocker(Thread t);
 public static void setCurrentBlocker(Object blocker);
 ```
 
-```
-public static Object u = new Object();
-static ChangeObjectThread t1 = new ChangeObjectThread("t1");
-static ChangeObjectThread t2 = new ChangeObjectThread("t2");
+```java
+public class LockSupportTest {
+    public static Object u = new Object();
+    static ChangeObjectThread t1 = new ChangeObjectThread("t1");
+    static ChangeObjectThread t2 = new ChangeObjectThread("t2");
 
-public static class ChangeObjectThread extends Thread {
-    public ChangeObjectThread(String name) {
-        super(name);
-    }
-    @Override public void run() {
-        synchronized (u) {
-            System.out.println(Thread.currentThread() +"in " + getName());
-            LockSupport.park();
-            if (Thread.currentThread().isInterrupted()) {
-                System.out.println(Thread.currentThread() +"被中断了");
+    public static class ChangeObjectThread extends Thread {
+        public ChangeObjectThread(String name) {
+            super(name);
+        }
+        @Override public void run() {
+            synchronized (u) {
+                System.out.println(Thread.currentThread() +"in " + getName());
+                LockSupport.park();
+                if (Thread.currentThread().isInterrupted()) {
+                    System.out.println(Thread.currentThread() +"被中断了");
+                }
+                System.out.println(Thread.currentThread() + "继续执行");
             }
-            System.out.println(Thread.currentThread() + "继续执行");
         }
     }
+
+    public static void main(String[] args) throws InterruptedException {
+        t1.start();
+        Thread.sleep(1000L);
+        t2.start();
+        Thread.sleep(3000L);
+        t1.interrupt();
+        LockSupport.unpark(t2);
+        t1.join();
+        t2.join();
+    }
 }
 
-public static void main(String[] args) throws InterruptedException {
-    t1.start();
-    Thread.sleep(1000L);
-    t2.start();
-    Thread.sleep(3000L);
-    t1.interrupt();
-    LockSupport.unpark(t2);
-    t1.join();
-    t2.join();
-}
 ```
 
 > LockSuport主要是针对Thread进进行阻塞处理，可以指定阻塞队列的目标对象，每次可以指定具体的线程唤醒。Object.wait()是以对象为纬度，阻塞当前的线程和唤醒单个(随机)或者所有线程

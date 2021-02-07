@@ -36,7 +36,7 @@ countDown();
 
 1. 从多个统计结果汇总数据进行报表统计
 
-```
+```java
 public class CountDownLatchTest1 {
     //用于聚合所有的统计指标
     private static final Map<String, Integer> map = new HashMap<>();
@@ -110,7 +110,7 @@ public class CountDownLatchTest1 {
 
 2. 百米赛跑, 当所有选手到达终点, 裁判进行汇总排名
 
-```
+```java
 public class CountdownLatchTest2 {
 
     public static void main(String[] args) {
@@ -151,8 +151,9 @@ public class CountdownLatchTest2 {
 
 3. 模拟并发操作
 
-```
-//模拟的并发量
+```java
+public class LatchTest {
+    //模拟的并发量
     private static final int CONCURRENT_NUM = 199;
 
     public static void main(String[] args) throws InterruptedException {
@@ -213,11 +214,13 @@ public class CountdownLatchTest2 {
         System.out.println(endTime + " [" + Thread.currentThread() + "] All thread is completed.");
         return endTime - startTime;
     }
+}
+
 ```
 
 4. A，B，C的工作都分为两个阶段，A只需要等待B，C各自完成他们工作的第一个阶段就可以执行了
 
-```
+```java
 public class Employee extends Thread{
 
     private String employeeName;
@@ -303,7 +306,7 @@ reset();
 
 > 在这个例子中第一个barrier状态是大家都洗好手，第二个barrier状态是大家都吃完饭。第二个barrier在第一个barrier释放后可以重用。
 
-```
+```java
 public class CyclicBarrierTest {
     public static void main(String[] args) {
         CyclicBarrier barrier = new CyclicBarrier(3, () -> System.out.println("开始做下一件事吧..."));
@@ -355,7 +358,7 @@ public class CyclicBarrierTest {
 
 2. 多轮赛马
 
-```
+```java
 public class Horse implements Runnable {
 
     private static int counter = 0;
@@ -495,11 +498,12 @@ boolean hasQueuedThreads()
 
 ## 应用场景
 
-Semaphore可以用于做流量控制，特别公用资源有限的应用场景，比如数据库连接。假如有一个需求，要读取几万个文件的数据，因为都是IO密集型任务，我们可以启动几十个线程并发的读取，但是如果读到内存后，还需要存储到数据库中，而数据库的连接数只有10个，这时我们必须控制只有十个线程同时获取数据库连接保存数据，否则会报错无法获取数据库连接。这个时候，我们就可以使用Semaphore来做流控
+Semaphore可以用于做流量控制，特别公用资源有限的应用场景，比如数据库连接。
+假如有一个需求，要读取几万个文件的数据，因为都是IO密集型任务，我们可以启动几十个线程并发的读取，但是如果读到内存后，还需要存储到数据库中，而数据库的连接数只有10个，这时我们必须控制只有十个线程同时获取数据库连接保存数据，否则会报错无法获取数据库连接。这个时候，我们就可以使用Semaphore来做流控
 
 1. 只有10个线程可以同时访问
 
-```
+```java
 public class SemaphoreTest {
 
     private static final int THREAD_COUNT = 30;
@@ -531,7 +535,7 @@ public class SemaphoreTest {
 2. 模拟学校食堂的窗口打饭过程
 
 
-```
+```java
 public class SemaphoreTest3 {
 
     public static void main(String[] args) {
@@ -575,7 +579,8 @@ public class SemaphoreTest3 {
 
 模拟5000次请求，同时最大200个并发操作
 
-```
+```java
+public class MyTest {
 
     /**
      * 请求总数
@@ -588,8 +593,8 @@ public class SemaphoreTest3 {
     private static final int CONCURRENT_COUNT = 200;
 
 
-    private static int count = 0;
     public static void main(String[] args) throws InterruptedException {
+        AtomicInteger countAtomicInteger = new AtomicInteger();
         ExecutorService executorService = Executors.newCachedThreadPool();
 
         //信号量 能保证同时执行的线程最多200个，模拟出稳定的并发量
@@ -603,7 +608,7 @@ public class SemaphoreTest3 {
                     //获取执行许可，当总计未释放的许可数不超过200是，允许通过
                     //否则线程阻塞等待，直到获取许可
                     semaphore.acquire();
-                    add();
+                    countAtomicInteger.incrementAndGet();
                     //执行后，释放许可
                     semaphore.release();
                 } catch (InterruptedException e) {
@@ -616,12 +621,10 @@ public class SemaphoreTest3 {
         //线程阻塞，直到闭锁值为0时，继续往下执行
         countDownLatch.await();
         executorService.shutdown();
-        System.out.println(count);
+        System.out.println(countAtomicInteger.get());
     }
 
-    private static void add(){
-        count++;
-    }
+}
 ```
 
 # Phaser
@@ -673,7 +676,7 @@ protected boolean onAdvance(int phase, int registeredParties)
 
 ## 样例
 
-```
+```java
 public class GamePhaser extends Phaser {
 
     /**
@@ -806,7 +809,7 @@ V exchange(V v, long timeout, TimeUnit unit)
 
 ## 样例
 
-```
+```java
 public class ExchangerTest {
 
     public static void main(String[] args) {
@@ -816,29 +819,23 @@ public class ExchangerTest {
         Exchanger<String > exchanger = new Exchanger<>();
 
         ExecutorService service1 = Executors.newSingleThreadExecutor();
-        service1.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(3000);
-                    System.out.println("子线程1："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程1"));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        service1.execute(() -> {
+            try {
+                Thread.sleep(3000);
+                System.out.println("子线程1："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程1"));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         });
         service1.shutdown();
 
         ExecutorService service2 = Executors.newSingleThreadExecutor();
-        service2.execute(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(3000);
-                    System.out.println("子线程2："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程2"));
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        service2.execute(() -> {
+            try {
+                Thread.sleep(3000);
+                System.out.println("子线程2："+Thread.currentThread().getName()+"收到的消息是: " + exchanger.exchange("你好这里是线程2"));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         });
         service2.shutdown();

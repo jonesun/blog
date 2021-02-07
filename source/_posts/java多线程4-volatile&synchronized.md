@@ -39,7 +39,7 @@ Java提供了 volatile 关键字来保证可见性。当一个共享变量被 vo
 
 下面的代码是很典型的一段代码，很多人在中断线程时可能都会采用这种标记办法：
 
-```
+```java
 public class VolatileTest {
 
     private boolean stop = false;
@@ -129,7 +129,7 @@ public void println(String x) {
 
 上面看了volatile的用法，值得一提的是volatile只能修饰变量。那如果要保证一个操作或者方法的原子性时(防止多个线程同时执行一段代码)就得使用synchronized了:
 
-```
+```java
 public class SynchronizedTest {
 
     private int studentsCount = 0;
@@ -230,7 +230,7 @@ public int getStudentsCount() {
 - 线程不安全的单例
 
 普通单线程模式下
-```
+```java
 public class TestSingleton {
 
     private static TestSingleton instance = null;
@@ -261,33 +261,36 @@ public class TestSingleton {
 
 试试多线程调用情况下
 
-```
-public static void main(String[] args) {
+```java
+public class Test {
+    public static void main(String[] args) {
 
-    CompletableFuture<Void> completableFuture1 = CompletableFuture.runAsync(() -> {
-        TestSingleton testSingleton = TestSingleton.getInstance();
+        CompletableFuture<Void> completableFuture1 = CompletableFuture.runAsync(() -> {
+            TestSingleton testSingleton = TestSingleton.getInstance();
 
-        System.out.println("1: " + testSingleton.hashCode());
-    });
+            System.out.println("1: " + testSingleton.hashCode());
+        });
 
-    CompletableFuture<Void>  completableFuture2 =  CompletableFuture.runAsync(() -> {
-        TestSingleton testSingleton1 = TestSingleton.getInstance();
+        CompletableFuture<Void>  completableFuture2 =  CompletableFuture.runAsync(() -> {
+            TestSingleton testSingleton1 = TestSingleton.getInstance();
 
-        System.out.println("2: " + testSingleton1.hashCode());
-    });
+            System.out.println("2: " + testSingleton1.hashCode());
+        });
 
-    while (!(completableFuture1.isDone() && completableFuture2.isDone())) {
+        while (!(completableFuture1.isDone() && completableFuture2.isDone())) {
 
+        }
     }
-}
 
 //打印结果，不固定，有时候一样，有时候不一样。说明多线程情况下已不是单例了
 //ps: 所以多线程的代码才不好调试，结果不固定，跟实际机器的环境有关系
+}
+
 ```
 
 - 线程安全的单例
 
-```
+```java
 public class TestSingleton {
 
     //使用volatile保证instance原子性
@@ -336,7 +339,7 @@ ps: 上面只是举例，如果日常真的要写线程安全的单例的话，�
 
 //使用枚举
 
-```
+```java
 //使用枚举-推荐
 public enum TestSingleton {
 
@@ -364,7 +367,7 @@ public class TestSingleton {
 
 - 对象实例化占用资源多且需要延时(第一次使用时再实例化)-使用内部类
 
-```
+```java
 public class TestSingleton {
     private static class SingletonClassInstance {
         private static final TestSingleton instance = new TestSingleton();
