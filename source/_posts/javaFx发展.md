@@ -30,7 +30,7 @@ JavaFX可在Windows、Mac OS X和Linux上运行，利用 JavaFX 能够非常轻�
 
 - 拥有一个 WebView 组件，可以通过js与原生java交互，实现丰富的功能
 
-- 可运行于服务器端，通过浏览器提供用户访问 [jpro](https://www.jpro.one/?page=demos)
+- 可运行于服务器端，通过浏览器提供用户访问，可参考[jpro](https://www.jpro.one/?page=demos)
 
 > 支持使用Spring Boot管理
 
@@ -64,16 +64,15 @@ public class MyApplication extends Application {
         primaryStage.setScene(new Scene(root, 800, 700));
         primaryStage.show();
     }
-
-                
-
+    
     @Override
     public void stop(){
         springContext.close();
     }
 
-
     public static void main(String[] args) {
+        //为了能正常使用Desktop.getDesktop()相关方法
+        System.setProperty("java.awt.headless", Boolean.toString(false));
         launch();
     }
 
@@ -126,7 +125,6 @@ public abstract class BaseController implements Initializable {
         Parent root = FXMLLoader.load(getClass().getResource(fxmlName), null, null, springContext::getBean);
         scene.setRoot(root);
     }
-
 }
 
 
