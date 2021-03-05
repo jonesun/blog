@@ -257,9 +257,6 @@ resources\mapper\user\UserMapper.xml
 
 ### 编写测试类
 
-> springboot2.x的版本, 默认使用的是junit5版本, junit4和junit5两个版本差别比较大，需要注意下用法
-
-![junit5vsjunit4](junit5vsjunit4.png)
 
 ```java
 package com.jonesun.mybatis.dao;
