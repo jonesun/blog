@@ -6,7 +6,7 @@ tags: [java]
 top: 1000
 ---
 
-# 目录
+# 基础
 
 [java-引用](/2020/11/30/java-引用)
 
@@ -15,8 +15,6 @@ top: 1000
 [java-时间](/2020/10/22/java-时间)
 
 [java-io](/2020/10/22/java-io)
-
- <!-- more -->
 
 [java-随机数](/2020/07/13/java随机数)
 
@@ -29,6 +27,16 @@ top: 1000
 [java设计模式](/2020/08/11/java设计模式)
 
 [SpringBoot集成使用](/2020/10/09/SpringBoot集成使用)
+
+## 资料整理
+
+[Java新特性](https://sunr7.gitee.io/java-new-features/) Java9之后到Java14
+
+[Java8特性介绍](https://sunr7.gitee.io/java8-learning/) 
+
+[RxJava学习](https://sunr7.gitee.io/rxjava_learning/) 
+
+ <!-- more -->
 
 # 开发小技巧
 
