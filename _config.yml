@@ -12,7 +12,7 @@ timezone:
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: https://jonesun.github.io/
+url: https://jonesun.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -76,12 +76,21 @@ theme: hexo-theme-next-7.8.0
 
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
+#deploy:
+#    type: git
+#    repo: https://github.com/jonesun/jonesun.github.io.git
+#    branch: master
+#    name: jone sun
+#    email: sunjoner7@gmail.com
+
 deploy:
-    type: git
-    repo: https://github.com/jonesun/jonesun.github.io.git
-    branch: master
-    name: jone sun
-    email: sunjoner7@gmail.com
+  type: git
+  repo:
+    github: https://github.com/jonesun/jonesun.github.io.git,master
+    coding: https://e.coding.net/jonesun/blog/jonesun.git,master
+    gitee: https://gitee.com/sunr7/jonesun.git,master
+  name: jone sun
+  email: sunjoner7@gmail.com
     
 live2d:
   enable: true
