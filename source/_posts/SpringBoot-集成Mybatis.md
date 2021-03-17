@@ -41,19 +41,11 @@ tags: [java, springboot]
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-test</artifactId>
     <scope>test</scope>
-<!--    <exclusions>-->
-<!--      <exclusion>-->
-<!--        <groupId>org.junit.vintage</groupId>-->
-<!--        <artifactId>junit-vintage-engine</artifactId>-->
-<!--      </exclusion>-->
-<!--    </exclusions>-->
   </dependency>
 
 </dependencys>
 
 ```
-
-> Vintage Engine属于Junit5的一个模块，它的作用是：允许用JUnit 5运行用JUnit 4编写的测试，从而提供了向下兼容的能力。Spring Boot 2.4.0开始Vintage Engine已从spring-boot-starter-test正式移除，故不再需要排除Vintage Engine
 
 为演示方便，这里使用H2来代替Mysql
 
@@ -320,6 +312,8 @@ class UserDaoTest {
     }
 }
 ```
+
+[样例代码](https://github.com/jonesun/mybatis-sample)
 
 # 常用动态SQL标签
 
@@ -900,6 +894,8 @@ maxLifetime: 1800000
             <version>3.4.0</version>
         </dependency>
 ```
+
+> 现在在项目中使用的话，直接用mybatis-plus-boot-starter
 
 注意因为pagehelper-spring-boot-starter默认会引用mybatis，所以要不直接去除(MyBatis-Plus有自己的分页功能), 要不就将pagehelper-spring-boot-starter的mybatis引用排除掉
 

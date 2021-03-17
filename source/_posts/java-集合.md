@@ -117,12 +117,22 @@ map相关的介绍在[java多线程6-ConcurrentHashMap](/2020/08/11/java多线�
 
 ![queue](queue.png)
 
-> Queue
+## Queue
 
-它和List的区别在于，List可以在任意位置添加和删除元素，而Queue只有两个操作：
+它和List的区别在于，List可以在任意位置添加和删除元素，而Queue只有：
 
-- 把元素添加到队列末尾
-- 从队列头部取出元素
+功能 | 抛异常 | 返回值
+---|---|---
+增(把元素添加到队列末尾) | add(e) | offer(e)
+删(从队列头部取出元素) | remove() | poll()
+查(或者说瞧，看队列中还有没有元素) | element() | peek()
+
+两组方法的区别：
+
+1. 如果队列空了，那 remove() 会抛异常，而poll() 返回null；element() 会抛异常，而 peek() 返回null;
+2. 有些队列(如BlockingQueue)会有容量的限制，当达到了最大的容量且不会扩容时，使用add(e)就会抛异常；而 offer(e) 返回false;
+
+*所以使用时尽量前后统一，即前面使用了add(e)后面就使用remove()，前面使用了offer(e)后面就使用poll();*
 
 > PriorityQueue
 
@@ -139,12 +149,15 @@ PriorityQueue默认按元素比较的顺序排序（必须实现Comparable接口
 
 这也是我们在多线程环境下，为什么需要BlockingQueue的原因。作为BlockingQueue的使用者，我们再也不需要关心什么时候需要阻塞线程，什么时候需要唤醒线程，因为这一切BlockingQueue都给你一手包办了
 
-> Deque
+## Deque
 
-双端队列(允许两头都进，两头都出)，它的功能是：
+双端队列(允许两头都进，两头都出)，那自然是有针对First端的操作和对Last端的操作：
 
-- 既可以添加到队尾，也可以添加到队首
-- 既可以从队首获取，又可以从队尾获取
+功能 | 抛异常 | 返回值
+---|---|---
+增(把元素添加到队列头部/末尾) | addFirst(e)/ addLast(e) | offerFirst(e)/ offerLast(e)
+删(从队列头部/末尾取出元素) | removeFirst()/ removeLast() | pollFirst()/ pollLast()
+查(或者说瞧，看队列中还有没有元素) | getFirst()/ getLast() | peekFirst()/ peekLast()
 
 **LinkedList即是List，又是Queue，还是Deque**,但是，在使用的时候，如果我们把它当作List，就获取List的引用，如果我们把它当作Queue，就获取Queue的引用
 
@@ -153,6 +166,8 @@ PriorityQueue默认按元素比较的顺序排序（必须实现Comparable接口
 * addFirst() 在列表的开头插入一个元素。
 * offer() 与 add() 和 addLast() 相同。 它们都在列表的尾部（末尾）添加一个元素。
 * removeLast() 删除并返回列表的最后一个元素。
+
+*使用时一样，尽量用同一组方法*
 
 ```
 // 这是一个List:
@@ -169,6 +184,8 @@ Queue<String> queue = new LinkedList<>();
 - Vector：一种线程安全的List实现；
 - Stack：基于Vector实现的LIFO的栈(Java 6 添加了 ArrayDeque ，其中包含直接实现堆栈功能的方法)
 
+如使用ArrayDeque封装下：
+
 ```java
 public class Stack<T> {
   private Deque<T> storage = new ArrayDeque<>();
@@ -181,11 +198,13 @@ public class Stack<T> {
     return storage.toString();
   }
 }
+
+//或者直接Deque<Integer> stack = new ArrayDeque<>();
 ```
   
 还有一小部分接口是遗留接口，也不应该继续使用：Enumeration<E>：已被Iterator<E>取代。
 
-## 线程安全
+## 线程安全集合
 
 interface | non-thread-safe | thread-safe
 ---|---|---
@@ -248,4 +267,20 @@ System.out.println("list: " + list);
 * 使用map如果需要按照插入的顺序进行访问，又想保持快速访问的能力，推荐LinkedHashMap
 * 想要列表中不存在重复元素，推荐set, 由于set的很多实现类实际上是map实现类的特殊存在(value为空对象的map), 故使用哪个实现类同map一样
 
-> 不要在新代码中使用遗留类 Vector ，Hashtable 和 Stack
+> 不要在新代码中使用遗留类 Vector ，Hashtable 和 Stack(替代为ArrayDeque)
+
+# 面试常见问题
+
+> Vector 和 ArrayList 的区别是什么？
+
+1. 线程安全问题，Vector在很多方法上都添加了synchronized以保障线程安全，但线程安全的成本就是效率会降低，在某些系统里很容易成为瓶颈； 
+2. 扩容时ArrayList的新容量是原容量的**1.5**倍，而Vector默认则为两倍；
+
+> ArrayDeque 和 LinkedList 的区别有哪些？
+
+1. ArrayDeque 是一个可扩容的数组，LinkedList 是链表结构；
+2. ArrayDeque 里不可以存 null 值，
+3. 但是 LinkedList 可以；ArrayDeque 在操作头尾端的增删操作时更高效，但是 LinkedList 只有在当要移除中间某个元素且已经找到了这个元素后的移除才是 O(1) 的；
+4. ArrayDeque 在内存使用方面更高效。
+
+所以，如果要实现普通的队列**只要不是必须要存null值，推荐ArrayDeque**。当然如果需要兼容Java6之前的版本就得用LinkedList，因为ArrayDeque是Java6才引入的。
