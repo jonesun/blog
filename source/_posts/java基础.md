@@ -44,3 +44,9 @@ top: 1000
 
 
 > 使用```System.getProperties().list(System.out);```可输出可用的环境信息列表, 或者使用System.getenv()获取map
+
+
+> float 和 double 类型主要是为了科学计算和工程计算而设计的。它们执行二进制浮点运算（binary floating-point arithmetic），这是为了在广泛的数值范围上提供较为精确为快速的近似计算而精心设计的。
+然而，它们并没有提供完全精确的结果，所以不应该被用于需要精确结果的场合。
+使用 BigDecimal、int 或者 long 进行货币计算(如果数值范围没有超过 9 为十进制数字，就可以使用 int；如果不超过 18 位数字，就可以使用 long。
+如果数值可能超过 18 位数字，就必须使用 BigDecimal。)

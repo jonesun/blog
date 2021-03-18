@@ -12,6 +12,8 @@ tags: [java, springboot]
 
 说到test大家都会想到junit，是的spring-boot-starter-test默认集成的就是junit，但需要注意的是：springboot2.x的版本, 默认使用的是[junit5](https://junit.org/junit5/docs/current/user-guide/) 版本, junit4和junit5两个版本差别比较大，需要注意下用法：
 
+*通常我们只要引入 spring-boot-starter-test 依赖就行，它包含了一些常用的模块 Junit、Spring Test、AssertJ、Hamcrest、Mockito 等*
+
 ![junit5vsjunit4](junit5vsjunit4.png)
 
  <!-- more -->
@@ -102,7 +104,7 @@ class MyApplicationTests {
 
 右击代码即可运行测试
 
-# @DisplayName()测试显示中文名称
+## @DisplayName()测试显示中文名称
 
 ```java
 import org.junit.jupiter.api.DisplayName;
@@ -125,7 +127,7 @@ class StandAloneServerApplicationTests {
 
 ![displayName](displayName.png)
 
-# 指定测试顺序
+## 指定测试顺序
 
 ```java
 import org.junit.jupiter.api.*;
@@ -155,5 +157,179 @@ class StandAloneServerApplicationTests {
 ```
 
 更多其他注解用法，可查阅官方文档 [writing-tests-annotations](https://junit.org/junit5/docs/current/user-guide/#writing-tests-annotations)
+
+## 测试Controller
+
+测试Controller不建议直接引用Controller类进行测试，因为Controller一般是提供api给外部访问用的，使用http请求更能模拟真实场景，SpringBoot中提供了Mockito可以达到效果
+
+举例
+
+```java
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@DisplayName("用户Controller层测试")
+@AutoConfigureMockMvc //不启动服务器,使用mockMvc进行测试http请求
+@SpringBootTest
+class UserControllerTest {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    MockMvc mockMvc;
+
+    ObjectMapper objectMapper;
+
+    @Autowired
+    public UserControllerTest(MockMvc mockMvc, ObjectMapper objectMapper) {
+        this.mockMvc = mockMvc;
+        this.objectMapper = objectMapper;
+    }
+
+    @Order(1)
+    @DisplayName("注册")
+    @Test
+    void register() throws Exception {
+        UserForm userForm = new UserForm();
+        userForm.setName("jonesun");
+        userForm.setAge(30);
+        userForm.setEmail("sunr922@163.com");
+        //请求路径不要错了
+        MvcResult mvcResult = mockMvc.perform(MockMvcRequestBuilders.post("/users")
+                        //这里要特别注意和content传参数的不同，具体看你接口接受的是哪种
+//                        .param("userName",info.getUserName()).param("password",info.getPassword())
+                        //传json参数,最后传的形式是 Body = {"password":"admin","userName":"admin"}
+                        .content(objectMapper.writeValueAsString(userForm))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON)
+        )
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print())
+                .andReturn();
+
+        //得到返回代码
+        int status = mvcResult.getResponse().getStatus();
+        //得到返回结果
+        String content = mvcResult.getResponse().getContentAsString();
+
+        logger.info("status: {}, content: {}", status, content);
+    }
+
+    @Order(2)
+    @DisplayName("列表")
+    @Test
+    void list() throws Exception {
+
+        RequestBuilder request = MockMvcRequestBuilders.get("/users")
+//                .param("searchPhrase","ABC")          //传参
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON);  //请求类型 JSON
+        MvcResult mvcResult = mockMvc.perform(request)
+                // 期望的结果状态 等同于Assert.assertEquals(200,status);
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andDo(MockMvcResultHandlers.print())                 //添加ResultHandler结果处理器，比如调试时 打印结果(print方法)到控制台
+                .andReturn();                                         //返回验证成功后的MvcResult；用于自定义验证/下一步的异步处理；
+        int status = mvcResult.getResponse().getStatus();                 //得到返回代码
+        String content = mvcResult.getResponse().getContentAsString();    //得到返回结果
+        logger.info("status: {}, content: {}", status, content);
+//
+//        mockMvc.perform(MockMvcRequestBuilders.get("/users"))
+//                .andDo(print())
+//                .andExpect(status().isOk())
+//                .andExpect(content().string(containsString("Hello World")));
+    }
+}
+```
+
+完整代码见 [github](https://github.com/jonesun/mybatis-sample/blob/master/src/test/java/org/jonesun/mybatis/sample/controller/UserControllerTest.java)
+
+## 测试并发
+
+有时我们需要对自己编写的代码做并发测试，看在高并发情况下，代码中是否存在线程安全等问题，通常可以利用[Jmeter](https://jmeter.apache.org/)或者浏览器提供的各个插件(如postman)。
+实际上我们可以利用JUC提供的[并发同步器CountDownLatch和Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore/)来实现
+
+举例，模拟秒杀场景
+
+```java
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+@SpringBootTest
+class GoodsServiceTest {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Autowired
+    GoodsService goodsService;
+
+
+    public static final Long TEST_GOODS_ID = 123L;
+
+    @Order(1)
+    @Test
+    void init() {
+        Goods goods = new Goods(TEST_GOODS_ID, "商品1", 100);
+        goodsService.init(goods);
+    }
+
+
+    @Order(2)
+    @Test
+    void buy() {
+        goodsService.buy(TEST_GOODS_ID);
+    }
+
+    @DisplayName("秒杀单个商品")
+    @Order(3)
+    @Test
+    void batchBuy() throws InterruptedException {
+        Integer inventory = goodsService.getInventoryByGoodsId(TEST_GOODS_ID);
+        logger.info("【{}】准备秒杀, 当前库存: {}", TEST_GOODS_ID, inventory);
+        LocalDateTime startTime = LocalDateTime.now();
+        AtomicInteger buySuccessAtomicInteger = new AtomicInteger();
+        AtomicInteger notBoughtAtomicInteger = new AtomicInteger();
+        AtomicInteger errorAtomicInteger = new AtomicInteger();
+        final int totalNum = 300;
+        //用于发出开始信号
+        final CountDownLatch countDownLatchSwitch = new CountDownLatch(1);
+        final CountDownLatch countDownLatch = new CountDownLatch(totalNum);
+
+        //控制并发量 10 50 100 200
+        Semaphore semaphore = new Semaphore(200);
+
+        ExecutorService executorService = Executors.newFixedThreadPool(totalNum);
+
+        for (int i = 0; i < totalNum; i++) {
+            executorService.execute(() -> {
+                try {
+                    countDownLatchSwitch.await();
+                    semaphore.acquire();
+                    TimeUnit.SECONDS.sleep(1);
+
+                    boolean result = goodsService.buy(TEST_GOODS_ID);
+                    if (result) {
+                        buySuccessAtomicInteger.incrementAndGet();
+                    } else {
+                        notBoughtAtomicInteger.incrementAndGet();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    errorAtomicInteger.incrementAndGet();
+                } finally {
+                    semaphore.release();
+                    countDownLatch.countDown();
+                }
+
+            });
+
+        }
+        countDownLatchSwitch.countDown();
+        countDownLatch.await();
+        logger.info("测试完成,花费 {}毫秒，【{}】总共{}个用户抢购{}件商品，{}个人买到 {}个人未买到，{}个人发生异常，商品还剩{}个", TEST_GOODS_ID, ChronoUnit.MILLIS.between(startTime, LocalDateTime.now()), totalNum,
+                inventory, buySuccessAtomicInteger.get(), notBoughtAtomicInteger.get(), errorAtomicInteger.get(),
+                goodsService.getInventoryByGoodsId(TEST_GOODS_ID));
+        assertEquals(inventory, buySuccessAtomicInteger.get());
+    }
+
+}
+```
+
+完整代码见 [github](https://github.com/jonesun/mybatis-sample/blob/master/src/test/java/org/jonesun/mybatis/sample/controller/UserControllerTest.java)
+
 
 -- 未完，抽时间继续整理整理 --

@@ -1,9 +1,14 @@
 ---
 title: SpringBoot-Docker使用
+tags:
+  - java
+  - springboot
+categories:
+  - java
+  - springboot
 date: 2020-12-17 10:03:02
-categories: [java,springboot]
-tags: [java, springboot]
 ---
+
 
 SpringBoot 2.4.0开始官方插件增加了对docker的支持
 
