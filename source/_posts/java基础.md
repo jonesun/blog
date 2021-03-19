@@ -26,6 +26,8 @@ top: 1000
 
 [SpringBoot集成使用](/2020/10/09/SpringBoot集成使用)
 
+[SpringCloud集成使用](/2021/03/19/SpringCloud集成使用)
+
 ## 资料整理
 
 [Java新特性](https://sunr7.gitee.io/java-new-features/) Java9之后到Java14
