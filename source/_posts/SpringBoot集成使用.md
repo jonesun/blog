@@ -278,6 +278,12 @@ FactoryBean可以⽣成某⼀个类型的Bean实例，也就是说我们可以�
 </repositories>
 ```
 
+使用gradle的话:
+
+```groovy
+maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
+```
+
 > 第三方库想找到最新版本，除到各自官网查找外，可以到[Maven Central Repository Search](https://search.maven.org/) 中搜索
 
 ### 中文乱码解决
@@ -376,3 +382,27 @@ class TestService {
 > 不过需要注意的是如果被 @Retryable 注解的方法的调用方和被调用方处于同一个类中，那么重试将会失效
 
 > 另外Spring的重试机制只支持对异常进行捕获，而无法对返回值进行校验判断重试。如果想要更灵活的重试策略可以使用**Guava Retry**
+
+# 面试常问
+
+## 谈谈你对IOC 和 AOP 的理解？他们的实现原理是什么？
+
+IOC 叫做控制反转，指的是通过Spring来管理对象的创建、配置和生命周期，这样相当于把控制权交给了
+Spring，不需要人工来管理对象之间复杂的依赖关系，这样做的好处就是解耦。在Spring里面，主要提供
+了 BeanFactory 和 ApplicationContext 两种 IOC 容器，通过他们来实现对 Bean 的管理。
+
+AOP 叫做面向切面编程，他是一个编程范式，目的就是提高代码的模块性。Spring AOP 基于动态代理的
+方式实现，如果是实现了接口的话就会使用 JDK 动态代理，反之则使用 CGLIB 代理，Spring中 AOP 的应
+用主要体现在 事务、日志、异常处理等方面，通过在代码的前后做一些增强处理，可以实现对业务逻辑的
+隔离，提高代码的模块化能力，同时也是解耦。Spring主要提供了 Aspect 切面、JoinPoint 连接点、
+PointCut 切入点、Advice 增强等实现方式。
+
+## Spring Boot 启动流程
+
+1. 准备环境，根据不同的环境创建不同的Environment
+2. 准备、加载上下文，为不同的环境选择不同的Spring Context，然后加载资源，配置Bean
+3. 初始化，这个阶段刷新Spring Context，启动应用
+
+网上搜到的流程图
+
+![spring-boot启动流程](spring-boot启动流程.png)
