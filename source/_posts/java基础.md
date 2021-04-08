@@ -30,11 +30,11 @@ top: 1000
 
 ## 资料整理
 
-[Java新特性](https://sunr7.gitee.io/java-new-features/) Java9之后到Java14
+[Java新特性](https://jonesun.gitee.io/java-new-features/) Java9之后到Java14
 
-[Java8特性介绍](https://sunr7.gitee.io/java8-learning/) 
+[Java8特性介绍](https://jonesun.gitee.io/java8-learning/) 
 
-[RxJava学习](https://sunr7.gitee.io/rxjava_learning/) 
+[RxJava学习](https://jonesun.gitee.io/rxjava_learning/) 
 
  <!-- more -->
 

@@ -52,6 +52,8 @@ Zuul 1 | Spring Cloud Gateway | Spring出品的API网关服务
 
 ![spring-cloud-alibaba](spring-cloud-alibaba.png)
 
+**需要注意的是如果想Spring Cloud 2020 结合 Spring Cloud Alibaba使用的话，Spring Cloud Alibaba最好也使用2020.x版本，避免一些奇怪的问题**
+
 从官网上的介绍和一些资料显示，Spring Cloud Alibaba主要的变化是：
 
 1. 阿里开源了[Nacos](https://nacos.io/zh-cn/docs/quick-start.html) 这个组件可以用来代替 Spring Cloud Config和Spring Cloud Eureka:

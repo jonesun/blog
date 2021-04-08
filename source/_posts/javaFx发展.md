@@ -58,7 +58,7 @@ public class MyApplication extends Application {
         //或者
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/fxml/main.fxml"));
         fxmlLoader.setControllerFactory(springContext::getBean);
-        root = fxmlLoader.load();
+        Parent root = fxmlLoader.load();
 
         primaryStage.setTitle("xxx");
         primaryStage.setScene(new Scene(root, 800, 700));
@@ -129,6 +129,8 @@ public abstract class BaseController implements Initializable {
 
 
 ```
+
+[示例](https://github.com/jonesun/javafx8-springboot-demo)
 
 > 支持自动更新
 
