@@ -185,3 +185,50 @@ CAP理论是分布式架构中重要理论
 - 一致性(Consistency) (所有节点在同一时间具有相同的数据)
 - 可用性(Availability) (保证每个请求不管成功或者失败都有响应)
 - 分隔容忍(Partition tolerance) (系统中任意信息的丢失或失败不会影响系统的继续运作)
+
+
+# 常见问题
+
+- spring-cloud 2020.0.0以上版本无法连接nacos config解决办法
+
+加入spring-cloud-starter-bootstrap:
+
+```xml
+<dependency>
+    <groupId>org.springframework.cloud</groupId>
+    <artifactId>spring-cloud-starter-bootstrap</artifactId>
+</dependency>
+```
+
+如果还不行，则去除spring-cloud-context:
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
+        <version>${nacos.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-context</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>com.alibaba.cloud</groupId>
+        <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+        <version>${nacos.version}</version>
+        <exclusions>
+            <exclusion>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-context</artifactId>
+            </exclusion>
+        </exclusions>
+    </dependency>
+</dependencies>
+
+```
+
+> 在spring cloud config client中，启动时不在使用spring-cloud-context来加载bootstrap.yml来启动了。而是改为spring-cloud-starter-bootstrap作为引导。所以需要把boot-starter-bootstrap加入代码中.
+> 但是nacos中的依赖引入了spring-cloud-context。导致bootstrap和context两个包冲突。因此需要在spring-cloud-starter-alibaba-nacos-discovery和spring-cloud-starter-alibaba-nacos-config两个包中把context包去除

@@ -427,7 +427,9 @@ logging:
     name: C:/tmp/admin-client/spring-log.log
 ```
 
-> 注意logging.file.name不支持表达式，所以项目中无论是使用默认logback还是log4j2，都需要匹配好日志路径及名称
+> 注意logging.file.name不支持表达式，所以项目中无论是使用默认logback还是log4j2，都需要匹配好日志路径及名称。如果需要配置相对路径则可配置为./log/xxx.log，表示为项目所在目录下的log文件夹中的xxx.log文件
+> 低版本的springBoot没有logging.file.name，可直接配置为logging.file
+
 
 这样就可以在admin-server中查看日志,无需登录到服务器上查看了，甚至可以利用日志配置，在线实时调整日志的显示级别(内部原理也是actuator)，方便在出现异常情况下查看详细的日志打印
 
