@@ -602,3 +602,24 @@ info:
   author: jone sun
   blog: https://jonesun.github.io/
 ```
+
+如果运行后出现类似:
+
+```
+org.yaml.snakeyaml.scanner.ScannerException: while scanning for the next token
+found character '@' that cannot start any token. (Do not use @ for indentation)
+ in 'reader', line 39, column 12:
+      version: @project.version@
+```
+
+错误，先检查下pom.xml中是否存在对应值，尤其有些项目没有写description，再在build标签下新增:
+
+```xml
+ <resources>
+    <resource>
+        <directory>src/main/resources</directory>
+        <!--开启过滤，用指定的参数替换directory下的文件中的参数-->
+        <filtering>true</filtering>
+    </resource>
+</resources>
+```

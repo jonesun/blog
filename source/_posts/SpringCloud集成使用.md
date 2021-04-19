@@ -232,3 +232,5 @@ CAP理论是分布式架构中重要理论
 
 > 在spring cloud config client中，启动时不在使用spring-cloud-context来加载bootstrap.yml来启动了。而是改为spring-cloud-starter-bootstrap作为引导。所以需要把boot-starter-bootstrap加入代码中.
 > 但是nacos中的依赖引入了spring-cloud-context。导致bootstrap和context两个包冲突。因此需要在spring-cloud-starter-alibaba-nacos-discovery和spring-cloud-starter-alibaba-nacos-config两个包中把context包去除
+
+最后附上自己研究并搭建的基于Spring Cloud 2020和Spring Cloud Alibaba 2020 简易版 [spring-cloud-jonesun](https://github.com/jonesun/spring-cloud-jonesun)
