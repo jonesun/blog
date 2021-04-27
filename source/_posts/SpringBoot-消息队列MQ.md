@@ -27,7 +27,7 @@ tags: [java, springboot]
 个人建议，要看实际项目的需求，业务量不是特别大的项目，不建议为了使用而使用。
 当然如果项目中有以上的场景需求，或者使用传统模式时遇到了瓶颈时，大胆的引入吧(上面说的弊端也是有很多解决方案的，如可以搭建MQ集群来保持MQ的高可用性)！
 
-![消息中间件的应用场景](https://www.cnblogs.com/wusier/p/14689805.html)
+[消息中间件的应用场景](https://www.cnblogs.com/wusier/p/14689805.html)
 
  <!-- more -->
 
@@ -119,3 +119,28 @@ RocketMQ中文资料丰富，也得到了阿里各个系统的验证，对于一
 # Spring Boot中的集成使用
 
 -- 未完，待整理 --
+
+
+## RabbitMQ 的三种类型的交换器
+
+*RabbitMQ 使用 Exchange(交换机)和 Queue(队列)来实现消息队列*
+
+### 广播式交换器类型(Fanout)
+
+该类交换器不分析所接收到消息中的 Routing Key，默认将消息转发到所有与该交换器绑定的队列中去
+
+![Fanout](rabbitmq-fanout.jpg)
+
+### 直接式交换器类型(Direct)
+
+该类交换器需要精确匹配 Routing Key 与 Binding Key，如消息的 Routing Key = Cloud，那么该条消息只能被转发至 Binding Key = Cloud 的消息队列中去
+
+![Direct](rabbitmq-direct.jpg)
+
+### 主题式交换器(Topic Exchange)
+
+该类交换器通过消息的 Routing Key 与 Binding Key 的模式匹配，将消息转发至所有符合绑定规则的队列中。
+
+Binding Key 支持通配符，其中“*”匹配一个词组，“#”匹配多个词组(包括零个)
+
+![Topic Exchange](rabbitmq-topic-exchange.jpg)
