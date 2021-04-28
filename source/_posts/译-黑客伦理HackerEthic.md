@@ -21,3 +21,5 @@ tags: [互联网]
    > You can create art and beauty on a computer.
 1. 计算机使生活更美好。
    > Computers can change your life for the better.
+    
+根据这六条“黑客伦理”，黑客价值观的核心原则可以概括成这样几点：**分享、开放、民主、计算机的自由使用、进步**。
