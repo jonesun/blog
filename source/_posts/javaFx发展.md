@@ -11,6 +11,8 @@ tags: [java, javafx]
 
 当然如果是基于高版本的jdk开发, 推荐使用[Liberica JDK-不仅包含了 JavaFX，还继续为 Windows 以及 Linux 提供 32 位构建](https://bell-sw.com/pages/java-8u242/), 下载Full version版本就可以无缝切换
 
+学习javaFx常用布局控件可参考[JavaFX Tutorial](http://tutorials.jenkov.com/javafx/index.html)
+
  <!-- more -->
 
 ## 为何使用javaFx
