@@ -1,8 +1,14 @@
 ---
 title: java多线程2-线程池
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+  - 线程池
+abbrlink: 87bed628
 date: 2020-07-23 10:18:00
-categories: [java, 多线程]  
-tags: [java, 多线程, 线程池]
 ---
 # 一、使用线程池的好处
 

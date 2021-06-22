@@ -1,8 +1,13 @@
 ---
 title: javaFx-属性绑定
+categories:
+  - java
+  - javafx
+tags:
+  - java
+  - javafx
+abbrlink: ba53eabe
 date: 2020-11-19 18:12:43
-categories: [java, javafx] 
-tags: [java, javafx]
 ---
 
 # 前言

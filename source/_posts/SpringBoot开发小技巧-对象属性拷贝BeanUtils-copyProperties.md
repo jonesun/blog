@@ -1,8 +1,13 @@
 ---
 title: SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: c177f6b0
 date: 2020-08-31 13:11:32
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言

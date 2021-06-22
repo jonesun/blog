@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成flyway实现数据库版本控制
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 933cf8db
 date: 2020-12-09 17:38:57
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言

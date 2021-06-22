@@ -1,8 +1,13 @@
 ---
 title: java设计模式-责任链模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 7e2ffbc9
 date: 2020-09-27 10:33:05
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 > 设计模式是为了可扩展性，不要为了使用设计模式而使用

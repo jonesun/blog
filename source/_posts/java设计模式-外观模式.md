@@ -1,8 +1,13 @@
 ---
 title: java设计模式-外观模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 4f40d3f3
 date: 2020-10-30 09:51:37
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

@@ -1,8 +1,13 @@
 ---
 title: SpringBoot开发小技巧-打印Mybatis中的sql语句
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 62be47dd
 date: 2020-08-17 16:59:51
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言

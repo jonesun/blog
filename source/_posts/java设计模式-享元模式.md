@@ -1,8 +1,13 @@
 ---
 title: java设计模式-享元模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 5903f011
 date: 2020-11-02 13:57:40
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

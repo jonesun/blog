@@ -1,8 +1,13 @@
 ---
 title: java设计模式-原型模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 2933c5b8
 date: 2020-11-06 10:32:23
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

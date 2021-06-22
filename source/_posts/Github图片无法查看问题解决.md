@@ -1,7 +1,8 @@
 ---
 title: Github图片无法查看问题解决
-date: 2020-05-22 16:00:40
 tags: github
+abbrlink: 3db93ce5
+date: 2020-05-22 16:00:40
 ---
 
 经常访问github, 最近发现github上的图片无法显示，按照以下步骤后，顺利解决

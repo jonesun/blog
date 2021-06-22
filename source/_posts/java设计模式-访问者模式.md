@@ -1,8 +1,13 @@
 ---
 title: java设计模式-访问者模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 7892876e
 date: 2020-11-05 13:26:33
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

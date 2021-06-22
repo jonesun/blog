@@ -1,8 +1,13 @@
 ---
 title: java设计模式-适配器模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: e9e2ac5d
 date: 2020-10-28 10:08:05
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

@@ -1,8 +1,11 @@
 ---
 title: InterProcessSharedPreferences-Android中跨进程的SharedPreferences
-date: 2016-12-08 08:33:50
 categories: android
-tags: [android, jonesun]  
+tags:
+  - android
+  - jonesun
+abbrlink: a29c5e38
+date: 2016-12-08 08:33:50
 ---
 
 解决android中的SharedPreferences不能跨进程读写的问题.

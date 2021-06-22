@@ -1,8 +1,13 @@
 ---
-title: java设计模式-状态模式 
-date: 2020-11-05 11:12:01 
-categories: [java, 设计模式]
-tags: [java, 设计模式]
+title: java设计模式-状态模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 3255402d
+date: 2020-11-05 11:12:01
 ---
 
 # 前言

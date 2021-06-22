@@ -1,8 +1,11 @@
 ---
 title: java-集合
+categories:
+  - java
+tags:
+  - java
+abbrlink: b4ef74d7
 date: 2020-10-14 10:13:16
-categories: [java]  
-tags: [java]
 ---
 
 # 简介
@@ -107,7 +110,7 @@ juc中提供的在并发编程中线程安全的有序的集合，适用于高�
 
 ![map](map.png)
 
-map相关的介绍在[java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)有体现，另外再补充一个EnumMap
+map相关的介绍在[java多线程6-ConcurrentHashMap](/20200811/java/多线程/57e2d1c0)有体现，另外再补充一个EnumMap
 
 > EnumMap
 
@@ -142,7 +145,7 @@ PriorityQueue默认按元素比较的顺序排序（必须实现Comparable接口
 
 > BlockingQueue
 
-并发编程中经常用到了阻塞队列，如线程池的任务队列[java多线程2-线程池](/2020/07/23/java多线程2-线程池)，它是基于ReentrantLock
+并发编程中经常用到了阻塞队列，如线程池的任务队列[java多线程2-线程池](/20200723/java/多线程/87bed628)，它是基于ReentrantLock
 
 **阻塞队列BlockingQueue就是为线程之间共享数据而设计的**
 

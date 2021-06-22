@@ -1,8 +1,14 @@
 ---
 title: java多线程1-从Thread到Future再到CompletableFuture
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+  - future
+abbrlink: 36c04c8a
 date: 2020-07-14 13:50:58
-categories: [java, 多线程] 
-tags: [java, 多线程, future]
 ---
 
 # 引言
@@ -1034,7 +1040,7 @@ public class CompletableFuture<T> implements Future<T>, CompletionStage<T> {
 
 基于服务器内核的限制，如果你是八核，每次线程只能起八个;适用于对list密集计算操作充分利用CPU资源，如果需要调用远端服务不建议使用
 
-如果所有 CompletableFuture 都使用默认[ForkJoinPool.commonPool()](/2020/07/28/java多线程3-fork-join框架) 线程池，一旦有任务执行很慢的 I/O 操作，就会导致所有线
+如果所有 CompletableFuture 都使用默认[ForkJoinPool.commonPool()](/20200728/java/多线程/a490755) 线程池，一旦有任务执行很慢的 I/O 操作，就会导致所有线
 程都阻塞在 I/O 操作上，进而影响系统整体性能。
 所以，建议大家在生产环境使用时，根据不同的业务类型创建不同的线程池，以避免互相影响。
 

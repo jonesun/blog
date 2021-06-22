@@ -1,8 +1,13 @@
 ---
 title: java多线程10-ThreadLocal
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: b6038c0d
 date: 2020-08-24 11:17:15
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 # 概念

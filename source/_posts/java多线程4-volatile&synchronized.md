@@ -1,8 +1,13 @@
 ---
 title: java多线程4-volatile&synchronized
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: cc62b819
 date: 2020-07-30 10:32:00
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 # 并发编程三要素

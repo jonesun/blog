@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成Redis
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: b11f77d1
 date: 2020-08-26 15:36:38
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # Redis介绍

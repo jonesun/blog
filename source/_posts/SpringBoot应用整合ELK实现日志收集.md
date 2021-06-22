@@ -1,8 +1,15 @@
 ---
 title: SpringBoot应用整合ELK实现日志收集
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+  - ELK
+  - 日志
+abbrlink: 5316e6b4
 date: 2020-07-21 10:59:39
-categories: [java,springboot]
-tags: [java, springboot, ELK, 日志]
 ---
 
 # 概念

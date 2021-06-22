@@ -1,50 +1,55 @@
 ---
 title: SpringBoot集成使用
-date: 2020-10-09 10:16:56
-categories: [java,springboot]
-tags: [java, springboot]
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
 top: 999
+abbrlink: 7b2ee301
+date: 2020-10-09 10:16:56
 ---
 
 # 目录
 
 > SpringBoot版本为2.x, 2.4.0开始版本号没有.RELEASE后缀
 
-[SpringBoot-Starters](/2020/12/26/SpringBoot-Starters)
+[SpringBoot-Starters](/20201226/java/springboot/c9c436f0)
 
 ## 第三方组件
 
-[SpringBoot-集成Log日志](/2020/07/24/SpringBoot-集成log日志)
+[SpringBoot-集成Log日志](/20200724/java/springboot/33ed675a)
 
-[SpringBoot-Test用法](/2021/03/05/SpringBoot-Test用法)
+[SpringBoot-Test用法](/20210305/java/springboot/8dec456e)
 
-[SpringBoot-集成Mybatis](/2020/09/29/SpringBoot-集成Mybatis)
+[SpringBoot-集成Mybatis](/20200929/java/springboot/c091a644)
 
-[SpringBoot-集成Swagger3](/2020/10/10/SpringBoot-集成swagger)
+[SpringBoot-集成Swagger3](/20201010/java/springboot/a5de5e84)
 
-[SpringBoot-集成Redis](/2020/08/26/SpringBoot-集成Redis)
+[SpringBoot-集成Redis](/20200826/java/springboot/b11f77d1)
 
-[SpringBoot-SpringSecurity5整合](/2020/07/22/SpringBoot-SpringSecurity整合)
+[SpringBoot-SpringSecurity5整合](/20200722/java/springboot/1e755469)
 
-[SpringBoot-集成Websocket](/2020/09/04/SpringBoot-集成websocket)
+[SpringBoot-集成Websocket](/20200904/java/springboot/11360df2)
 
-[SpringBoot应用整合ELK实现日志收集](/2020/07/21/SpringBoot应用整合ELK实现日志收集)
+[SpringBoot应用整合ELK实现日志收集](/20200721/java/springboot/5316e6b4)
 
-[SpringBoot-监控](/2020/11/20/SpringBoot-监控)
+[SpringBoot-监控](/20201120/java/springboot/685e4f62)
 
-[SpringBoot-集成Flyway实现数据库版本控制](/2020/12/09/SpringBoot-集成flyway实现数据库版本控制)
+[SpringBoot-集成Flyway实现数据库版本控制](/20201209/java/springboot/933cf8db)
 
-[SpringBoot-SpringInitializr说明](/2020/12/07/SpringBoot-SpringInitializr说明)
+[SpringBoot-SpringInitializr说明](/20201207/java/springboot/c778234)
 
-[SpringBoot-消息队列MQ](/2021/02/26/SpringBoot-消息队列MQ)
+[SpringBoot-消息队列MQ](/20210226/java/springboot/ade04692)
 
-[SpringBoot-Docker使用](/2020/12/17/SpringBoot-Docker使用)
+[SpringBoot-Docker使用](/20201217/java/springboot/90c59710)
 
 ## 开发小技巧
 
-[SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties](/2020/08/31/SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties)
+[SpringBoot开发小技巧-对象属性拷贝BeanUtils.copyProperties](/20200831/java/springboot/c177f6b0)
 
-[SpringBoot开发小技巧-打印Mybatis中的sql语句](/2020/08/17/SpringBoot开发小技巧-打印Mybatis中的sql语句)
+[SpringBoot开发小技巧-打印Mybatis中的sql语句](/20200817/java/springboot/62be47dd)
 
 [screw-简洁好用的数据库表结构文档生成工具](https://toscode.gitee.com/leshalv/screw/tree/master)
 

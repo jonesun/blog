@@ -1,8 +1,13 @@
 ---
 title: java设计模式-单例模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 49fe4565
 date: 2020-11-05 17:02:48
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言
@@ -167,7 +172,7 @@ class MySpringTestBeanTest {
 
 > 如果想声明成多例对象可以使用@Scope(“prototype”)
 
-另外如果需要保证每个线程中都只有一个的话，借助[ThreadLocal](/2020/08/24/java多线程10-ThreadLocal)：
+另外如果需要保证每个线程中都只有一个的话，借助[ThreadLocal](/20200824/java/多线程/b6038c0d)：
 
 ```java
  public class ThreadSingleton {

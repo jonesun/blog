@@ -1,8 +1,13 @@
 ---
 title: java多线程8-locks锁
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: c9ab2479
 date: 2020-08-17 18:10:27
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 # 前言

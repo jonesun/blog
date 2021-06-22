@@ -1,8 +1,11 @@
 ---
 title: java-引用
+categories:
+  - java
+tags:
+  - java
+abbrlink: aee68e6b
 date: 2020-11-30 09:58:04
-categories: [java]  
-tags: [java]
 ---
 
 # 数据类型

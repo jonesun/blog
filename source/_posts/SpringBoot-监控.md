@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-监控
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 685e4f62
 date: 2020-11-20 16:59:02
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 ## 前言

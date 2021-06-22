@@ -1,8 +1,13 @@
 ---
 title: Hexo博客集成Gitalk评论
+categories: hexo
+tags:
+  - nodejs
+  - hexo
+  - NexT
+  - gitalk
+abbrlink: 63d6ed0b
 date: 2020-07-29 14:27:46
-categories: hexo 
-tags: [nodejs, hexo, NexT, gitalk]   
 ---
 
 > next高版本的已经默认集成gitalk插件, 如果你本地没找到配置，尽快升级。目前我使用的是next 7.x版本，故只需要在_config.yml中打开gitalk配置即可

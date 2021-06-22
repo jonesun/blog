@@ -1,8 +1,14 @@
 ---
 title: SpringBoot-SpringSecurity整合
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+  - springsecurity
+abbrlink: '1e755469'
 date: 2020-07-22 13:23:09
-categories: [java,springboot]
-tags: [java, springboot, springsecurity]
 ---
 
 # SpringSecurity
@@ -1368,7 +1374,7 @@ public class MultiHttpSecurityConfig {
 
 国内项目中很多会集成Mybatis，改写为Mybatis也比较简单，我们来参考实现JdbcUserDetailsManager自己的MybatisUserDetailManager
 
-1. 首先引入Mybatis，参考[SpringBoot-集成Mybatis](/2020/09/29/SpringBoot-集成Mybatis)
+1. 首先引入Mybatis，参考[SpringBoot-集成Mybatis](/20200929/java/springboot/c091a644)
 
 2. 编写自定义的UserDetailsService
 

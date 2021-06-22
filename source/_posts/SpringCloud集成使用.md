@@ -1,16 +1,22 @@
 ---
 title: SpringCloud集成使用
-date: 2021-03-19 10:46:53
-categories: [java,springcloud]
-tags: [java, springcloud]
+urlname: SpringCloud集成使用
+categories:
+  - java
+  - springcloud
+tags:
+  - java
+  - springcloud
 top: 998
+abbrlink: 55535
+date: 2021-03-19 10:46:53
 ---
 
 # 前言
 
 顾名思义是跟云相关的，云程序实际上就是指分布式应用程序，所以Spring Cloud就是为了让分布式应用程序编写更方便，更容易而提供的一组基础设施，它的核心是Spring框架，利用Spring Boot的自动配置，力图实现最简化的分布式应用程序开发。
 
-截至目前（2021-03-19）[官网](https://spring.io/projects/spring-cloud) 最新版本为2020.0.2版
+截至目前（2021-06-22）[官网](https://spring.io/projects/spring-cloud) 最新版本为2020.0.3版
 
 Spring Cloud包含了一大堆技术组件，既有开源社区开发的组件，也有商业公司开发的组件，既有持续更新迭代的组件，也有即将退役不再维护的组件。
 
@@ -52,7 +58,7 @@ Zuul 1 | Spring Cloud Gateway | Spring出品的API网关服务
 
 ![spring-cloud-alibaba](spring-cloud-alibaba.png)
 
-**需要注意的是如果想Spring Cloud 2020 结合 Spring Cloud Alibaba使用的话，Spring Cloud Alibaba最好也使用2020.x版本，避免一些奇怪的问题**
+**需要注意的是如果想Spring Cloud 2020 结合 Spring Cloud Alibaba使用的话，Spring Cloud Alibaba最好也使用2021.1(第一个支持2020版spring cloud的版本)及以上版本，避免一些奇怪的问题**
 
 从官网上的介绍和一些资料显示，Spring Cloud Alibaba主要的变化是：
 
@@ -233,4 +239,4 @@ CAP理论是分布式架构中重要理论
 > 在spring cloud config client中，启动时不在使用spring-cloud-context来加载bootstrap.yml来启动了。而是改为spring-cloud-starter-bootstrap作为引导。所以需要把boot-starter-bootstrap加入代码中.
 > 但是nacos中的依赖引入了spring-cloud-context。导致bootstrap和context两个包冲突。因此需要在spring-cloud-starter-alibaba-nacos-discovery和spring-cloud-starter-alibaba-nacos-config两个包中把context包去除
 
-最后附上自己研究并搭建的基于Spring Cloud 2020和Spring Cloud Alibaba 2020 简易版 [spring-cloud-jonesun](https://github.com/jonesun/spring-cloud-jonesun)
+最后附上自己研究并搭建的基于Spring Cloud 2020和Spring Cloud Alibaba 2021 简易版 [spring-cloud-jonesun](https://github.com/jonesun/spring-cloud-jonesun)

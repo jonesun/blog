@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成websocket
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 11360df2
 date: 2020-09-04 15:42:37
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言

@@ -1,8 +1,13 @@
 ---
 title: java8开发小技巧-获取两个时间的时间差
+categories:
+  - java
+  - java8
+tags:
+  - java
+  - java8
+abbrlink: '16e93703'
 date: 2020-08-12 10:52:32
-categories: [java, java8]  
-tags: [java, java8]
 ---
 
 日常开发中经常会需要计算一个方法执行了多久:

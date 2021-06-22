@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成Mybatis
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: c091a644
 date: 2020-09-29 15:43:05
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 简介

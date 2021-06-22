@@ -1,8 +1,11 @@
 ---
 title: Android自定义AsyncTaskLoader
-date: 2016-10-20 15:28:03
 categories: android
-tags: [android, jonesun] 
+tags:
+  - android
+  - jonesun
+abbrlink: 11b89789
+date: 2016-10-20 15:28:03
 ---
 
 Android3.0以后推出了Loader,用来异步加载数据的,配合ListView或者GridView等用Adapter作为数据源的来使用，非常方便。

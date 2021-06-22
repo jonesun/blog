@@ -1,8 +1,13 @@
 ---
 title: java设计模式-备忘录模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: df30fde2
 date: 2020-11-05 10:05:29
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

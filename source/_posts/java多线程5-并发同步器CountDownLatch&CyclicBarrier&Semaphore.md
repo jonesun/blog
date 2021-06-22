@@ -1,8 +1,13 @@
 ---
 title: java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: d2a4479b
 date: 2020-07-31 10:38:35
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 # CountDownLatch

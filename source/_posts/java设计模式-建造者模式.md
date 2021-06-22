@@ -1,8 +1,13 @@
 ---
 title: java设计模式-建造者模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: e2a6f58b
 date: 2020-11-05 15:44:34
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

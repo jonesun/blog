@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成log日志
-date: 2020-07-24 17:04:02 
-categories: [java,springboot]
-tags: [java, springboot]
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 33ed675a
+date: 2020-07-24 17:04:02
 ---
 
 # 前言
@@ -288,5 +293,5 @@ AsyncLogger需要加载disruptor-3.0.0.jar或者更高的版本(pom.xml)：
 
 # 高阶
 
-随着业务量的提高，普通日志已经满足不了需求，此时可以引入Elasticsearch，使用[ELK](/2020/07/21/SpringBoot应用整合ELK实现日志收集)
+随着业务量的提高，普通日志已经满足不了需求，此时可以引入Elasticsearch，使用[ELK](/20200721/java/springboot/5316e6b4)
 来搭建日线日志系统，，这几个组件都挺能抢内存的，elasticsearch默认就要2g内存，线上机器性能不够的话，还是乖乖使用原始log收集

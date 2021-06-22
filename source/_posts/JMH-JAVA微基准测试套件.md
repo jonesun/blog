@@ -1,8 +1,12 @@
 ---
 title: JMH-Java微基准测试套件
+categories:
+  - java
+tags:
+  - java
+  - test
+abbrlink: 520c60c5
 date: 2020-07-20 16:36:30
-categories: [java]
-tags: [java, JMH, 测试]
 ---
 
 # JMH(Java Microbenchmark Harness)和jMeter的不同

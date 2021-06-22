@@ -1,8 +1,13 @@
 ---
 title: java设计模式-组合模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 6719cec9
 date: 2020-11-02 10:05:50
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

@@ -1,8 +1,13 @@
 ---
 title: java设计模式-策略模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: ca7def2a
 date: 2020-11-03 09:40:30
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

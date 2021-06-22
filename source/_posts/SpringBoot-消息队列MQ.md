@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-消息队列MQ
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: ade04692
 date: 2021-02-26 10:15:43
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 为什么要使用消息队列-MQ

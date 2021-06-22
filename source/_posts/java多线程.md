@@ -1,34 +1,39 @@
 ---
 title: java多线程
-date: 2020-08-1 14:28:36
-categories: [java, 多线程] 
-tags: [java, 多线程]
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
 top: 1000
+abbrlink: 11bde6ec
+date: 2020-08-01 14:28:36
 ---
 
 # 目录
 
 > 任何并发能做的事情，单进程也能够实现，只不过这种方式效率很低，它是一种顺序性的
 
-[java多线程1-从Thread到Future再到CompletableFuture](/2020/07/14/java多线程1-从Thread到Future再到CompletableFuture)
+[java多线程1-从Thread到Future再到CompletableFuture](/20200714/java/多线程/36c04c8a)
 
-[java多线程2-线程池](/2020/07/23/java多线程2-线程池)
+[java多线程2-线程池](/20200723/java/多线程/87bed628)
 
-[java多线程3-fork-join框架](/2020/07/28/java多线程3-fork-join框架)
+[java多线程3-fork-join框架](/20200728/java/多线程/a490755)
 
-[java多线程4-volatile&synchronized](/2020/07/30/java多线程4-volatile&synchronized/)
+[java多线程4-volatile&synchronized](/20200730/java/多线程/cc62b819)
 
-[java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore)
+[java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore](/20200731/java/多线程/d2a4479b)
 
-[java多线程6-ConcurrentHashMap](/2020/08/11/java多线程6-ConcurrentHashMap)
+[java多线程6-ConcurrentHashMap](/20200811/java/多线程/57e2d1c0)
 
-[java多线程7-atomic原子类](/2020/08/11/java多线程7-atomic原子类)
+[java多线程7-atomic原子类](/20200811/java/多线程/e45118f)
 
-[java多线程8-locks锁](/2020/08/17/java多线程8-locks锁)
+[java多线程8-locks锁](/20200817/java/多线程/c9ab2479)
 
-[java多线程9-BlockingQueue和BlockingDeque-待细化](/2020/08/18/java多线程9-BlockingQueue和BlockingDeque)
+[java多线程9-BlockingQueue和BlockingDeque-待细化](/20200818/java/多线程/aa881dfa)
 
-[java多线程10-ThreadLocal](/2020/08/24/java多线程10-ThreadLocal)
+[java多线程10-ThreadLocal](/20200824/java/多线程/b6038c0d)
 
  <!-- more -->
 

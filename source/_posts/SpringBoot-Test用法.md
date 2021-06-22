@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-Test用法
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: 8dec456e
 date: 2021-03-05 17:18:09
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言
@@ -243,7 +248,7 @@ class UserControllerTest {
 ## 测试并发
 
 有时我们需要对自己编写的代码做并发测试，看在高并发情况下，代码中是否存在线程安全等问题，通常可以利用[Jmeter](https://jmeter.apache.org/)或者浏览器提供的各个插件(如postman)。
-实际上我们可以利用JUC提供的[并发同步器CountDownLatch和Semaphore](/2020/07/31/java多线程5-并发同步器CountDownLatch&CyclicBarrier&Semaphore/)来实现
+实际上我们可以利用JUC提供的[并发同步器CountDownLatch和Semaphore](/20200731/java/多线程/d2a4479b/)来实现
 
 举例，模拟秒杀场景
 

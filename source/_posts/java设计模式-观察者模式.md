@@ -1,8 +1,13 @@
 ---
 title: java设计模式-观察者模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 8603fba1
 date: 2020-11-03 11:47:39
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

@@ -1,32 +1,35 @@
 ---
 title: java基础
-date: 2020-08-11 13:44:00
-categories: [java]
-tags: [java]
+categories:
+  - java
+tags:
+  - java
 top: 1000
+abbrlink: b8b0eacd
+date: 2020-08-11 13:44:00
 ---
 
 # 基础
 
-[java-引用](/2020/11/30/java-引用)
+[java-引用](/20201130/java/aee68e6b)
 
-[java-集合](/2020/10/14/java-集合)
+[java-集合](/20201014/java/b4ef74d7)
 
-[java-时间](/2020/10/22/java-时间)
+[java-时间](/20201022/java/1956c086)
 
-[java-io](/2020/10/22/java-io)
+[java-io](/20201022/java/ddadecb7)
 
-[java-随机数](/2020/07/13/java随机数)
+[java-随机数](/20200713/java/3a0ad540)
 
 ## 高级
 
-[java多线程](/2020/08/01/java多线程)
+[java多线程](/20200801/java/多线程/11bde6ec)
 
-[java设计模式](/2020/08/11/java设计模式)
+[java设计模式](/20200811/java/designPatterns/56df777e)
 
-[SpringBoot集成使用](/2020/10/09/SpringBoot集成使用)
+[SpringBoot集成使用](/20201009/java/springboot/7b2ee301)
 
-[SpringCloud集成使用](/2021/03/19/SpringCloud集成使用)
+[SpringCloud集成使用](/20210319/java/springcloud/55535)
 
 ## 资料整理
 
@@ -40,9 +43,9 @@ top: 1000
 
 # 开发小技巧
 
-[java8开发小技巧-获取两个时间的时间差](/2020/08/12/java8开发小技巧-获取两个时间的时间差)
+[java8开发小技巧-获取两个时间的时间差](/20200812/java/java8/16e93703)
 
-[JMH-Java微基准测试套件](/2020/07/20/JMH-Java微基准测试套件)
+[JMH-Java微基准测试套件](/20200720/java/520c60c5)
 
 
 > 使用```System.getProperties().list(System.out);```可输出可用的环境信息列表, 或者使用System.getenv()获取map

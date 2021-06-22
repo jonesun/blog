@@ -1,9 +1,13 @@
 ---
 title: java多线程9-BlockingQueue和BlockingDeque
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: aa881dfa
 date: 2020-08-18 15:01:39
-categories: [java, 多线程] 
-tags: [java, 多线程]
-
 ---
 
 ![BlockingQueue](BlockingQueue.png)

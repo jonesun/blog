@@ -1,8 +1,13 @@
 ---
 title: java设计模式-解释器模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 2ce89565
 date: 2020-11-05 15:06:02
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

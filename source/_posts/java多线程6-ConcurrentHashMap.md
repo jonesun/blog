@@ -1,8 +1,13 @@
 ---
 title: java多线程6-ConcurrentHashMap
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: 57e2d1c0
 date: 2020-08-11 16:10:50
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 ![map结构](map结构.png)

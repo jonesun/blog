@@ -1,8 +1,13 @@
 ---
 title: java设计模式-抽象工厂模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 5ee502d3
 date: 2020-10-27 11:39:27
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

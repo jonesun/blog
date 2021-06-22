@@ -1,7 +1,11 @@
 ---
 title: java-io
-date: 2020-10-22 14:24:50
+categories:
+  - java
 tags:
+  - java
+abbrlink: ddadecb7
+date: 2020-10-22 14:24:50
 ---
 
 InputStream代表输入字节流，OutputStream代表输出字节流

@@ -1,8 +1,12 @@
 ---
 title: Github-Hexo创建博客
+categories: hexo
+tags:
+  - nodejs
+  - hexo
+  - NexT
+abbrlink: b55300
 date: 2016-08-08 08:33:50
-categories: hexo             # 分类
-tags: [nodejs, hexo, NexT]   # [标签1, 标签2..., 标签n]
 ---
 
 ## 环境准备 ##

@@ -1,8 +1,13 @@
 ---
 title: java设计模式-模板方法模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 295e2dfa
 date: 2020-11-03 10:35:21
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

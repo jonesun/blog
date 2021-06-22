@@ -1,8 +1,13 @@
 ---
 title: java设计模式-命令模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: c08d175c
 date: 2020-11-03 16:41:17
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

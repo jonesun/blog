@@ -1,8 +1,14 @@
 ---
 title: java多线程3-fork/join框架
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+  - 线程池
+abbrlink: a490755
 date: 2020-07-28 10:19:44
-categories: [java, 多线程] 
-tags: [java, 多线程, 线程池]
 ---
 
 # 概念

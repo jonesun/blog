@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-SpringInitializr说明
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: c778234
 date: 2020-12-07 18:20:48
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言

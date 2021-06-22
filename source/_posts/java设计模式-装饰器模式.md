@@ -1,8 +1,13 @@
 ---
 title: java设计模式-装饰器模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: 87feaab1
 date: 2020-10-29 10:37:43
-categories: [java, 设计模式]
-tags: [java, 设计模式]
 ---
 
 # 前言

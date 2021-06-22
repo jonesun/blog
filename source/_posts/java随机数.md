@@ -1,8 +1,10 @@
 ---
 title: java随机数
+categories: java
+tags:
+  - java
+abbrlink: 3a0ad540
 date: 2020-07-13 10:51:10
-categories: java 
-tags: [java]
 ---
 
 # 1.Random

@@ -1,8 +1,12 @@
 ---
 title: Windows下安装Nexus3.x搭建Maven仓库
-date: 2018-02-09 11:00:13
 categories: maven
-tags: [maven, gradle, jonesun] 
+tags:
+  - maven
+  - gradle
+  - jonesun
+abbrlink: c1ff8d1f
+date: 2018-02-09 11:00:13
 ---
 
 使用android studio或者idea开发应用时，除了可以依赖本地的库之外，还可以依赖网上（公有maven服务器、私有maven服务器、jcenter等）。如果是依赖本地的，必须要将依赖的module和主工程放在一个project里面，这就导致了每个project都需要配置这些依赖关系，如果是公司内多个工程依赖同一个公司内部的控件，控件有更新时，同步非常麻烦，但公司内部的控件不可能部署到公有maven服务器上，所以有必要搭建一个局域网内的maven服务器，方便管理公司内部的公共库。

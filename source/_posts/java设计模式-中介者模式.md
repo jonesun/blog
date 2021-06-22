@@ -1,8 +1,13 @@
 ---
 title: java设计模式-中介者模式
+categories:
+  - java
+  - designPatterns
+tags:
+  - java
+  - designPatterns
+abbrlink: cc119eab
 date: 2020-11-05 13:58:34
-categories: [java, 设计模式] 
-tags: [java, 设计模式]
 ---
 
 # 前言

@@ -1,8 +1,13 @@
 ---
 title: java多线程7-atomic原子变量
+categories:
+  - java
+  - 多线程
+tags:
+  - java
+  - 多线程
+abbrlink: e45118f
 date: 2020-08-11 18:07:19
-categories: [java, 多线程]  
-tags: [java, 多线程]
 ---
 
 在JDK1.5之后，JDK的（concurrent包）并发包里提供了一些类来支持原子操作，如AtomicBoolean,AtomicInteger,AtomicLong都是用原子的方式来更新指定类型的值

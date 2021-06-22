@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-集成swagger
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: a5de5e84
 date: 2020-10-10 14:31:18
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 简介

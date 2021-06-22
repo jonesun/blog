@@ -1,8 +1,13 @@
 ---
 title: javaFx发展
+categories:
+  - java
+  - javafx
+tags:
+  - java
+  - javafx
+abbrlink: a81ff2a
 date: 2020-05-20 16:16:37
-categories: [java, javafx] 
-tags: [java, javafx]
 ---
 
 ## javaFx发展

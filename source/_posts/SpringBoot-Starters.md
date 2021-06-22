@@ -1,8 +1,13 @@
 ---
 title: SpringBoot-Starters
+categories:
+  - java
+  - springboot
+tags:
+  - java
+  - springboot
+abbrlink: c9c436f0
 date: 2020-12-26 10:15:25
-categories: [java,springboot]
-tags: [java, springboot]
 ---
 
 # 前言
