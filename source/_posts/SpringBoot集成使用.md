@@ -17,6 +17,8 @@ date: 2020-10-09 10:16:56
 
 [SpringBoot-Starters](/20201226/java/springboot/c9c436f0)
 
+[使用Jenkins自动构建](/20210706/jenkins/9b38587/)
+
 ## 第三方组件
 
 [SpringBoot-集成Log日志](/20200724/java/springboot/33ed675a)
