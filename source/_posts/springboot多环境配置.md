@@ -35,50 +35,28 @@ urlname:
 
 ## yml多环境配置
 
-在resources中分别新建不同环境用的yml(如果项目使用的是properties则修改yml后缀并改写配置为properties格式即可)配置（演示方便直接dev+prod）
+在resources中分别新建不同环境用的yml(如果项目使用的是properties则修改yml后缀并改写配置为properties格式即可)配置（演示方便只分别设置不同端口）
 
 - application-dev.yml:
 
 ```yaml
 # 应用名称
-spring:
-  application:
-    name: mybatis-sample-dev
-  datasource:
-    driver-class-name: org.h2.Driver
-    schema: classpath:db/schema-h2.sql
-    data: classpath:db/data-h2.sql
-    # 内存模式
-    url: jdbc:h2:mem:test
-    username: root
-    password: test
-  h2:
-    console:
-      enabled: true
-      path: /console
 server:
   port: 8081
+```
+
+- application-test.yml:
+
+```yaml
+server:
+  port: 8082
 ```
 
 - application-prod.yml:
 
 ```yaml
-spring:
-  application:
-    name: mybatis-sample
-
-  datasource:
-    driver-class-name: org.h2.Driver
-    # 本地模式
-    url: jdbc:h2:file:./mydb;AUTO_SERVER=TRUE;MODE=MySQL;
-    username: root
-    password: test
-  h2:
-    console:
-      enabled: true
-      path: /console
 server:
-  port: 8081
+  port: 8083
 ```
 
 # pom配置
@@ -127,6 +105,50 @@ server:
 
 ```
 
+再在原有application.yml加入(注意一定要配置pom.xml，不然会报类似@profileActive@找不到的错误):
+
+```yaml
+spring:
+  profiles:
+    active: @profileActive@
+```
+
+> 如果不想定义多个yml，也可以直接在application.yml中配置多个环境
+
+通过---可以把一个yml文档分割为多个，并可以通过 spring.profiles.active 属性指定使用哪个配置文件
+
+application.yml
+```yaml
+spring:
+  profiles:
+    active: @profileActive@
+---
+# 应用名称
+#spring:
+#  profiles: dev
+spring:
+  config:
+    activate:
+      on-profile: dev
+server:
+  port: 8081
+
+---
+
+# 应用名称
+#spring:
+#  profiles: prod
+spring:
+  config:
+    activate:
+      on-profile: dev
+server:
+  port: 8082
+
+```
+
+> springBoot 2.4开始废弃了原有的spring.profiles, 改为了spring.config.activate.on-profile，故如果项目的springBoot版本是2.4+的推荐用新的配置
+
 # 切换环境
 
 这个使用就默认使用dev环境进行运行，如果要开发中切换环境修改pom.xml中的默认打包环境即可(如切换为test环境):
@@ -163,8 +185,49 @@ mvn clean package -Dmaven.test.skip=true -Pprod #生产环境
 可以借助Spring的注解 **@Profile** 实现这样的功能
 
 ```java
+public interface IEmailService {
 
+    void send(String content);
+}
+
+@Service
+@Profile("prod")
+public class EmailService implements IEmailService{
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Override
+    public void send(String content) {
+        //测试方便，仅仅打印日志
+        logger.info("发送邮件: {}", content);
+    }
+}
+
+@SpringBootTest
+class EmailServiceTest {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+
+    @Autowired(required = false)
+    IEmailService emailService;
+
+    @Value("${spring.profiles.active}")
+    private String env;
+
+    @Test
+    void testSend() {
+        if(emailService == null) {
+            logger.error("当前环境：{} 不支持发送邮件",env);
+        } else {
+            emailService.send("这是一封测试邮件");
+        }
+    }
+
+
+}
 ```
+
+切换环境，可以发现只有设置为prod环境时才会打印发送邮件的日志
 
 # 后记
 
@@ -177,6 +240,12 @@ java -jar xxx.jar --spring.profiles.active=prod # 运行生产环境的配置
 
 这种也是可以的
 
+另外如果有些配置不方便放到源码管理中，可以指定加载外部配置的方式(当然如果使用了springCloud的话可以用springConfig或者nacosConfig):
+
+```shell
+java -jar xxx.jar --spring.config.location=application-prod.yml
+```
+
 
 如果jar(或者war)包会分发到客户机器中，由于jar可以直接当成zip解压，就会暴露不同环境的配置
 
@@ -186,31 +255,43 @@ java -jar xxx.jar --spring.profiles.active=prod # 运行生产环境的配置
 
 ```xml
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
+    <plugins>
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+        </plugin>
+    </plugins>
 
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>dev/*</exclude>
-                    <exclude>prod/*</exclude>
-                </excludes>
-                <filtering>false</filtering>
-            </resource>
-
-            <resource>
-                <!-- 这里的变量名需和下面的profile配置的properties中变量一致 -->
-                <directory>src/main/resources/${profileActive}</directory>
-                <includes>
-                    <include>*.*</include>
-                </includes>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
+    <finalName>${project.artifactId}</finalName>
+    <resources>
+        <resource>
+            <directory>src/main/java</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+        </resource>
+        <resource>
+            <directory>src/main/resources</directory>
+            <excludes>
+                <exclude>application-**.yml</exclude>
+            </excludes>
+            <filtering>false</filtering>
+        </resource>
+        <resource>
+            <directory>src/main/resources</directory>
+            <includes>
+                <include>application.yml</include>
+                <include>application-${profileActive}.yml</include>
+            </includes>
+            <filtering>true</filtering>
+        </resource>
+    </resources>
+</build>
 ```
+
+再次打包，可以发现
+
+![jar-已过滤版本](jar-已过滤版本.png)
+
+
+最后同样附上[样例代码](https://github.com/jonesun/mybatis-sample)
