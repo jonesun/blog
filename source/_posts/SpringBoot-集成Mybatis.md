@@ -955,3 +955,62 @@ pom.xml需加入
   <version>1.2.1</version>
 </dependency>
 ```
+
+# Docker Mysql
+
+拉取mysql镜像，如果需要指定版本则可以到[Hub Docker](https://hub.docker.com/_/mysql?tab=tags)中寻找合适版本，这里我们直接用最新版本(8.+)
+
+```shell
+docker pull mysql
+```
+
+启动
+
+```shell
+# docker run --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root123 -d mysql
+
+# 映射本地路径
+docker run -p 3306:3306 --name mysql --restart=always -v /d/Software/docker/env/mysql/logs:/var/log/mysql -v /d/Software/docker/env/mysql/data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root123 -d mysql
+```
+
+> 一般mysql配置文件是不需要映射的，只要映射日志和数据保存位置即可
+
+进入容器
+
+```shell
+docker exec -it mysql bash
+```
+
+登录mysql
+
+```shell
+mysql -u root -p
+
+# 如果要修改密码
+ALTER USER 'root'@'localhost' IDENTIFIED BY 'root123';
+```
+
+授权其他电脑访问并更新加密规则
+
+```shell
+grant all privileges on *.* TO 'root'@'%';
+flush privileges;
+```
+
+添加远程登录用户
+
+```shell
+CREATE USER 'jonesun'@'%' IDENTIFIED WITH mysql_native_password BY 'jonesun123';
+GRANT ALL PRIVILEGES ON *.* TO 'jonesun'@'%';
+```
+
+## Mysql客户端工具
+
+* [MySQL Workbench](https://www.mysql.com/products/workbench/): 这属于mysql官方出品，免费，功能强大，是首选。
+![mysql-workbench](mysql-workbench.png)
+
+* [DBeaver](https://dbeaver.io/download/):  开放[源码](https://github.com/dbeaver/dbeaver)  超过2万Star的项目，中文友好，推荐使用
+![dbeaver-ss-mock](dbeaver-ss-mock.png)
+
+* [navicat-for-mysql](https://www.navicat.com/en/products/navicat-for-mysql): 这个确实是好用，就是价格有点贵。网上也有不少破解版，喜欢用的自行搜索吧
+![navicat-for-mysql](navicat-for-mysql.png)
