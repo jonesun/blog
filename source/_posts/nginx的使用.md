@@ -3,8 +3,8 @@ title: nginx的使用
 abbrlink: 6aeab245
 date: 2021-09-22 09:47:31
 urlname:
-tags:
-categories:
+tags: nginx
+categories: nginx
 ---
 
 # docker 中运行nginx
@@ -90,9 +90,7 @@ docker run --name my-nginx -p 80:80 --restart=always -v D:\Software\docker\env\n
 ```shell
 docker ps
 ```
-542fef5056b1
-docker exec -it 542fef5056b1 /bin/bash
-docker exec -t 542fef5056b1 nginx -s reload
+
 进入容器
 ```shell
 docker exec -it 容器id /bin/bash
