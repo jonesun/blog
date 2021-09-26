@@ -27,6 +27,8 @@ docker pull nginx:1.21.3
 docker images
 ```
 
+<!-- more -->
+
 ![docker-images](docker-images.png)
 
 ## 运行nginx

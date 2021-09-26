@@ -78,20 +78,55 @@ ps -aux|grep redis
 
 ### docker
 
-使用docker:
+使用docker
 
-下载镜像
+#### 下载镜像
 ```
 docker pull redis
 ```
 
+#### 准备redis的配置文件
+
+因为需要redis的配置文件，这里最好去redis的[官方网站](http://www.redis.cn/download.html) 去下载一个redis使用里面的配置文件即可
+
+拿到redis.conf 后放到指定目录(这个目录用于后面docker指定本地目录用，比如我放在D:\Software\docker\env\redis\redis.conf)
+
+修改redis.conf配置文件的以下配置：
+
+  - 注释掉 bind 127.0.0.1 使redis可以外部访问，则注释掉这部分
+  - 修改 protected-mode no 不限制只能本地访问
+  - 修改 requirepass 123456 #给redis设置密码(如果需要)
+
 运行
 
-```
-docker run --name my-redis -p 6379:6379 -d redis
+```shell
+# docker run -p 6379:6379 --name redis -v D:\Software\docker\env\redis\redis.conf:/etc/redis/redis.conf  -v D:\Software\docker\env\redis\data:/data -d redis redis-server /etc/redis/redis.conf --appendonly yes
+docker run -p 6379:6379 --name redis --restart=always -v /d/Software/docker/env/redis/redis.conf:/etc/redis/redis.conf  -v /d/Software/docker/env/redis/data:/data -d redis redis-server /etc/redis/redis.conf --appendonly yes
+# /d/ Windows的D盘
 ```
 
+参数解释：
+  * -p 6379:6379:把容器内的6379端口映射到宿主机6379端口
+  * -v /d/Software/docker/env/redis.conf:/etc/redis/redis.conf：把宿主机配置好的redis.conf放到容器内的这个位置中
+  * -v /d/Software/docker/env/redis/data:/data：把redis持久化的数据在宿主机内显示，做数据备份
+  * redis-server /etc/redis/redis.conf：这个是关键配置，让redis不是无配置启动，而是按照这个redis.conf的配置启动
+  * appendonly yes：redis启动后数据持久化
+
 其他定制配置可参考[hub.docker](https://hub.docker.com/_/redis/)
+
+## Redis可视化客户端
+
+Redis的可视化客户端目前较流行的有：
+
+* Redis Desktop Manager: 基于Qt5的跨平台Redis桌面管理软件，[下载地址](http://docs.redisdesktop.com/en/latest/install/#windows) , 不过[0.9.3](https://github.com/uglide/RedisDesktopManager/releases/tag/0.9.3) 版本之后就开始付费使用了，只能下载0.9.3的版本。
+
+![redis-desktop-manager](redis-desktop-manager.png)
+
+* Another Redis Desktop Manager：基于nodejs开发的免费的Redis可视化管理工具 [下载地址](https://github.com/qishibo/AnotherRedisDesktopManager/releases) [码云下载地址](https://gitee.com/qishibo/AnotherRedisDesktopManager/releases)
+  
+* ![another-redis-desktop-manager](another-redis-desktop-manager.png)
+
+> 个人推荐 Another Redis DeskTop Manager，作为替代方案
 
 ## 引入
 
