@@ -299,3 +299,11 @@ AsyncLogger需要加载disruptor-3.0.0.jar或者更高的版本(pom.xml)：
 # log4j2 高危漏洞
 
 最近全网爆出log4j2存在一个高危漏洞， 故如果项目中引用了log4j2，则需检查是否是2.15.0+, 低于这个版本的尽快更新下
+
+熟悉Spring Boot组件的版本机制的话，其实这个并不需要特地发版解决。只需要pom.xml加个简单配置就可以了:
+
+```xml
+<properties>
+    <log4j2.version>2.15.0</log4j2.version>
+</properties>
+```
