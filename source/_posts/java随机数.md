@@ -187,3 +187,9 @@ byte[] buffer = new byte[16];
 sr.nextBytes(buffer); // 用安全随机数填充buffer
 System.out.println(Arrays.toString(buffer));
 ```
+
+# 更新
+
+JDK中生成随机数的类java.util.Random，但是这个类生成的都是伪随机数。
+
+JDK17对这个类进行了加强，提供了一个RandomGenerator接口，为所有的伪随机数提供统一的API。
