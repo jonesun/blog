@@ -115,11 +115,19 @@ public class Phone {
     }
 
     public void charge(Charger charger) {
-        Integer outVoltage = charger.discharge();
-        System.out.println(name + "正在充电...");
+        charger.discharge(36);
+        System.out.println(name + "正在充电... ");
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
+
 ```
 
 * 模拟下手机充电
